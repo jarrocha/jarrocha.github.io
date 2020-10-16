@@ -6,10 +6,21 @@
     <description>Recent content in Linux on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 12 Nov 2018 14:00:17 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 04 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Setting up mbed-cli on Linux</title>
+      <link>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</link>
+      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</guid>
+      <description>Intro This tutorial comes from the fact that I faced errors that were simple but not easy to find the solution due to the mbed compile scripts error outputs.
+I will try to get involved with the project to help improve feedback from the scripts thus reducing the need to go out seeking help.
+Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.</description>
+    </item>
     
     <item>
       <title>Linux Kernel Modules: Character Devices</title>
@@ -17,7 +28,11 @@
       <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
-      <description>&lt;p&gt;This post will be part of a series where device drivers will be presented and
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This post will be part of a series where device drivers will be presented and
 quickly analized for people that need a quick reference of how to make device
 drivers on an updated kernel. The driver presented here was tested on a 3.2 and
 3.16 Linux Kernel. I will make a driver with more features and test it on a
@@ -30,7 +45,11 @@ newer kernel next time.&lt;/p&gt;</description>
       <pubDate>Sat, 11 Mar 2017 16:47:01 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
-      <description>&lt;p&gt;This a small project that came to mind after reading some reference
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This a small project that came to mind after reading some reference
 material while stuyding HTTP. It basically consists of using raw sockets to
 make the kernel handle L2 data/frames to the user application. From there
 anything is possible, a ping server, a traceroute appication, IP spoofing,

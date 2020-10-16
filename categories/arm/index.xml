@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ARM on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/categories/arm/</link>
+    <description>Recent content in ARM on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 04 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/categories/arm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Setting up mbed-cli on Linux</title>
+      <link>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</link>
+      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</guid>
+      <description>Intro This tutorial comes from the fact that I faced errors that were simple but not easy to find the solution due to the mbed compile scripts error outputs.
+I will try to get involved with the project to help improve feedback from the scripts thus reducing the need to go out seeking help.
+Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.</description>
+    </item>
+    
+  </channel>
+</rss>

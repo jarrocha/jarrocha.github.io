@@ -17,7 +17,11 @@
       <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
-      <description>&lt;p&gt;This post will be part of a series where device drivers will be presented and
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This post will be part of a series where device drivers will be presented and
 quickly analized for people that need a quick reference of how to make device
 drivers on an updated kernel. The driver presented here was tested on a 3.2 and
 3.16 Linux Kernel. I will make a driver with more features and test it on a

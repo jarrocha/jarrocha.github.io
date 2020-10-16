@@ -6,10 +6,19 @@
     <description>Recent content in Categories on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 18 Apr 2016 16:25:31 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 04 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>ARM</title>
+      <link>https://jarrocha.github.io/categories/arm/</link>
+      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/arm/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Bash</title>
