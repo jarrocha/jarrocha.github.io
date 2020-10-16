@@ -44,34 +44,20 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&
     </item>
     
     <item>
-      <title>(Hu)go Template Primer</title>
-      <link>https://jarrocha.github.io/post/goisforlovers/</link>
-      <pubDate>Wed, 02 Apr 2014 00:00:00 +0000</pubDate>
+      <title>Linux Shell Programming Basics</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</link>
+      <pubDate>Tue, 12 Jan 2016 10:30:20 -0700</pubDate>
       
-      <guid>https://jarrocha.github.io/post/goisforlovers/</guid>
-      <description>&lt;p&gt;Hugo uses the excellent &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; &lt;a href=&#34;https://golang.org/pkg/html/template/&#34;&gt;html/template&lt;/a&gt; library for
-its template engine. It is an extremely lightweight engine that provides a very
-small amount of logic. In our experience that it is just the right amount of
-logic to be able to create a good static website. If you have used other
-template systems from different languages or frameworks you will find a lot of
-similarities in Go templates.&lt;/p&gt;
-
-&lt;p&gt;This document is a brief primer on using Go templates. The &lt;a href=&#34;https://golang.org/pkg/html/template/&#34;&gt;Go docs&lt;/a&gt;
-provide more details.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Getting Started with Hugo</title>
-      <link>https://jarrocha.github.io/post/hugoisforlovers/</link>
-      <pubDate>Wed, 02 Apr 2014 00:00:00 +0000</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/hugoisforlovers/</guid>
-      <description>&lt;p&gt;First, go to &lt;a href=&#34;https://github.com/spf13/hugo/releases&#34;&gt;Hugo releases&lt;/a&gt; and download the
-appropriate version for your OS and architecture.&lt;/p&gt;
-
-&lt;p&gt;Save it somewhere specific as we will be using it in the next step.&lt;/p&gt;
-
-&lt;p&gt;More complete instructions are available at &lt;a href=&#34;https://gohugo.io/getting-started/installing/&#34;&gt;Install Hugo&lt;/a&gt;&lt;/p&gt;</description>
+      <guid>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</guid>
+      <description>&lt;p&gt;A shell is an interactive program that in its core forks for new processes
+and wait for their termination. In other words, we present a prompt, the
+user enters the commands, we parse the input , and execute it. Good error
+and signal handling is needed, as well as the return values of the different
+system calls that we will use. The man pages come real handy for this since
+we have a very good reference just a terminal screen away. This program is
+considered a good start to learn the basic of system calls and signal processing.
+This post serves as a quick analysis of the code in the
+&lt;a href=&#34;https://github.com/jarrocha/bschell&#34;&gt;github repository&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
     
   </channel>

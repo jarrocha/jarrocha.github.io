@@ -15,15 +15,15 @@
     
 
     
-    <meta name="title" content="About Hugo" />
-    <meta property="og:title" content="About Hugo" />
-    <meta property="twitter:title" content="About Hugo" />
+    <meta name="title" content="Linux Shell Programming Basics" />
+    <meta property="og:title" content="Linux Shell Programming Basics" />
+    <meta property="twitter:title" content="Linux Shell Programming Basics" />
     
 
     
-    <meta name="description" content="Fill your desciption">
-    <meta property="og:description" content="Fill your desciption" />
-    <meta property="twitter:description" content="Fill your desciption" />
+    <meta name="description" content="A basic command shell for Linux">
+    <meta property="og:description" content="A basic command shell for Linux" />
+    <meta property="twitter:description" content="A basic command shell for Linux" />
     
 
     
@@ -34,9 +34,9 @@
     <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>About Hugo-Innercoder.dev</title>
+    <title>Linux Shell Programming Basics-Innercoder.dev</title>
 
-    <link rel="canonical" href="/about/">
+    <link rel="canonical" href="/post/2018-11-18-shell-prog-basics/">
 
     <link rel="stylesheet" href="/css/iDisqus.min.css"/>
 	
@@ -179,16 +179,24 @@
                 <div class="post-heading">
                     <div class="tags">
                         
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
                     </div>
-                    <h1>About Hugo</h1>
+                    <h1>Linux Shell Programming Basics</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by 
                         
-                                Innercoder.dev
+                            Jaime Arrocha
                          
                         on 
-                        Wednesday, April 9, 2014
+                        Tuesday, January 12, 2016
                         
                         
                         
@@ -218,26 +226,193 @@
                 </header>
                 
                 
-                <p>Hugo is the <strong>world’s fastest framework for building websites</strong>. It is written in Go.</p>
+                <p>A shell is an interactive program that in its core forks for new processes
+and wait for their termination. In other words, we present a prompt, the
+user enters the commands, we parse the input , and execute it. Good error
+and signal handling is needed, as well as the return values of the different
+system calls that we will use. The man pages come real handy for this since
+we have a very good reference just a terminal screen away. This program is
+considered a good start to learn the basic of system calls and signal processing.
+This post serves as a quick analysis of the code in the
+<a href="https://github.com/jarrocha/bschell">github repository</a>.</p>
 
-<p>It makes use of a variety of open source projects including:</p>
+<p><strong>Note: </strong>the complete code of an older version is fully 
+posted in the end. Check my github repo for an updated version. Use the link above.</p>
+
+<p>This shell features some basic error and signal handling, use of system calls 
+(fork, waitpid, execve), background processes, and directory change. And more 
+than implementing a lot of features from the beginning, it is going to focus on a 
+smaller set of features but well implemented.</p>
+
+<p>Below is the basic structure for each new process. This structure can also be 
+used later on when a job list is implemented. This is still in the TODO list and 
+can serve as the second part for the development of this project.</p>
+
+<p>The last two members are for storing the input buffer and an array of pointers 
+to it, respectively. Since the same buffer variable is used to capture the input, 
+each process structure will hold its own input.</p>
+
+<pre><code class="language-c">struct proc_st {
+        int bg;
+        int exec;
+        int commc;
+        int fd_out;
+        int fd_in;
+        pid_t pid;
+        char pbuff[MAX_LEN];
+        char *commv[];
+};
+</code></pre>
+
+<p>Here are the function prototypes of the program so far. The used for error 
+feedback, signal handling, and command identification respectively.</p>
+
+<pre><code>/* function prototypes */
+void error_msg(char *);
+void sig_handler(int);
+void comm_identi(struct proc_st *, char *);
+</code></pre>
+
+<p>The following are for the initialization of the signal handlers. The signal function 
+call’s first argument is used to identify the signal and the second argument is set the 
+action to perform when received. SIG_IGN is used for ignoring the signal. For the signal 
+SIGCHLD, a handler function is given. Why the special case for SIGCHLD? Since we are 
+allowing background processes and the signal is by default ignored, the shell needs to 
+know about the finished background processes so as to not leave zombie processes behind.
+</p>
+
+<pre><code class="language-c">/* initialize signal handlers */
+signal(SIGINT, SIG_IGN);
+signal(SIGQUIT, SIG_IGN);
+signal(SIGCHLD, sig_handler);
+</code></pre>
 
 <ul>
-<li><a href="https://github.com/russross/blackfriday">https://github.com/russross/blackfriday</a></li>
-<li><a href="https://github.com/alecthomas/chroma">https://github.com/alecthomas/chroma</a></li>
-<li><a href="https://github.com/muesli/smartcrop">https://github.com/muesli/smartcrop</a></li>
-<li><a href="https://github.com/spf13/cobra">https://github.com/spf13/cobra</a></li>
-<li><a href="https://github.com/spf13/viper">https://github.com/spf13/viper</a></li>
+<li>Line 4: obtains input from the user.</li>
+<li>Line 10: sets an internal flag to let the program know to send the command
+arguments for execution.</li>
+<li>Line 11: send the obtained string input for parsing and identification.</li>
+<li>Line 13-20: if command is executable, then proceed to fork and wait if it is
+not a background job.</li>
+<li>Line 23-28: check if the command is set to be performed in the background.</li>
 </ul>
 
-<p>Learn more and contribute on <a href="https://github.com/gohugoio">GitHub</a>.</p>
+<pre><code class="language-c">printf(&quot;[SHELL]&gt; &quot;);
+for (;;) {
 
+  while (fgets(buff, MAX_LEN, stdin) != NULL) {
+
+      proc = malloc(sizeof(struct proc_st) + MAX_ARGS);
+
+      /*initialize to zero */
+      memset(proc, 0, sizeof(struct proc_st));
+      proc-&gt;exec = 1;
+      comm_identi(proc, buff);
+
+      if (proc-&gt;exec == 1) {
+          if ((pid = fork()) &lt; 0 ) {
+              printf(&quot;fork error&quot;);
+          } else if (pid == 0) { /* child */
+              if (execvp(*(proc-&gt;commv), proc-&gt;commv) &lt; 0 )
+                  error_msg(&quot;could not execute&quot;);
+              free(proc);
+          }
+
+          /* parent */
+          if (proc-&gt;bg == 0) {
+              if ((pid = waitpid(pid, &amp;status, 0)) &lt; 0)
+                  error_msg(&quot;waitpid error&quot;);
+          } else
+              printf(&quot;PID %d %s\n&quot;, pid, proc-&gt;pbuff);
+      }
+      free(proc);
+      printf(&quot;[SHELL]&gt; &quot;);
+  }
+}
+exit(0);
+</code></pre>
+
+<p>The other important function peforms parsing of the input string buffer and 
+command identification for built-in commands. Parsing is done with the strtok() 
+function. There are many ways to implement the parsing though. The function 
+strcmp() is used for a simple identification of built-in functions.</p>
+
+<ul>
+<li>Line 5-14: performs parsing with the strtok() function.</li>
+<li>Line 16: necessary limiting for command pointer array.</li>
+<li>Line 19-36: this section checks for built-in commands.</li>
+</ul>
+
+<pre><code class="language-c">void comm_identi(struct proc_st *proc, char *buffer)
+{
+        char *tmp;
+
+        /* replace newline with null */
+        if (buffer[strlen(buffer) - 1] == '\n')
+                buffer[strlen(buffer) - 1] = 0;
+        strncpy(proc-&gt;pbuff,buffer,MAX_LEN);
+
+        tmp = strtok(buffer, &quot; &quot;);
+        while (tmp != NULL) {
+                proc-&gt;commv[(proc-&gt;commc)++] = tmp;
+                tmp = strtok(NULL, &quot; &quot;);
+        }
+
+        proc-&gt;commv[proc-&gt;commc] = NULL;
+
+        /* check for built-in functions */
+        if (proc-&gt;commc &gt;= 1) {
+                if(!strcmp(proc-&gt;commv[0], &quot;exit&quot;)) {
+                        free(proc);
+                        exit(EXIT_SUCCESS);
+                }
+
+                if(!strcmp(proc-&gt;commv[0], &quot;cd&quot;)) {
+                        proc-&gt;exec = 0;
+                        if (chdir(proc-&gt;commv[1]) != 0)
+                                error_msg(&quot;chdir() error&quot;);
+                }
+
+                /* check if it is a background process */
+                if (*proc-&gt;commv[(proc-&gt;commc) - 1] == '&amp;') {
+                        proc-&gt;bg = 1;
+                        proc-&gt;commv[(proc-&gt;commc) - 1] = NULL;
+                }
+        }
+
+        return;
+}
+</code></pre>
+
+<p>If interested, download the code and modify it to your liking. Fix any bugs or
+improve on it. That&rsquo;s the only way to learn. If you are unsure about any <em>libc</em>
+funtion use the man pages. Though for beginners it might be a little puzzling
+at first, they are straight to the point and very informative.
+I also recommend Stevens <em>Advanced Programming in the Unix Environment</em>,
+Kerrisk <em>The Linux Programming Interface</em>, and O'Hallaron <em>Computer Systems: A
+Programmer&rsquo;s Perspective</em>.</p>
+
+<p>Update for <a href="https://github.com/jarrocha/bscshell">Basic Shell v2</a>:</p>
+
+<ul>
+<li>better handling of signals. Removed unsafe function calls. But sigaction()
+is still needed for a even better handling.</li>
+<li>implemented a jump table for built-in commands.</li>
+<li>removed unneeded allocation and frees.</li>
+</ul>
+
+<p>Let me know your thought in the comments.</p>
 
                 
 
                 <hr>
                 <ul class="pager">
                     
+                    
+                    <li class="next">
+                        <a href="/post/2018-11-18-sockets-http/" data-toggle="tooltip" data-placement="top" title="Capturing Websites With Sockets and HTTP">Next
+                            Post &rarr;</a>
+                    </li>
                     
                 </ul>
 
