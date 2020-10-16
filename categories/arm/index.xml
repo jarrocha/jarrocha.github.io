@@ -12,14 +12,16 @@
     
     
     <item>
-      <title>Setting up mbed-cli on Linux</title>
+      <title>Setting up ARM MbedOS cli on Linux</title>
       <link>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</guid>
-      <description>Intro This tutorial comes from the fact that I faced errors that were simple but not easy to find the solution due to the mbed compile scripts error outputs.
-I will try to get involved with the project to help improve feedback from the scripts thus reducing the need to go out seeking help.
-Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.</description>
+      <description>Intro This tutorial comes from the fact that there are several steps where errors can come up.
+Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
+2. Install mbed-cli with python. This steps are well made from the website. Make your to be using Python3. https://os.mbed.com/docs/mbed-os/v6.3/build-tools/install-and-set-up.html
+3. Configure GCC_ARM_PATH and ARM_PATH
+$ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $ mbed config -G GCC_ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot;  Test output:</description>
     </item>
     
   </channel>
