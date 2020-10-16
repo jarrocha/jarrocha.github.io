@@ -6,26 +6,22 @@
     <description>Recent content in Linux on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 18 Nov 2018 10:47:50 -0400</lastBuildDate>
+    <lastBuildDate>Sat, 11 Mar 2017 16:47:01 -0700</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/categories/linux/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>TCP Sockets Server</title>
-      <link>https://jarrocha.github.io/post/tcp-server/</link>
-      <pubDate>Sun, 18 Nov 2018 10:47:50 -0400</pubDate>
+      <title>Coding Your Own Network Sniffer</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</link>
+      <pubDate>Sat, 11 Mar 2017 16:47:01 -0700</pubDate>
       
-      <guid>https://jarrocha.github.io/post/tcp-server/</guid>
-      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post serves as a explanation of the basics of a TCP socket server, which
-serves as the base to a future post explaining the basics of a web server.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
-Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
+      <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
+      <description>&lt;p&gt;This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -61,19 +57,6 @@ POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
-      <title>Coding Your Own Network Sniffer</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</link>
-      <pubDate>Sat, 18 Jun 2016 16:47:01 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
-      <description>&lt;p&gt;This a small project that came to mind after reading some reference
-material while stuyding HTTP. It basically consists of using raw sockets to
-make the kernel handle L2 data/frames to the user application. From there
-anything is possible, a ping server, a traceroute appication, IP spoofing,
-man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
       <title>Code Performance Analysis With Assembly &amp; C: Part 2</title>
       <link>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</link>
       <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
@@ -83,6 +66,23 @@ man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
 and O3. We are going to be able to see, what performance decisions the gcc
 compiler makes; for example, we are going to check if the compilers takes the
 function that calculates the string length calls out of the loop.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>TCP Sockets Server</title>
+      <link>https://jarrocha.github.io/post/tcp-server/</link>
+      <pubDate>Wed, 18 May 2016 10:47:50 -0400</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/tcp-server/</guid>
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This post serves as a explanation of the basics of a TCP socket server, which
+serves as the base to a future post explaining the basics of a web server.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
+Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
     
     <item>

@@ -6,7 +6,7 @@
     <description>Recent content in Kernel on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 12 Nov 2016 14:00:17 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 12 Nov 2018 14:00:17 -0700</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/categories/kernel/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Linux Kernel Modules: Character Devices</title>
       <link>https://jarrocha.github.io/post/2018-11-18-char-driver/</link>
-      <pubDate>Sat, 12 Nov 2016 14:00:17 -0700</pubDate>
+      <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
       <description>&lt;p&gt;This post will be part of a series where device drivers will be presented and
