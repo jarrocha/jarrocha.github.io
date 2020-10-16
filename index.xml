@@ -6,21 +6,10 @@
     <description>Recent content on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 28 Sep 2014 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 18 Nov 2018 10:47:50 -0400</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Creating a New Theme</title>
-      <link>https://jarrocha.github.io/post/creating-a-new-theme/</link>
-      <pubDate>Sun, 28 Sep 2014 00:00:00 +0000</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/creating-a-new-theme/</guid>
-      <description>&lt;p&gt;This tutorial will show you how to create a simple theme in Hugo. I assume that you are familiar with HTML, the bash command line, and that you are comfortable using Markdown to format content. I&amp;rsquo;ll explain how Hugo uses templates and how you can organize your templates to create a theme. I won&amp;rsquo;t cover using CSS to style your theme.&lt;/p&gt;
-
-&lt;p&gt;We&amp;rsquo;ll start with creating a new site with a very basic template. Then we&amp;rsquo;ll add in a few pages and posts. With small variations on that, you will be able to create many different types of web sites.&lt;/p&gt;</description>
-    </item>
     
     <item>
       <title>TCP Sockets Server</title>
@@ -72,17 +61,6 @@ This post serves as a quick analysis of the code in the
     </item>
     
     <item>
-      <title>About Hugo</title>
-      <link>https://jarrocha.github.io/about/</link>
-      <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
-      
-      <guid>https://jarrocha.github.io/about/</guid>
-      <description>Hugo is the world’s fastest framework for building websites. It is written in Go.
-It makes use of a variety of open source projects including:
- https://github.com/russross/blackfriday https://github.com/alecthomas/chroma https://github.com/muesli/smartcrop https://github.com/spf13/cobra https://github.com/spf13/viper  Learn more and contribute on GitHub.</description>
-    </item>
-    
-    <item>
       <title></title>
       <link>https://jarrocha.github.io/search/placeholder/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -97,7 +75,7 @@ It makes use of a variety of open source projects including:
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/top/about/</guid>
-      <description>Jaime Arrocha is an expericence Linux developer with a passion for embedded systems, RTOS, computer networking, server applications, performance, and cloud computing. I created this website with the intent of both learning and giving back to the community. I hope that the information you find here is of help. I will try my best to keep the website alive with interesting posts.
+      <description>Jaime Arrocha is an expericenced Linux developer with a passion for embedded systems, RTOS, computer networking, server applications, performance, and cloud computing. I created this website with the intent of both learning and giving back to the community. I hope that the information you find here is of help. I will try my best to keep the website alive with interesting posts.
 There’s a chinese saying that goes “Don’t be fearful of a slow progress, be fearful of a standstill”.</description>
     </item>
     

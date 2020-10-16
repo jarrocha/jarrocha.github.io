@@ -3,11 +3,6 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://jarrocha.github.io/post/creating-a-new-theme/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://jarrocha.github.io/post/tcp-server/</loc>
     <lastmod>2018-11-18T10:47:50-04:00</lastmod>
   </url>
@@ -20,11 +15,6 @@
   <url>
     <loc>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</loc>
     <lastmod>2016-01-12T10:30:20-07:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/about/</loc>
-    <lastmod>2014-04-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -58,7 +48,7 @@
   
   <url>
     <loc>https://jarrocha.github.io/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <lastmod>2018-11-18T10:47:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -76,7 +66,7 @@
   
   <url>
     <loc>https://jarrocha.github.io/post/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <lastmod>2018-11-18T10:47:50-04:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -93,24 +83,6 @@
   
   <url>
     <loc>https://jarrocha.github.io/top/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/tags/featured/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/tags/hugo/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/tags/themes/</loc>
-    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
