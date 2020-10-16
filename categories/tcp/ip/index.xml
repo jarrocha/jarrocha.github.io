@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TCP/IP on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/categories/tcp/ip/</link>
+    <description>Recent content in TCP/IP on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 13 Jul 2016 16:53:42 -0700</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/categories/tcp/ip/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Implementing a Prethreaded Web Server</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</link>
+      <pubDate>Wed, 13 Jul 2016 16:53:42 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</guid>
+      <description>&lt;p&gt;p&amp;gt;In this post I will analyze an implementation of a prethreaded TCP server that
+leverages the HTTP protocol. This is a personal ongoing project that will
+continue its
+development and I found it to be at a good place to start sharing what I have
+done so far. The whole purpose of this is to later on built a tool to test its
+performance and how to break it with malformed packets. It is such an
+interesting project that everytime I sit down with it, I start thinking about
+different features to implement on it. Again all this is coded in C with the
+POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Coding Your Own Network Sniffer</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</link>
+      <pubDate>Sat, 18 Jun 2016 16:47:01 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
+      <description>&lt;p&gt;This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Installing and Configuring OpenvSwitch With QEMU-KVM</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</link>
+      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</guid>
+      <description>&lt;p&gt;The maturity reached by Software Defined Networking (SDN) in the lastest years
+is a very important one. We are at a point where we could see this architecture
+/framework become a standard. And what makes it so amazing is its fundamental
+idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
+is a tool used to create virtual bridges which can then connect virtual or
+physical hosts. It implements both traditional L2 switching protocols or
+Openflow.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Automating Quagga With QEMU-KVM: Part 1</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</link>
+      <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</guid>
+      <description>&lt;p&gt;Some days ago I needed a proof of concept for some routing configuration using
+Linux that was stuck in my head for days already. So I needed a way to bring up
+some Linux boxes to quickly to check this. The &lt;a href=&#34;https://opennetlinux.org/docs/routingtutorial&#34;&gt;ONL website&lt;/a&gt; proved very
+useful, but I needed to use CentOS. So I came up with a script based on the
+mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
+and configured.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

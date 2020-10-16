@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg" />
+    
+
+    
+    <meta name="title" content="Automating Quagga With QEMU-KVM: Part 1" />
+    <meta property="og:title" content="Automating Quagga With QEMU-KVM: Part 1" />
+    <meta property="twitter:title" content="Automating Quagga With QEMU-KVM: Part 1" />
+    
+
+    
+    <meta name="description" content="Network automation with QEMU-KVM Part 1">
+    <meta property="og:description" content="Network automation with QEMU-KVM Part 1" />
+    <meta property="twitter:description" content="Network automation with QEMU-KVM Part 1" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Automating Quagga With QEMU-KVM: Part 1-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/2018-11-18-quagga-kvm-i/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/development">Development</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/ovs">OVS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                    </div>
+                    <h1>Automating Quagga With QEMU-KVM: Part 1</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Wednesday, March 23, 2016
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                
+                
+                <p>Some days ago I needed a proof of concept for some routing configuration using
+Linux that was stuck in my head for days already. So I needed a way to bring up
+some Linux boxes to quickly to check this. The <a href="https://opennetlinux.org/docs/routingtutorial">ONL website</a> proved very
+useful, but I needed to use CentOS. So I came up with a script based on the
+mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
+and configured.</p>
+
+<p>This post takes you through the basics of installing and configuring both
+QEMU-KVM and Quagga. And with the ease of a script to create multiple VMs to
+play with.</p>
+
+<h4>What is <a href="http://www.linux-kvm.org/page/Main_Page">QEMU</a>?</h4>
+
+<p>QEMU is a hypervisor, simple as that. It can emulate different hardware
+architectures and devices. It is considered a Type 2 hypervisors since it runs
+with a host OS. Other populars hypervisors in this category are ORACLE
+Virtualbox and VMware Fusion.</p>
+
+<h4>What is <a href="http://wiki.qemu.org/Main_Page">KVM</a>?</h4>
+
+<p>KVM is a Linux kernel module that allows the utilization of hardware extension
+for virtualization, in this case Intel VT-x and AMD-V. This module increases the
+performance of QEMU since instructions to the virtual cpu do not need to be
+translated by the hypervisor, they can be directly executed by the physical cpu.</p>
+
+<h4>What is <a href="http://www.nongnu.org/quagga/">Quagga</a>?</h4>
+
+<p>Quagga is a routing protocol suite. It allows for a Linux box to run routing
+protocols by way of a daemon that control the kernel&rsquo;s routing table. Another
+popular routing protocol suite is Bird.</p>
+
+<h2>Procedure</h2>
+
+<h4>Install needed packages</h4>
+```
+apt-get install kvm libvirt qemu-kvm
+```
+<h4>Get VM creation privileges</h4>
+```
+adduser YOUR_USER libvirt
+```
+<h4>Download the ISO</h4>
+
+<p>The ISO used for this small project was CentOS 7. Specifically
+<em>CentOS-7-x86_64-Minimal-1511.iso</em>. Here is the <a href="https://wiki.centos.org/Download">link</a></p>
+
+<h4>Create the image</h4>
+
+<p>With the ISO in our hands we need to create the image where it is going to be
+installed, we have to options a raw and qcow2. Raw images allow for faster I/O
+with the disadvantage that they take the full hard disk space they were created
+with. Qcow2 takes a hit on peformance but saves you space. You can choose either
+of them depending on your situation. Here is the output for a qcow2 image.
+CentOS 7 requires around ~2.5GBi of HD space.</p>
+
+<pre><code>qemu-img create -f qcow2 image_name.qcow2 3G
+Formatting 'image_name.qcow2', fmt=qcow2 size=5368709120 encryption=off
+cluster_size=65536 lazy_refcounts=off 
+</code></pre>
+
+<h4>Install CentOS on image</h4>
+
+<p>After having the created the image we are ready to install our new OS into it.
+I gave it 2 GB of RAM to speed it up.
+<em>NOTE:</em> the command is called <strong>kvm</strong> but it is actually a wrapper/backend for
+the command <strong>qemu-system-x86_64 -enable-kvm</strong></p>
+
+<pre><code>kvm -m 2048 -cdrom CentOS-7-x86_64-Minimal-1511.iso -vga vmware -hda
+router.qcow2
+</code></pre>
+
+<h4>Basic configuration of Linux box</h4>
+
+<pre><code>kvm -m 2048 -vga vmware -hda router.qcow2
+</code></pre>
+
+<p>After a succesfull installation of the OS we reboot and get into our command
+line. We are going to do basic configuration to prepare the OS for <strong>Quagga</strong>.
+Run the image:</p>
+
+<p>QEMU will automatically brigde our network interface for internet access as the
+host.</p>
+
+<p>Run the following commands for basic configuration. The numbers belongin to the
+quagga directory could be different.</p>
+
+<pre><code>// I really dislike systemd's network interface renaming
+Append &quot;net.ifnames=0&quot; and &quot;biosdevname=0&quot; as kernel arguments to /etc/default/grub 
+&quot;GRUB_CMDLINE_LINUX&quot; then,
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+// This might take a while
+yum update
+yum install quagga
+
+// Allow changes to Zebra's configuration file
+setsebool -P zebra_write_config 1
+
+// Enables IP forwading between interfaces inside the host
+echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt; /etc/sysctl.conf
+
+// Obtain zebra configuration file
+cp /usr/share/doc/quagga-0.99.22.4/zebra.conf.sample /etc/quagga/zebra.conf
+
+// Obtain ospf configuration file
+cp /usr/share/doc/quagga-0.99.22.4/ospfd.conf.sample /etc/quagga/ospfd.conf
+
+// Obtain rip configuration file
+cp /usr/share/doc/quagga-0.99.22.4/ripd.conf.sample /etc/quagga/ripd.conf
+
+// Obtain bgp configuration file 
+cp /usr/share/doc/quagga-0.99.22.4/bgpd.conf.sample /etc/quagga/bgpd.conf
+
+// Enable zebra daemon 
+systemctl enable zebra
+</code></pre>
+
+<p>So now our gold image is ready to be used for multiple purposes. One thing that
+can still be done right now or can be left for later is the hostname renaming
+and the enabling of which routing protocol daemons to enable.</p>
+
+<pre><code>// Set hostname
+hostnamectl set-hostname routerX
+
+// Enable routing protocol daemons
+systemctl enable ospf
+systemctl enable bgp
+systemctl enable rip
+</code></pre>
+
+<p>This will depend of what things you need to automate. We will come back to this
+at the end.</p>
+
+<h3>Automation Script</h3>
+
+<p>Now I am going to analyze our automation script to bring up the images, create,
+and setup the bridges. The full script is at my github <a href="https://github.com/jarrocha/net-routing_tools">repo</a>.</p>
+
+<pre><code class="language-bash">if [ ! -e /dev/kvm ]; then
+  set +e
+  mknod /dev/kvm c 10 $(grep '\&lt;kvm\&gt;' /proc/misc | cut -f 1 -d' ')
+  set -e
+fi
+</code></pre>
+
+<p>This part is essential for the use of kvm virtualization extension. This section
+makes sure there is a device node created for the kvm module. It creates it
+otherwise.</p>
+
+<pre><code class="language-bash">for bridge in $BRIDGES; do
+  printf &quot;Adding bridge $bridge\n&quot;
+  $BRCTL addbr $bridge || die &quot;$BRCTL addbr $bridge Failed&quot;
+  sleep 2
+  $IP link set $bridge address 00:11:11:aa:aa:aa
+  $IP link set $bridge address 00:11:11:bb:bb:bb
+  sleep 2
+  printf &quot;Bringing up all bridge interfaces\n&quot;
+  $IP link set dev $bridge up || die &quot;$IP link set dev $bridge up&quot;
+done
+</code></pre>
+
+<p>This part pretty much creates the bridges for the routers and enables them. Each
+bridge requires a different MAC address. Further automation for this could be
+to perform this at the end by deducing from the amount of routers peer routers
+that are going to be configured and/or needed.</p>
+
+<pre><code>$KVM $KVM_OPTS \
+  -name router1 \
+  -net nic,macaddr=52:54:00:00:01:00 -net tap,ifname=r1-eth0,script=no,downscript=no \
+  -net nic,macaddr=52:54:00:00:01:01 -net tap,ifname=r1-eth1,script=no,downscript=no \
+  -net nic,macaddr=52:54:00:00:01:02 -net tap,ifname=r1-eth2,script=no,downscript=no \
+  -hda ./images/router1.qcow2 &amp;
+sleep 5
+</code></pre>
+
+<p>This is done for every router, we create three interfaces here but this can be
+automated even further to whatever we need. For example, we could ask the user
+how many interfaces are needed for a particular router. We let the command
+take a few seconds before going with the other routers.</p>
+
+<pre><code class="language-bash">for intf in $INTF; do
+  $IP link set dev $intf up
+done
+</code></pre>
+
+<p>This small piece simply brings up the newly created interfaces.</p>
+
+<pre><code>#### Creating physical-links/bridges for routers
+$BRCTL addif brdg1 r1-eth0 || die &quot;$BRCTL addif brdg1 r1-eth0&quot;
+$BRCTL addif brdg1 r2-eth0 || die &quot;$BRCTL addif brdg1 r2-eth0&quot;
+$BRCTL addif brdg2 r1-eth1 || die &quot;$BRCTL addif brdg1 r1-eth1&quot;
+$BRCTL addif brdg2 r3-eth0 || die &quot;$BRCTL addif brdg1 r3-eth0&quot;
+</code></pre>
+
+<p>This final part is what joins the bridges with the respective router interfaces.
+This part could be automated to ask the user what interfaces are going to be
+logically connected.</p>
+
+<p>This is it. Take a look at the script. I was able to quickly and succesfully
+bring up three routers and configure them with OSPF. I could make another post
+where OSPF, BGP ,and RIP are configured with Quagga but there are so many
+out there already.</p>
+
+<p>On Part 2, I will analyze a more automated version of this script and show the
+steps to pack this script into the image.</p>
+
+<p>Thanks for visiting.</p>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2018-11-18-performance-analysis-i/" data-toggle="tooltip" data-placement="top" title="Code Performance Analysis With Assembly &amp; C: Part 1">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/2018-11-18-ovs-kvm/" data-toggle="tooltip" data-placement="top" title="Installing and Configuring OpenvSwitch With QEMU-KVM">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2020
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

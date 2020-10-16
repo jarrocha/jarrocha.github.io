@@ -97,11 +97,27 @@
                     
                         
                         <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
                             <a href="/categories/development">Development</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/life">Life</a>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
                         </li>
                         
                         <li>
@@ -109,11 +125,23 @@
                         </li>
                         
                         <li>
-                            <a href="/categories/tech">Tech</a>
+                            <a href="/categories/ovs">OVS</a>
                         </li>
                         
                         <li>
-                            <a href="/categories/tips">Tips</a>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
                         </li>
                         
                     
@@ -198,126 +226,114 @@
             
 
 <div class="post-preview">
-    <a href="https://jarrocha.github.io/2018/05/23/external_system_auth/">
+    <a href="https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/">
         <h2 class="post-title">
-            微服务安全沉思录之三
+            Code Performance Analysis With Assembly &amp; C: Part 2
         </h2>
-	
-        <h3 class="post-subtitle">
-            外部系统访问控制
-        </h3>
 	
         <div class="post-content-preview">
 	
-            一些外部的第三方系统可能需要访问系统内部的微服务。例如在网上商店的例子中，外部的推荐服务可能需要接入系统，以获取商店的商品目录信息。相对于内部服务之间的访问而言，外部系统的访问需要进行严格的安全控制。
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    Posted by     &#34;赵化冰&#34; Wednesday, May 23, 2018
-    
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="https://jarrocha.github.io/2018/05/23/service_2_service_auth/">
-        <h2 class="post-title">
-            微服务安全沉思录之二
-        </h2>
-	
-        <h3 class="post-subtitle">
-            服务间认证与鉴权
-        </h3>
-	
-        <div class="post-content-preview">
-	
-            除来自用户的访问请求以外，微服务应用中的各个微服务相互之间还有大量的访问,根据应用系统数据敏感程度不同，对于系统内微服务的访问也需要进行相应的安全控制。
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    Posted by     &#34;赵化冰&#34; Wednesday, May 23, 2018
-    
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="https://jarrocha.github.io/2018/05/22/user_authentication_authorization/">
-        <h2 class="post-title">
-            微服务安全沉思录之一
-        </h2>
-	
-        <h3 class="post-subtitle">
-            用户访问认证与鉴权
-        </h3>
-	
-        <div class="post-content-preview">
-	
-            这段时间对之前微服务安全相关的一些想法进行了进一步总结和归纳，理清在之前文章里面没有想得太清楚的地方，例如服务间的认证与鉴权以及用户身份在服务调用链中的传递。在这一系列博客里面将分为三个部分对微服务安全进行系统阐述：用户访问认证与鉴权，服务间认证与鉴权，外部系统访问控制。
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    Posted by     &#34;赵化冰&#34; Wednesday, May 23, 2018
-    
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="https://jarrocha.github.io/2018/05/23/istio-auto-injection-with-webhook/">
-        <h2 class="post-title">
-            Istio Sidecar自动注入原理
-        </h2>
-	
-        <h3 class="post-subtitle">
-            Kubernetes webhook扩展机制解析
-        </h3>
-	
-        <div class="post-content-preview">
-	
-            Kubernets 1.9版本引入了Admission Webhook(web 回调)扩展机制，通过Webhook,开发者可以非常灵活地对Kubernets API Server的功能进行扩展，在API Server创建资源时对资源进行验证或者修改。 Istio 0.7版本就利用了Kubernets webhook实现了sidecar的自动注入。
-        
-        </div>
-    </a>
-    <p class="post-meta">
-    Posted by     &#34;赵化冰&#34; Wednesday, May 23, 2018
-    
-    
-    </p>
-
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="https://jarrocha.github.io/2018/05/01/may-day-jiulonghu/">
-        <h2 class="post-title">
-            川西秘境探险
-        </h2>
-	
-        <h3 class="post-subtitle">
-            2018五一甘堡藏寨，九龙湖自驾游记
-        </h3>
-	
-        <div class="post-content-preview">
-	
-            <h2 id="寻浮云牧场不遇">寻浮云牧场不遇</h2>
-
-<p>五一节前的一周内，几个朋友就纷纷坐不住了，一个二个不再安心上班，开始在微信群里讨论过节要到哪里耍。
-大家思来想去，最后决定还是去理县方向。因为根据多年自驾的经验，只要出了汶川，沿途都是风景。</p>
+            <p>In this second part, the optimization code will be shown. Specifically O1, O2,
+and O3. We are going to be able to see, what performance decisions the gcc
+compiler makes; for example, we are going to check if the compilers takes the
+function that calculates the string length calls out of the loop.</p>
        
         </div>
     </a>
     <p class="post-meta">
-    Posted by 赵化冰 Tuesday, May 1, 2018
+    Posted by Jaime Arrocha Wednesday, May 18, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-ovs-kvm/">
+        <h2 class="post-title">
+            Installing and Configuring OpenvSwitch With QEMU-KVM
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            <p>The maturity reached by Software Defined Networking (SDN) in the lastest years
+is a very important one. We are at a point where we could see this architecture
+/framework become a standard. And what makes it so amazing is its fundamental
+idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
+is a tool used to create virtual bridges which can then connect virtual or
+physical hosts. It implements both traditional L2 switching protocols or
+Openflow.</p>
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Monday, April 18, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/">
+        <h2 class="post-title">
+            Automating Quagga With QEMU-KVM: Part 1
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            Network automation with QEMU-KVM Part 1
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Wednesday, March 23, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/">
+        <h2 class="post-title">
+            Code Performance Analysis With Assembly &amp; C: Part 1
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            <p>These blog series belong to some old notes that I have and thought that could be
+useful to redo. It is always good to refresh material and what a better way than
+to write about it.</p>
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Friday, February 19, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/">
+        <h2 class="post-title">
+            Linux Shell Programming Basics
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            A basic command shell for Linux
+        
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Tuesday, January 12, 2016
     
     
     </p>
@@ -335,10 +351,6 @@
         <a href="/">&larr; Newer Posts</a>
     </li>
     
-    
-    <li class="next">
-        <a href="/page/3/">Older Posts &rarr;</a>
-    </li>
     
 </ul>
 
@@ -362,30 +374,8 @@
              
             
                 
-            
-                
                     <a href="/tags/development" title="Development">
                         Development
-                    </a>
-                
-            
-                
-                    <a href="/tags/docker" title="Docker">
-                        Docker
-                    </a>
-                
-            
-                
-            
-                
-                    <a href="/tags/istio" title="Istio">
-                        Istio
-                    </a>
-                
-            
-                
-                    <a href="/tags/kubernetes" title="Kubernetes">
-                        Kubernetes
                     </a>
                 
             
@@ -393,46 +383,6 @@
                     <a href="/tags/linux" title="Linux">
                         Linux
                     </a>
-                
-            
-                
-                    <a href="/tags/microservice" title="Microservice">
-                        Microservice
-                    </a>
-                
-            
-                
-                    <a href="/tags/security" title="Security">
-                        Security
-                    </a>
-                
-            
-                
-                    <a href="/tags/service-mesh" title="Service Mesh">
-                        Service Mesh
-                    </a>
-                
-            
-                
-                    <a href="/tags/tips" title="Tips">
-                        Tips
-                    </a>
-                
-            
-                
-            
-                
-            
-                
-            
-                
-            
-                
-            
-                
-            
-                
-            
                 
             
         </div>

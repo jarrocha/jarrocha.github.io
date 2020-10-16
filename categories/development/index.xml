@@ -44,6 +44,19 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&
     </item>
     
     <item>
+      <title>Coding Your Own Network Sniffer</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</link>
+      <pubDate>Sat, 18 Jun 2016 16:47:01 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
+      <description>&lt;p&gt;This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>Linux Shell Programming Basics</title>
       <link>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</link>
       <pubDate>Tue, 12 Jan 2016 10:30:20 -0700</pubDate>

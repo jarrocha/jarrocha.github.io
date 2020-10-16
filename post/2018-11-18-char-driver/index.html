@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg" />
+    
+
+    
+    <meta name="title" content="Linux Kernel Modules: Character Devices" />
+    <meta property="og:title" content="Linux Kernel Modules: Character Devices" />
+    <meta property="twitter:title" content="Linux Kernel Modules: Character Devices" />
+    
+
+    
+    <meta name="description" content="Fill your desciption">
+    <meta property="og:description" content="Fill your desciption" />
+    <meta property="twitter:description" content="Fill your desciption" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Linux Kernel Modules: Character Devices-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/2018-11-18-char-driver/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/development">Development</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/ovs">OVS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                    </div>
+                    <h1>Linux Kernel Modules: Character Devices</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Saturday, November 12, 2016
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                
+                
+                <p>This post will be part of a series where device drivers will be presented and
+quickly analized for people that need a quick reference of how to make device
+drivers on an updated kernel. The driver presented here was tested on a 3.2 and
+3.16 Linux Kernel. I will make a driver with more features and test it on a
+newer kernel next time.</p>
+
+<p><em>Note: some space formatting is lost when processed by octopress so for a more
+cleanly looking code, I recommend github.</em></p>
+
+<p>The complete code is in its <a href="https://github.com/jarrocha/k_mod">github repository</a>.</p>
+
+<p>The purpose of this particular char driver is to display &ldquo;Hello World&rdquo; a
+certain amount of time when pass a parameter, if not passed, it will still
+do it for a default amount. Other features it has are, dynamic major number
+allocation and dynamic node creation. Once the device is initialized, it
+allocates a buffer to store and read a string from userspace.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm"> *       Filename:  chdx.c</span>
+</span><span class='line'><span class="cm"> *    Description:  A character driver that displays &quot;Hello World!&quot;.</span>
+</span><span class='line'><span class="cm"> *         Author:  Jaime Arrocha </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#include &lt;linux/module.h&gt;      </span><span class="cm">/* for modules          */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/init.h&gt;            </span><span class="cm">/* module_init, module_exit */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/moduleparam.h&gt;     </span><span class="cm">/* module parameters        */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/fs.h&gt;          </span><span class="cm">/* file operations      */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/slab.h&gt;            </span><span class="cm">/* kernel memory allocation */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/cdev.h&gt;            </span><span class="cm">/* device registration      */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;linux/device.h&gt;      </span><span class="cm">/* udev class creation      */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#include &lt;asm/uaccess.h&gt;       </span><span class="cm">/* copy_to/from_user        */</span><span class="cp"></span>
+</span><span class='line'><span class="cp">#define MOD_NAME &quot;chdx&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm"> * global variables</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kt">char</span> <span class="o">*</span><span class="n">kbuf</span><span class="p">;</span>              <span class="cm">/* kernel buffer for module    */</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">dev_t</span> <span class="n">first</span><span class="p">;</span>          <span class="cm">/* device registration numbers */</span>
+</span><span class='line'><span class="k">static</span> <span class="k">struct</span> <span class="n">device</span> <span class="o">*</span><span class="n">chdx_dev</span><span class="p">;</span>
+</span><span class='line'><span class="k">static</span> <span class="k">struct</span> <span class="n">cdev</span> <span class="o">*</span><span class="n">chdx_cdev</span><span class="p">;</span>      <span class="cm">/* char device structure   */</span>
+</span><span class='line'><span class="k">static</span> <span class="k">struct</span> <span class="n">class</span> <span class="o">*</span><span class="n">chdx_cl</span><span class="p">;</span>       <span class="cm">/* device class            */</span>
+</span><span class='line'><span class="kt">int</span> <span class="n">qty</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>             <span class="cm">/* paramenter variable     */</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">size_t</span> <span class="n">kbuf_size</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm"> * function prototypes </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="nf">chdx_open</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="p">);</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="nf">chdx_close</span><span class="p">(</span><span class="k">struct</span> <span class="n">inode</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="p">);</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">chdx_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="p">,</span> <span class="kt">size_t</span><span class="p">,</span> <span class="kt">loff_t</span> <span class="o">*</span><span class="p">);</span>
+</span><span class='line'><span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">chdx_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="p">,</span> <span class="kt">size_t</span><span class="p">,</span> <span class="kt">loff_t</span> <span class="o">*</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/* </span>
+</span><span class='line'><span class="cm"> * module paramenter prototype</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="n">module_param</span><span class="p">(</span><span class="n">qty</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">S_IRUGO</span><span class="o">|</span><span class="n">S_IWUSR</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm"> * file operations structure initialization</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="k">struct</span> <span class="n">file_operations</span> <span class="n">chdx_fops</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>  <span class="p">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">THIS_MODULE</span><span class="p">,</span>
+</span><span class='line'>  <span class="p">.</span><span class="n">open</span> <span class="o">=</span> <span class="n">chdx_open</span><span class="p">,</span>
+</span><span class='line'>  <span class="p">.</span><span class="n">release</span> <span class="o">=</span> <span class="n">chdx_close</span><span class="p">,</span>
+</span><span class='line'>  <span class="p">.</span><span class="n">read</span> <span class="o">=</span> <span class="n">chdx_read</span><span class="p">,</span>
+</span><span class='line'>  <span class="p">.</span><span class="n">write</span> <span class="o">=</span> <span class="n">chdx_write</span><span class="p">,</span>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Headers, global varaibles, and prototypes. Several comments are inplace to
+explain the different sections.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="nf">chdx_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">ret_val</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">x</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* dynamic allocation of major number */</span>
+</span><span class='line'>  <span class="k">if</span><span class="p">((</span><span class="n">ret_val</span> <span class="o">=</span> <span class="n">alloc_chrdev_region</span><span class="p">(</span><span class="o">&amp;</span><span class="n">first</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">MOD_NAME</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">dev_err</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span><span class="s">&quot;Registration error&quot;</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">ret_val</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* device registration */</span>
+</span><span class='line'>  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">chdx_cdev</span> <span class="o">=</span> <span class="n">cdev_alloc</span><span class="p">()))</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">dev_err</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;cdev_alloc() failed&quot;</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">goto</span> <span class="n">unreg1</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">cdev_init</span><span class="p">(</span><span class="n">chdx_cdev</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">chdx_fops</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* dynamic allocation of kernel buffer */</span>   
+</span><span class='line'>  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">kbuf</span> <span class="o">=</span> <span class="n">kmalloc</span><span class="p">(</span><span class="n">kbuf_size</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">)))</span>
+</span><span class='line'>      <span class="k">goto</span> <span class="n">unreg2</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">if</span><span class="p">((</span><span class="n">cdev_add</span><span class="p">(</span><span class="n">chdx_cdev</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">dev_err</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;cdev_add() failed&quot;</span><span class="p">);</span>
+</span><span class='line'>      <span class="k">goto</span> <span class="n">unreg3</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  
+</span><span class='line'>      
+</span><span class='line'>  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">chdx_cl</span> <span class="o">=</span> <span class="n">class_create</span><span class="p">(</span><span class="n">THIS_MODULE</span><span class="p">,</span> <span class="n">MOD_NAME</span><span class="p">)))</span>
+</span><span class='line'>      <span class="k">goto</span> <span class="n">unreg3</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">if</span><span class="p">((</span><span class="n">chdx_dev</span> <span class="o">=</span> <span class="n">device_create</span><span class="p">(</span><span class="n">chdx_cl</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&quot;%s&quot;</span><span class="p">,</span>
+</span><span class='line'>                   <span class="n">MOD_NAME</span><span class="p">))</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">goto</span> <span class="n">unreg4</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* module registration test */</span>  
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">qty</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">qty</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>  
+</span><span class='line'>  <span class="k">for</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">qty</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;Hello World!&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;Major: %d, Minor: %d&quot;</span><span class="p">,</span> <span class="n">MAJOR</span><span class="p">(</span><span class="n">first</span><span class="p">),</span> <span class="n">MINOR</span><span class="p">(</span><span class="n">first</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="nl">unreg4</span><span class="p">:</span> <span class="n">device_destroy</span><span class="p">(</span><span class="n">chdx_cl</span><span class="p">,</span> <span class="n">first</span><span class="p">);</span>
+</span><span class='line'>  <span class="nl">unreg3</span><span class="p">:</span> <span class="n">kfree</span><span class="p">(</span><span class="n">kbuf</span><span class="p">);</span>
+</span><span class='line'>  <span class="nl">unreg2</span><span class="p">:</span> <span class="n">cdev_del</span><span class="p">(</span><span class="n">chdx_cdev</span><span class="p">);</span>
+</span><span class='line'>  <span class="nl">unreg1</span><span class="p">:</span> <span class="n">unregister_chrdev_region</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">ret_val</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The init function. Each section is commented for its purpose done. Goto
+statements are used for easy error exits. It makes the code more readable in
+these cases. Extra attention is needed to the order of initialization of the
+different registration hearders. We should only call <strong>cdev_add()</strong> only when
+everything is in place in regards to the character driver major and minor numbers
+and its file operation structure. After that, we call <strong>class_create()</strong> and
+<strong>device_create()</strong>, to have <strong>udev()</strong> perform <strong>mknod()</strong> for us.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="nf">chdx_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">device_destroy</span><span class="p">(</span><span class="n">chdx_cl</span><span class="p">,</span> <span class="n">first</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">class_destroy</span><span class="p">(</span><span class="n">chdx_cl</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">kfree</span><span class="p">(</span><span class="n">kbuf</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">cdev_del</span><span class="p">(</span><span class="n">chdx_cdev</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">unregister_chrdev_region</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;chdx unloaded&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The exit function. Takes care of everything once the driver is unloaded. Without
+this function, the driver will not unload. The order on which functions are
+called is very important.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">chdx_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">fl</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">ubuf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">ubuf_len</span><span class="p">,</span>
+</span><span class='line'>                         <span class="kt">loff_t</span> <span class="o">*</span><span class="n">off</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">rbytes</span><span class="p">,</span> <span class="n">maxbytes</span><span class="p">,</span> <span class="n">bytes_to_rd</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">maxbytes</span> <span class="o">=</span> <span class="n">kbuf_size</span> <span class="o">-</span> <span class="o">*</span><span class="n">off</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">bytes_to_rd</span> <span class="o">=</span> <span class="n">maxbytes</span> <span class="o">&gt;</span> <span class="n">ubuf_len</span><span class="o">?</span> <span class="nl">ubuf_len</span> <span class="p">:</span> <span class="n">maxbytes</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">bytes_to_rd</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>                <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span><span class="s">&quot;End of buffer&quot;</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">rbytes</span> <span class="o">=</span> <span class="n">bytes_to_rd</span> <span class="o">-</span> <span class="n">copy_to_user</span><span class="p">(</span><span class="n">ubuf</span><span class="p">,</span> <span class="n">kbuf</span> <span class="o">+</span> <span class="o">*</span><span class="n">off</span><span class="p">,</span> <span class="n">bytes_to_rd</span><span class="p">);</span>
+</span><span class='line'>        <span class="o">*</span><span class="n">off</span> <span class="o">+=</span> <span class="n">rbytes</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;%d bytes read</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rbytes</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="n">rbytes</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="k">static</span> <span class="kt">ssize_t</span> <span class="nf">chdx_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">file</span> <span class="o">*</span><span class="n">fl</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">ubuf</span><span class="p">,</span>
+</span><span class='line'>                          <span class="kt">size_t</span> <span class="n">ubuf_len</span><span class="p">,</span> <span class="kt">loff_t</span> <span class="o">*</span><span class="n">off</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">wbytes</span><span class="p">,</span> <span class="n">maxbytes</span><span class="p">,</span> <span class="n">bytes_to_wr</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">maxbytes</span> <span class="o">=</span> <span class="n">kbuf_size</span> <span class="o">-</span> <span class="o">*</span><span class="n">off</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">bytes_to_wr</span> <span class="o">=</span> <span class="n">maxbytes</span> <span class="o">&gt;</span> <span class="n">ubuf_len</span> <span class="o">?</span> <span class="nl">ubuf_len</span> <span class="p">:</span> <span class="n">maxbytes</span><span class="p">;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">bytes_to_wr</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>                <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;Reached end of the device on a write&quot;</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">wbytes</span> <span class="o">=</span> <span class="n">bytes_to_wr</span> <span class="o">-</span> <span class="n">copy_from_user</span><span class="p">(</span><span class="n">kbuf</span> <span class="o">+</span> <span class="o">*</span><span class="n">off</span><span class="p">,</span> <span class="n">ubuf</span><span class="p">,</span> <span class="n">bytes_to_wr</span><span class="p">);</span>
+</span><span class='line'>        <span class="o">*</span><span class="n">off</span> <span class="o">+=</span> <span class="n">wbytes</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">dev_info</span><span class="p">(</span><span class="n">chdx_dev</span><span class="p">,</span> <span class="s">&quot;%d bytes written</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">wbytes</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="n">wbytes</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>The read and write function, they makes sure that userspace does not read or
+write beyond the allocated space in kernel. Special functions are used to handle
+pointers received from userspace. These pointers need to be check to be safe to
+use by the kernel. If not, undefined behavior with memory references will likely
+happen.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='BASH'><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>make
+</span><span class='line'>make -C /lib/modules/3.2.0-4-686-pae/build  <span class="nv">M</span><span class="o">=</span>/home/jaime/kmod modules<span class="p">;</span>
+</span><span class='line'>make<span class="o">[</span>1<span class="o">]</span>: Entering directory <span class="sb">`</span>/usr/src/linux-headers-3.2.0-4-686-pae<span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">  CC [M]  /home/jaime/kmod/chdx.o</span>
+</span><span class='line'><span class="s1">  Building modules, stage 2.</span>
+</span><span class='line'><span class="s1">  MODPOST 1 modules</span>
+</span><span class='line'><span class="s1">  CC      /home/jaime/kmod/chdx.mod.o</span>
+</span><span class='line'><span class="s1">  LD [M]  /home/jaime/kmod/chdx.ko</span>
+</span><span class='line'><span class="s1">make[1]: Leaving directory `/usr/src/linux-headers-3.2.0-4-686-pae&#39;</span>
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>sudo insmod chdx.ko <span class="nv">qty</span><span class="o">=</span>5
+</span><span class='line'><span class="o">[</span>sudo<span class="o">]</span> password <span class="k">for</span> jaime:
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>dmesg <span class="p">|</span> tail
+</span><span class='line'><span class="o">[</span>  580.006310<span class="o">]</span> chdx chdx: Hello World!
+</span><span class='line'><span class="o">[</span>  580.006312<span class="o">]</span> chdx chdx: Hello World!
+</span><span class='line'><span class="o">[</span>  580.006313<span class="o">]</span> chdx chdx: Hello World!
+</span><span class='line'><span class="o">[</span>  580.006314<span class="o">]</span> chdx chdx: Hello World!
+</span><span class='line'><span class="o">[</span>  580.006314<span class="o">]</span> chdx chdx: Hello World!
+</span><span class='line'><span class="o">[</span>  580.006315<span class="o">]</span> chdx chdx: Major: 251, Minor: 0
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>sudo chmod <span class="m">666</span> /dev/chdx
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>ls -l /dev/chdx
+</span><span class='line'>crw-rw-rw- <span class="m">1</span> root root 251, <span class="m">0</span> Jul  <span class="m">3</span> 13:07 /dev/chdx
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;Linux Kernel&quot;</span> &gt; /dev/chdx
+</span><span class='line'><span class="o">[</span>jaime@LinuxServer kmod<span class="o">]</span><span class="nv">$ </span>cat /dev/chdx
+</span><span class='line'>Linux Kernel
+</span></code></pre></td></tr></table></div></figure>
+
+<p>A short demonstration of the driver.</p>
+
+<p>More to come soon&hellip;</p>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2018-11-18-sockets-http/" data-toggle="tooltip" data-placement="top" title="Capturing Websites With Sockets and HTTP">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/tcp-server/" data-toggle="tooltip" data-placement="top" title="TCP Sockets Server">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2020
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

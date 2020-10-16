@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg" />
+    
+
+    
+    <meta name="title" content="Code Performance Analysis With Assembly &amp; C: Part 1" />
+    <meta property="og:title" content="Code Performance Analysis With Assembly &amp; C: Part 1" />
+    <meta property="twitter:title" content="Code Performance Analysis With Assembly &amp; C: Part 1" />
+    
+
+    
+    <meta name="description" content="Fill your desciption">
+    <meta property="og:description" content="Fill your desciption" />
+    <meta property="twitter:description" content="Fill your desciption" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Code Performance Analysis With Assembly &amp; C: Part 1-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/2018-11-18-performance-analysis-i/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/development">Development</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/ovs">OVS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                    </div>
+                    <h1>Code Performance Analysis With Assembly &amp; C: Part 1</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Friday, February 19, 2016
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                
+                
+                <p>These blog series belong to some old notes that I have and thought that could be
+useful to redo. It is always good to refresh material and what a better way than
+to write about it.</p>
+
+<p>These series will consists of presenting an algorithm in C that will iteratively
+be re-coded for better performance. Assembly code will be shown so as to show
+what&rsquo;s going on at the instruction level, <strong>gprof</strong>, <strong>valgrind</strong>, and <strong>perf</strong>
+will be used to assess quantitavely our coding efforts.
+All the code presented here is in my <a href="https://github.com/jarrocha/code_perf">github repo</a> free to use.</p>
+
+<p>Before I start I will like to mention that I find assembly language fascinating
+and one of the reasons I love programming. With assembly you can actually
+see what the program is doing. And it is all done by the GNU C Compiler.</p>
+
+<p>Reference machine processor: Intel Core i7-5600U</p>
+
+<p>In the first part I will show some code that belongs to the book
+<a href="http://www.amazon.com/Computer-Systems-Programmers-Perspective-3rd/dp/i013409266X">Computer Systems: A Programmer&rsquo;s Perspective</a>, it consist of having an
+abstract data type having as members a scalar, an array, and a variable
+holding the sum of the array contents.</p>
+
+<p>Here is our abstract data type:</p>
+
+<pre><code class="language-c">struct vec {
+  long int len;
+  long int result;
+  int *data;
+};
+</code></pre>
+
+<p><em>len</em> stores the number of elements of the array, <em>result</em> the addition of
+all of them and <em>data</em> a pointer to the allocated array.</p>
+
+<pre><code class="language-c">int main(int argc, char *argv[])
+{
+  long int num;
+  struct vec *vec_ptr;
+  srand(time(NULL));
+
+  if (argc != 2) {
+      printf(&quot;Usage: %s [ARRAY_ELEMENTS]\n&quot;, argv[0]);
+      exit(EXIT_SUCCESS);
+  }
+  
+  num = atol(argv[1]);
+  if (num &lt;= 0) {
+      printf(&quot;Invalid len size. Quitting\n&quot;);
+      exit(EXIT_FAILURE);
+  }
+  printf(&quot;User entered %ld\n&quot;, num);
+  vec_ptr = new_vec(num);
+  combine1(vec_ptr);
+
+  printf(&quot;Final result %ld\n&quot;, vec_ptr-&gt;result);
+  
+  free(vec_ptr);
+  return(EXIT_SUCCESS);
+}
+</code></pre>
+
+<p>The <em>main()</em> function calls the function to  initialize our structure and then
+calls the function to perform the addition. For our test we will start with
+an array size of 500000000.</p>
+
+<pre><code class="language-c">struct vec * new_vec(long int len)
+{
+  int i;
+  int *dat_ptr;
+
+  struct vec *alloc = malloc(sizeof(struct vec));
+  if(!alloc) {
+      printf(&quot;Error allocating\n&quot;);
+      exit(EXIT_FAILURE);
+  }
+
+  alloc-&gt;len = len;
+  
+  /* allocating space for array */
+  alloc-&gt;data = malloc(len * sizeof(int));
+  if (alloc-&gt;data == NULL) {
+      free((void *) alloc);
+      printf(&quot;Error allocating data\n&quot;);
+      exit(EXIT_FAILURE);
+  }
+  dat_ptr = alloc-&gt;data;
+  
+  /* randomizing its contents */
+  for (i = 0; i &lt; len; i++)
+      *(dat_ptr + i) = rand() % 10 + 1;
+
+  return alloc;
+}
+</code></pre>
+
+<p>This function has the simple task of allocating an array and randomizing its
+contents.</p>
+
+<pre><code class="language-c">long int vec_length(struct vec* v)
+{
+  return v-&gt;len;
+}
+
+int get_vec_element(struct vec * v, long int index, int* dest)
+{
+  if (index &lt; 0 || index &gt;= v-&gt;len)
+      return 0;
+  *dest = v-&gt;data[index];
+  return 1;
+}
+
+void combine1(struct vec* v)
+{
+  long int i, dest;
+  int val;
+
+  for (i = 0; i &lt; vec_length(v); i++) {
+      get_vec_element(v, i, &amp;val);
+      dest = dest OP val;
+  }
+  v-&gt;result = dest;
+}
+</code></pre>
+
+<p><strong>Deficiency Analysis:</strong>
+Here is our first version of the function. As you can see it has some very
+obvious deficiencies like calling <em>vec_length()</em> and <em>get_vec_element()</em> on every
+iteration. And also, the constant reading from memory, which you will see below.
+The function <em>vec_length()</em> simply returns the <strong>len</strong> element of
+<strong>struct vec</strong>, and <em>get_vec_element()</em> returns the array value given an index.</p>
+
+<pre><code class="language-asm">combine1:
+  pushq   %rbp
+  movq    %rsp, %rbp
+  subq    $40, %rsp
+  movq    %rdi, -40(%rbp)
+  movq    $0, -8(%rbp)
+  jmp .L8
+.L9:
+  leaq    -20(%rbp), %rdx
+  movq    -8(%rbp), %rcx
+  movq    -40(%rbp), %rax
+  movq    %rcx, %rsi
+  movq    %rax, %rdi
+  call    get_vec_element
+  movl    -20(%rbp), %eax
+  cltq
+  addq    %rax, -16(%rbp)
+  addq    $1, -8(%rbp)
+.L8:
+  movq    -40(%rbp), %rax
+  movq    %rax, %rdi
+  call    vec_length
+  cmpq    -8(%rbp), %rax
+  jg  .L9
+  movq    -40(%rbp), %rax
+  movq    -16(%rbp), %rdx
+  movq    %rdx, 8(%rax)
+  leave
+  ret
+</code></pre>
+
+<p>This code was created with <em>gcc</em> and flags <em>&ldquo;-fno-asynchronous-unwind-tables
+-S&rdquo;</em>.
+Here&rsquo;s a brief analysis of the code above.</p>
+
+<ul>
+<li>Line 2-3: save previous frame pointer and save it on the stack. Sets new
+position for frame pointer.</li>
+<li>Line 4: creates new stack</li>
+<li>Line 5: %rdi contains the first argument for the function,
+  <strong>struct vec * v</strong> which is saved on the stack.</li>
+<li>Line 6: initializes <em>i</em> to zero</li>
+<li>Line 7: unconditional jump to label <strong>.L8</strong>.</li>
+<li>Line 20-21: loads pointer <strong>v</strong> from memory to <strong>%rax</strong> and then onto
+      <strong>%rdi</strong> for call to <em>vec_length()</em></li>
+<li>Line 23: <em>vec_length()</em> returns to<strong>%rax</strong> which is compared to <strong>i</strong>.</li>
+<li>Line 24: if value <strong>len</strong> at <strong>%rax</strong> is greater than <strong>i</strong> at <strong>-8(%rbp)</strong>
+  jump to label <strong>.L9</strong>. Else, exit function.</li>
+<li>Line 9: load pointer address for <strong>val</strong> to register <strong>%rdx</strong> as third
+  argument for call to <em>get_vec_element()</em>.</li>
+<li>Line 10: load <strong>i</strong> from memory <strong>again</strong> :( to register <strong>%rcx</strong>.</li>
+<li>Line 11: load <strong>*v</strong> from memory to register <strong>%rax</strong>.</li>
+<li>Line 12-13: move the recently loaded values to the respective argument
+  variables <strong>%rdi</strong> 1st, <strong>%rsi</strong> 2nd, and <strong>%rdx</strong> 3rd (done
+  previously on line 9).</li>
+<li>Line 14: with the arguments ready call <em>get_vec_element()</em>.</li>
+<li>Line 15: <em>get_vec_element()</em> modified <strong>-20(%rbp)</strong>, load int value to
+  <strong>%eax</strong>.</li>
+<li>Line 16: cltq is equivalent to &ldquo;movslq %eax, %rax&rdquo;, sign extending 32-bit
+  <strong>%eax</strong> to <strong>%rax</strong>.</li>
+<li>Line 17: add quad words located <strong>%rax</strong> (previously obtained) with value at
+      <strong>-16(%rbp)</strong> and store it at <strong>-16(%rbp)</strong> (<strong>dest</strong>) .</li>
+<li>Line 18: add immediate value of 1 to value pointed at location <strong>-8(%rbp)</strong>
+  (<strong>i</strong>).</li>
+<li>Continue cycle until comparison at Line 23 branches to the exit.</li>
+</ul>
+
+<p>Here is the gprof output. Again with a test value of 500000000.</p>
+
+<pre><code class="language-asm">Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls   s/call   s/call  name
+ 31.04      2.23     2.23        1     2.23     2.23  new_vec
+ 29.35      4.33     2.10 500000000     0.00     0.00  get_vec_element
+ 23.45      6.01     1.68        1     1.68     4.99  combine1
+ 16.78      7.22     1.20 500000001     0.00     0.00  vec_length
+  0.07      7.22     0.01                             frame_dummy
+</code></pre>
+
+<p>It is shown that this code spents close to 60% of its time with calls to
+<em>get_vec_element()</em> and <em>vec_length()</em>. We can easily correct this.</p>
+
+<p>Running with perf with the command <em>perf stat -r 1 -e
+task-clock,cycles,instructions,cache-references,cache-misses,branches,branch-misses
+./psum1 500000000</em></p>
+
+<pre><code class="language-asm"> Performance counter stats for './psum1 500000000' (10 runs):
+
+      15588.601346      task-clock (msec)         #    1.001 CPUs utilized
+( +-  0.77% )
+    49,206,704,942      cycles                    #    3.157 GHz
+( +-  0.73% ) [66.66%]
+   114,537,661,031      instructions              #    2.33  insns per cycle
+( +-  0.01% ) [83.33%]
+        70,821,633      cache-references          #    4.543 M/sec
+( +-  0.81% ) [83.34%]
+        65,055,051      cache-misses              #   91.858 % of all cache refs
+( +-  0.33% ) [83.34%]
+    23,677,398,427      branches                  # 1518.892 M/sec
+( +-  0.01% ) [83.34%]
+        20,650,580      branch-misses             #    0.09% of all branches
+( +-  0.55% ) [83.33%]
+
+      15.579928644 seconds time elapsed
+( +-  0.77% )
+</code></pre>
+
+<p>Two important measurements from this output and the ones I am going to refer to
+are the <strong>cycles per instructions</strong> (CPI), the lower the CPI the more efficient
+is the processor at executing the program. And the
+<strong>ratio of cache-misses to instructions</strong>, this tell us how well is cache
+management for the program, the lower the ratio the better our program is with
+memory access. From my investigations, a good ratio is smaller than 5%. But I
+think we can do much better that it is right now.</p>
+
+<table>
+<thead>
+<tr>
+<th> Name  </th>
+<th style="text-align:center;">  CPI </th>
+<th style="text-align:center;"> cache-misses / instructions (%)</th>
+<th style="text-align:center;"> instructions </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> psum1     </td>
+<td style="text-align:center;"> 0.429   </td>
+<td style="text-align:center;">    0.56798  </td>
+<td style="text-align:center;"> 114,537,661,031 </td>
+</tr>
+</tbody>
+</table>
+
+<p><br></p>
+
+<p>To have a better idea of what instructions are creating the cache misses, I
+ran <strong>valgrind &ndash;tool=cachegrind ./psum1 500000000</strong>. This program simulates
+cache usage in a program and can at least give us an idea of where are the
+branches being missed. After running this application, there will be an output
+file called <strong>cachegrind.out.pid</strong> where pid will be a random number obtained
+at the moment of running. Run the output file like this <strong>cg_annotate
+cachegrind.out.pid</strong>. This program help us to get a better idea of what
+functions are creating cache misses.</p>
+
+<ul>
+<li><p>psum1.c:  get_vec_element<br>
+D1mr: 31,250,002<br>
+DLmr: 31,250,002</p></li>
+<li><p>psum1.c:  new_vec<br>
+D1mw: 31,250,000 <br>
+DLmw: 31,250,000</p></li>
+</ul>
+
+<p><strong>mr</strong> stands for write misses, <strong>mr</strong> for read misses, <strong>DL</strong> last level cache,
+and <strong>D1</strong> for data cache, which in our case it is referring to Level 2.
+The constant calling to <strong>get_vec_element()</strong> and <strong>new_vec()</strong> make the program
+misspredict branches. In our current case <strong>new_vec()</strong> won&rsquo;t be able to be
+reduced due to the need of creating values to our newly created array.
+More information about cachegrind can be found <a href="https://courses.cs.washington.edu/courses/cse326/05wi/valgrind-doc/cg_main.html#cg-top">here</a> and <a href="http://valgrind.org/docs/manual/manual.html">here</a>.</p>
+
+<p>On Part 2, we will test with gcc compiler optimizations. And will also do a
+another full assembly code analysis with their respective gprof and perf
+profiles.</p>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2018-11-18-shell-prog-basics/" data-toggle="tooltip" data-placement="top" title="Linux Shell Programming Basics">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/2018-11-18-quagga-kvm-i/" data-toggle="tooltip" data-placement="top" title="Automating Quagga With QEMU-KVM: Part 1">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2020
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

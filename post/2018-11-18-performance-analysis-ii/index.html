@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg" />
+    
+
+    
+    <meta name="title" content="Code Performance Analysis With Assembly &amp; C: Part 2" />
+    <meta property="og:title" content="Code Performance Analysis With Assembly &amp; C: Part 2" />
+    <meta property="twitter:title" content="Code Performance Analysis With Assembly &amp; C: Part 2" />
+    
+
+    
+    <meta name="description" content="Fill your desciption">
+    <meta property="og:description" content="Fill your desciption" />
+    <meta property="twitter:description" content="Fill your desciption" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Code Performance Analysis With Assembly &amp; C: Part 2-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/2018-11-18-performance-analysis-ii/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/development">Development</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/ovs">OVS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                    </div>
+                    <h1>Code Performance Analysis With Assembly &amp; C: Part 2</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Wednesday, May 18, 2016
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                
+                
+                <p>In this second part, the optimization code will be shown. Specifically O1, O2,
+and O3. We are going to be able to see, what performance decisions the gcc
+compiler makes; for example, we are going to check if the compilers takes the
+function that calculates the string length calls out of the loop.</p>
+
+<h4>O1 Optimization</h4>
+
+<p>Here is the command to created the assembly code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>gcc -fno-asynchronous-unwind-tables -S -O1 -o psum1_O1.s psum1.c
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Code to analyze:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="k">struct</span> <span class="n">vec</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kt">long</span> <span class="kt">int</span> <span class="n">len</span><span class="p">;</span>
+</span><span class='line'>        <span class="kt">long</span> <span class="kt">int</span> <span class="n">result</span><span class="p">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="o">*</span><span class="n">data</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">long</span> <span class="kt">int</span> <span class="nf">vec_length</span><span class="p">(</span><span class="k">struct</span> <span class="n">vec</span><span class="o">*</span> <span class="n">v</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">v</span><span class="o">-&gt;</span><span class="n">len</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">combine1</span><span class="p">(</span><span class="k">struct</span> <span class="n">vec</span><span class="o">*</span> <span class="n">v</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">long</span> <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">dest</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">val</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">vec_length</span><span class="p">(</span><span class="n">v</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">get_vec_element</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">val</span><span class="p">);</span>
+</span><span class='line'>      <span class="n">dest</span> <span class="o">=</span> <span class="n">dest</span> <span class="n">OP</span> <span class="n">val</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="n">v</span><span class="o">-&gt;</span><span class="n">result</span> <span class="o">=</span> <span class="n">dest</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Assembly output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='asm'><span class='line'><span class="nl">combine1:</span>
+</span><span class='line'>  <span class="nf">pushq</span>   <span class="nv">%r12</span>
+</span><span class='line'>  <span class="nf">pushq</span>   <span class="nv">%rbp</span>
+</span><span class='line'>  <span class="nf">pushq</span>   <span class="nv">%rbx</span>
+</span><span class='line'>  <span class="nf">subq</span>    <span class="no">$16</span><span class="p">,</span> <span class="nv">%rsp</span>
+</span><span class='line'>  <span class="nf">movq</span>    <span class="nv">%rdi</span><span class="p">,</span> <span class="nv">%rbp</span>
+</span><span class='line'>  <span class="nf">cmpq</span>    <span class="no">$0</span><span class="p">,</span> <span class="p">(</span><span class="nv">%rdi</span><span class="p">)</span>
+</span><span class='line'>  <span class="nf">jle</span> <span class="no">.L7</span>
+</span><span class='line'>  <span class="nf">movl</span>    <span class="no">$0</span><span class="p">,</span> <span class="nv">%ebx</span>
+</span><span class='line'><span class="nl">.L8:</span>
+</span><span class='line'>  <span class="nf">leaq</span>    <span class="mi">12</span><span class="p">(</span><span class="nv">%rsp</span><span class="p">),</span> <span class="nv">%rdx</span>
+</span><span class='line'>  <span class="nf">movq</span>    <span class="nv">%rbx</span><span class="p">,</span> <span class="nv">%rsi</span>
+</span><span class='line'>  <span class="nf">movq</span>    <span class="nv">%rbp</span><span class="p">,</span> <span class="nv">%rdi</span>
+</span><span class='line'>  <span class="nf">call</span>    <span class="no">get_vec_element</span>
+</span><span class='line'>  <span class="nf">movslq</span>  <span class="mi">12</span><span class="p">(</span><span class="nv">%rsp</span><span class="p">),</span> <span class="nv">%rax</span>
+</span><span class='line'>  <span class="nf">addq</span>    <span class="nv">%rax</span><span class="p">,</span> <span class="nv">%r12</span>
+</span><span class='line'>  <span class="nf">addq</span>    <span class="no">$1</span><span class="p">,</span> <span class="nv">%rbx</span>
+</span><span class='line'>  <span class="nf">cmpq</span>    <span class="mi">0</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">),</span> <span class="nv">%rbx</span>
+</span><span class='line'>  <span class="nf">jl</span>  <span class="no">.L8</span>
+</span><span class='line'><span class="nl">.L7:</span>
+</span><span class='line'>  <span class="nf">movq</span>    <span class="nv">%r12</span><span class="p">,</span> <span class="mi">8</span><span class="p">(</span><span class="nv">%rbp</span><span class="p">)</span>
+</span><span class='line'>  <span class="nf">addq</span>    <span class="no">$16</span><span class="p">,</span> <span class="nv">%rsp</span>
+</span><span class='line'>  <span class="nf">popq</span>    <span class="nv">%rbx</span>
+</span><span class='line'>  <span class="nf">popq</span>    <span class="nv">%rbp</span>
+</span><span class='line'>  <span class="nf">popq</span>    <span class="nv">%r12</span>
+</span><span class='line'>  <span class="nf">ret</span>
+</span><span class='line'>  <span class="na">.size</span>   <span class="no">combine1</span><span class="p">,</span> <span class="no">.-combine1</span>
+</span><span class='line'>  <span class="na">.section</span>    <span class="no">.rodata.str1.1</span><span class="p">,</span><span class="s">&quot;aMS&quot;</span><span class="p">,</span><span class="na">@progbits</span><span class="p">,</span><span class="mi">1</span>
+</span><span class='line'><span class="nl">.LC0:</span>
+</span><span class='line'>  <span class="na">.string</span> <span class="s">&quot;Error allocating&quot;</span>
+</span><span class='line'><span class="nl">.LC1:</span>
+</span><span class='line'>  <span class="na">.string</span> <span class="s">&quot;Invalid len size. Quitting&quot;</span>
+</span><span class='line'><span class="nl">.LC2:</span>
+</span><span class='line'>  <span class="na">.string</span> <span class="s">&quot;Error allocating data&quot;</span>
+</span><span class='line'>  <span class="na">.text</span>
+</span><span class='line'>  <span class="na">.globl</span>  <span class="no">new_vec</span>
+</span><span class='line'>  <span class="na">.type</span>   <span class="no">new_vec</span><span class="p">,</span> <span class="na">@function</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Analysis of the code:</p>
+
+<p><strong>NOTE:</strong> <strong>%rdi</strong> contains the first argument of the function which in our case
+is <strong>struct vec* v</strong>.</p>
+
+<ul>
+<li>Line 2-4: save register values <strong>%r12</strong>, <strong>%rbx</strong>, and <strong>rbp</strong>.</li>
+<li>Line 5: stack is created by 16 bytes. <strong>%rsp</strong> is updated to reflect this.</li>
+<li>Line 6: 1st argument <strong>*v</strong> is also moved to <strong>%rbp</strong>.</li>
+<li>Line 7: the value of the <strong>*v</strong> is compared to 0. If the result is less or
+equal the function exits.</li>
+<li>Line 9: the initial value of <strong>i</strong> which is 0, is hold at <strong>ebx</strong>.</li>
+<li>Line 11-13: memory address held at <strong>%rsp +12</strong>, &amp;val, is moved to <strong>%rdx</strong>,
+<strong>i</strong> is moved to <strong>%rsi</strong>, and <strong>*v</strong> is moved to <strong>%rdi</strong> in preparation of
+call to <strong>get_vec_element</strong>.</li>
+<li>Line 15: the value pointed by <strong>&amp;val</strong> being an int is converted to a quad
+word and moved to to <strong>%rax</strong>.</li>
+<li>Line 16: the dereferenced value of <strong>&amp;val</strong> is added to <strong>dest</strong> at <strong>%r12</strong>
+and saved there.</li>
+<li>Line 17: 1 is added to <strong>i</strong>.</li>
+<li>Line 18: the dereferenced value at <strong>%rbp + 0</strong> is compared to <strong>i</strong>, if <strong>i</strong>
+is less than this value, the loop is repeated, else the function set <strong>%rsp</strong> to
+its previous value, pops saved values from the stack and exits.</li>
+</ul>
+
+<h4>O1 Analysis</h4>
+
+<p>The optimization done at this level is that the compiler understands that
+<strong>vec_length()</strong> function looks at a value already been saved in memory from at
+a offset from <strong>%rbp</strong>
+within combine1. So, instead of calling to this function on every iteration of
+the for loop, it just looks up the value at is saved structure pointer in
+<strong>%rbp</strong> with the offset of 0, which is <strong>int len</strong>.</p>
+
+<p>Perf output for command:
+<em>perf stat -r 10 -e
+task-clock,cycles,instructions,cache-references,cache-misses,branches,branch-misses
+./psum1_O1 500000000</em></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='asm'><span class='line'><span class="nf">Performance</span> <span class="no">counter</span> <span class="no">stats</span> <span class="no">for</span> <span class="err">&#39;</span><span class="p">.</span><span class="err">/</span><span class="no">psum1_O1</span> <span class="mi">500000000</span><span class="err">&#39;</span> <span class="p">(</span><span class="mi">10</span> <span class="no">runs</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="err">5499</span><span class="nf">.112338</span>      <span class="no">task-clock</span> <span class="p">(</span><span class="no">msec</span><span class="p">)</span>         <span class="c">#    1.001 CPUs utilized</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.35</span><span class="err">%</span> <span class="p">)</span>
+</span><span class='line'>    <span class="err">17,367,704,415</span>      <span class="nf">cycles</span>                    <span class="c">#    3.158 GHz</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.37</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">66</span><span class="no">.63</span><span class="err">%]</span>
+</span><span class='line'>    <span class="err">43,526,536,942</span>      <span class="nf">instructions</span>              <span class="c">#    2.51  insns per cycle</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.01</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">83</span><span class="no">.32</span><span class="err">%]</span>
+</span><span class='line'>        <span class="err">66,824,057</span>      <span class="nf">cache-references</span>          <span class="c">#   12.152 M/sec</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.21</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">83</span><span class="no">.34</span><span class="err">%]</span>
+</span><span class='line'>        <span class="err">64,574,297</span>      <span class="nf">cache-misses</span>              <span class="c">#   96.633 % of all cache refs</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.03</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">83</span><span class="no">.36</span><span class="err">%]</span>
+</span><span class='line'>    <span class="err">10,676,703,525</span>      <span class="nf">branches</span>                  <span class="c"># 1941.532 M/sec</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.01</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">83</span><span class="no">.38</span><span class="err">%]</span>
+</span><span class='line'>        <span class="err">20,223,608</span>      <span class="nf">branch-misses</span>             <span class="c">#    0.19% of all branches</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.53</span><span class="err">%</span> <span class="p">)</span> <span class="err">[</span><span class="mi">83</span><span class="no">.33</span><span class="err">%]</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="err">5</span><span class="nf">.496328323</span> <span class="no">seconds</span> <span class="no">time</span> <span class="no">elapsed</span>
+</span><span class='line'><span class="err">(</span> <span class="err">+-</span>  <span class="err">0</span><span class="nf">.35</span><span class="err">%</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<table>
+<thead>
+<tr>
+<th> Name  </th>
+<th style="text-align:center;">  CPI  </th>
+<th style="text-align:center;"> cache-misses / instructions (%) </th>
+<th style="text-align:center;"> instructions </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> psum1     </td>
+<td style="text-align:center;">  0.429  </td>
+<td style="text-align:center;">    0.56798  </td>
+<td style="text-align:center;"> 114,537,661,031 </td>
+</tr>
+<tr>
+<td> psum1 - O1    </td>
+<td style="text-align:center;">  0.398  </td>
+<td style="text-align:center;">    1.487459 </td>
+<td style="text-align:center;"> 43,526,536,942  </td>
+</tr>
+</tbody>
+</table>
+
+<p><br>
+Cache misses per instruction ratio went up due to a decrease in the number of
+instructions needed this time. The CPI also went down to show this. Cachegrind
+returns the same cache miss results since we have not made any changes related
+to these two functions.</p>
+
+<ul>
+<li><p>psum1.c:  get_vec_element                                              <br/>
+D1mr: 31,250,001                                                          <br/>
+DLmr: 31,250,001</p></li>
+<li><p>psum1.c:  new_vec                                                     <br/>
+D1mw: 31,250,000                                                       <br/>
+DLmw: 31,250,000</p></li>
+</ul>
+
+<p><strong>mr</strong> stands for write misses, <strong>mr</strong> for read misses, <strong>DL</strong> last level cache,
+and <strong>D1</strong> for data cache, which in our case it is referring to Level 2.</p>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2018-11-18-ovs-kvm/" data-toggle="tooltip" data-placement="top" title="Installing and Configuring OpenvSwitch With QEMU-KVM">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/2018-11-18-network-sniffer/" data-toggle="tooltip" data-placement="top" title="Coding Your Own Network Sniffer">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2020
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

@@ -97,11 +97,51 @@
                     
                         
                         <li>
+                            <a href="/categories/bash">Bash</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/c">C</a>
+                        </li>
+                        
+                        <li>
                             <a href="/categories/development">Development</a>
                         </li>
                         
                         <li>
+                            <a href="/categories/kvm">KVM</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/kernel">Kernel</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/lkm">LKM</a>
+                        </li>
+                        
+                        <li>
                             <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/ovs">OVS</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/qemu">QEMU</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/quagga">Quagga</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tcp/ip">TCP/IP</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/x86-assembly">x86 Assembly</a>
                         </li>
                         
                     
@@ -207,6 +247,31 @@
 <hr>
 
 <div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-char-driver/">
+        <h2 class="post-title">
+            Linux Kernel Modules: Character Devices
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            <p>This post will be part of a series where device drivers will be presented and
+quickly analized for people that need a quick reference of how to make device
+drivers on an updated kernel. The driver presented here was tested on a 3.2 and
+3.16 Linux Kernel. I will make a driver with more features and test it on a
+newer kernel next time.</p>
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Saturday, November 12, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="https://jarrocha.github.io/post/2018-11-18-sockets-http/">
         <h2 class="post-title">
             Capturing Websites With Sockets and HTTP
@@ -234,19 +299,52 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.<
 <hr>
 
 <div class="post-preview">
-    <a href="https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/">
+    <a href="https://jarrocha.github.io/post/2018-11-18-pthreaded-server/">
         <h2 class="post-title">
-            Linux Shell Programming Basics
+            Implementing a Prethreaded Web Server
         </h2>
 	
         <div class="post-content-preview">
 	
-            A basic command shell for Linux
-        
+            <p>p&gt;In this post I will analyze an implementation of a prethreaded TCP server that
+leverages the HTTP protocol. This is a personal ongoing project that will
+continue its
+development and I found it to be at a good place to start sharing what I have
+done so far. The whole purpose of this is to later on built a tool to test its
+performance and how to break it with malformed packets. It is such an
+interesting project that everytime I sit down with it, I start thinking about
+different features to implement on it. Again all this is coded in C with the
+POSIX threads and sockets API.</p></p>
+       
         </div>
     </a>
     <p class="post-meta">
-    Posted by Jaime Arrocha Tuesday, January 12, 2016
+    Posted by Jaime Arrocha Wednesday, July 13, 2016
+    
+    
+    </p>
+
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="https://jarrocha.github.io/post/2018-11-18-network-sniffer/">
+        <h2 class="post-title">
+            Coding Your Own Network Sniffer
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            <p>This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.</p>
+       
+        </div>
+    </a>
+    <p class="post-meta">
+    Posted by Jaime Arrocha Saturday, June 18, 2016
     
     
     </p>
@@ -257,6 +355,15 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.<
 
             
 
+
+<ul class="pager">
+    
+    
+    <li class="next">
+        <a href="/page/2/">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
 
 
        	</div>

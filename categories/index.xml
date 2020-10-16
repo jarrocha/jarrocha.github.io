@@ -6,9 +6,28 @@
     <description>Recent content in Categories on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <lastBuildDate>Mon, 18 Apr 2016 16:25:31 -0700</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bash</title>
+      <link>https://jarrocha.github.io/categories/bash/</link>
+      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/bash/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>C</title>
+      <link>https://jarrocha.github.io/categories/c/</link>
+      <pubDate>Sat, 12 Nov 2016 14:00:17 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/c/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Development</title>
@@ -20,11 +39,83 @@
     </item>
     
     <item>
+      <title>KVM</title>
+      <link>https://jarrocha.github.io/categories/kvm/</link>
+      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/kvm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Kernel</title>
+      <link>https://jarrocha.github.io/categories/kernel/</link>
+      <pubDate>Sat, 12 Nov 2016 14:00:17 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/kernel/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>LKM</title>
+      <link>https://jarrocha.github.io/categories/lkm/</link>
+      <pubDate>Sat, 12 Nov 2016 14:00:17 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/lkm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Linux</title>
       <link>https://jarrocha.github.io/categories/linux/</link>
       <pubDate>Sun, 18 Nov 2018 10:47:50 -0400</pubDate>
       
       <guid>https://jarrocha.github.io/categories/linux/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>OVS</title>
+      <link>https://jarrocha.github.io/categories/ovs/</link>
+      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/ovs/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>QEMU</title>
+      <link>https://jarrocha.github.io/categories/qemu/</link>
+      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/qemu/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Quagga</title>
+      <link>https://jarrocha.github.io/categories/quagga/</link>
+      <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/quagga/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>TCP/IP</title>
+      <link>https://jarrocha.github.io/categories/tcp/ip/</link>
+      <pubDate>Wed, 13 Jul 2016 16:53:42 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/tcp/ip/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>x86 Assembly</title>
+      <link>https://jarrocha.github.io/categories/x86-assembly/</link>
+      <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/categories/x86-assembly/</guid>
       <description></description>
     </item>
     
