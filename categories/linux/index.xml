@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linux on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/categories/linux/</link>
+    <description>Recent content in Linux on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 18 Nov 2018 10:47:50 -0400</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/categories/linux/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>TCP Sockets Server</title>
+      <link>https://jarrocha.github.io/post/tcp-server/</link>
+      <pubDate>Sun, 18 Nov 2018 10:47:50 -0400</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/tcp-server/</guid>
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This post serves as a explanation of the basics of a TCP socket server, which
+serves as the base to a future post explaining the basics of a web server.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
+Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Capturing Websites With Sockets and HTTP</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-sockets-http/</link>
+      <pubDate>Fri, 02 Sep 2016 11:57:56 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-sockets-http/</guid>
+      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This post shows a program that captures web pages&amp;rsquo;s index.html with sockets.
+To do this, it creates a TCP client socket, connects to a web server and takes
+all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

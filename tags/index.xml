@@ -21,6 +21,15 @@
     </item>
     
     <item>
+      <title>Development</title>
+      <link>https://jarrocha.github.io/tags/development/</link>
+      <pubDate>Sun, 18 Nov 2018 10:47:50 -0400</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/development/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Docker</title>
       <link>https://jarrocha.github.io/tags/docker/</link>
       <pubDate>Tue, 13 Mar 2018 18:00:00 +0000</pubDate>
@@ -53,6 +62,15 @@
       <pubDate>Wed, 23 May 2018 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/tags/kubernetes/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Linux</title>
+      <link>https://jarrocha.github.io/tags/linux/</link>
+      <pubDate>Sun, 18 Nov 2018 10:47:50 -0400</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/linux/</guid>
       <description></description>
     </item>
     

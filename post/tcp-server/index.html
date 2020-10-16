@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/post-bg-unix-linux.jpg" />
+    
+
+    
+    <meta name="title" content="TCP Sockets Server" />
+    <meta property="og:title" content="TCP Sockets Server" />
+    <meta property="twitter:title" content="TCP Sockets Server" />
+    
+
+    
+    <meta name="description" content="Basics of a TCP socket server">
+    <meta property="og:description" content="Basics of a TCP socket server" />
+    <meta property="twitter:description" content="Basics of a TCP socket server" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>TCP Sockets Server-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/tcp-server/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/development">Development</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/life">Life</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/linux">Linux</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tech">Tech</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/tips">Tips</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/golang">golang</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/top/books/">BOOKS</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search">SEARCH <img src="/img/search.png" height="15" style="cursor: pointer;" alt="Search"></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        <a class="tag" href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                    </div>
+                    <h1>TCP Sockets Server</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Sunday, November 18, 2018
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#complete-code">Complete Code</a></li>
+</ul></li>
+</ul>
+</nav>
+                
+                <h2 id="intro">Intro</h2>
+
+<hr />
+
+<p>This post serves as a explanation of the basics of a TCP socket server, which
+serves as the base to a future post explaining the basics of a web server.</p>
+
+<p><strong>Note:</strong> the complete code of an older version is fully posted in the end.
+Check my github repo for an updated version. <a href="https://github.com/jarrocha/psockets/tree/master/tcp_server">Link</a>.</p>
+
+<p>There are good tutorials out there that explain each of the functions of the
+sockets POSIX API in detail so this post will serve mostly to understand the
+overall basics.</p>
+
+<p>As we all know, a TCP connection is also know a connection oriented protocol
+which handles acknoledgment of bytes when they are received and sent. So it
+makes sure that all packets are ordered and complete for each transaction.</p>
+
+<p>How do we start a TCP socket connection? Below is a graph of the transition
+between sockets system calls to have a TCP server up and running.</p>
+
+<pre><code>Connection Establishment         --------
+TCP (Stream Sockets)             |      |
+Server (Passive Socket)          v
+socket() --&gt; bind() --&gt; listen() --&gt; accept() --&gt; read()/write() --&gt; close()
+                                        |            |   ^
+Client (Active Socket)            ^     v            v   |
+socket() ----&gt; connect() ---------|-------------&gt; read()/write() --&gt; close()
+</code></pre>
+
+<p>A server starts by creating a socket descriptor, this particular socket is only
+used by the server to listen for incoming connections. It then binds a
+particular socket descriptor with an IP address and then sets to listen on that
+socket and IP address. Then the server sits on the accept function call. When
+the server gets a connection request with the accept function call, it creates
+another socket descriptor which is used for I/O with the client. When the I/O
+with the client is done, the server closes the socket descriptor used for I/O
+and uses the listening descriptor once again to listen for a new client.</p>
+
+<p>On the client side is much easier, you create socket descriptor for the server
+you are going to connect to and fill int some properties for this particular
+host you are after and then call connect(). If the call was successful, your
+program is ready for I/O with the server.</p>
+
+<p>Here&rsquo;s a quick summary of the function calls:</p>
+
+<pre><code class="language-c">-socket(): creates a new socket. Opens a socket descriptor.
+-bind(): usually used in servers, binds a socket to an existing address.
+-listen(): allows a stream socket to accept incoming connections.
+-accept(): consumes a connection from a peer application on a listening stream socket.
+-connect(): establish a connection with another socket if server is available.
+            If not it waits for up to a number of pending connections.
+
+-calling socket() is similar to calling open. A file descriptor will be 
+ obtained which can be used for I/O. When the application is done, the descriptor needs
+ to be closed.
+
+ -socket I/O can be performed using the convetional read() and write() system 
+ calls, or using a range of socket-specific system calls (e.g., send(), recv(),
+ sendto(), and recvfrom()). By default, these system calls can block. But they
+ can be run atomically by using the fcntl() F_SETFL operation to enable the 
+ O_NONBLOCK open file status flag.
+</code></pre>
+
+<p>So now that we get an idea of what the system calls do, I&rsquo;m going to show you
+some actual code. This code belongs to a TCP server implementation in my
+<a href="https://github.com/jarrocha/psockets/tree/master/tcp_server">github account</a>. 
+I am going to analyze it in pieces.</p>
+
+<pre><code class="language-c">/* server socket variables */
+int sockfd, new_sockfd;
+struct sockaddr_in host_addr, client_addr;
+socklen_t sin_size = sizeof(struct sockaddr_in);
+int recv_length = 1, yes = 1;
+</code></pre>
+
+<p>This section declares and defines our basic variables for both of server and
+clients. <em>sockfd</em> is used to establish socket connections and <em>new_sockfd</em> is
+used for I/O. <em>struct sockaddr_in</em> is the structure holding everything regarding
+IP addressing for both the server and client in particular for IPv4. The rest of
+the variables are mostly to enable options for other socket system calls.</p>
+
+<pre><code class="language-c">/* defining listening socket descriptor */
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+      perror(&quot;in socket&quot;);
+  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(int))
+          == -1)
+      perror(&quot;setting socket option SO_REUSEADDR&quot;);
+</code></pre>
+
+<p>Here we finally create our socket descriptor to accept connections from clients.
+And use <em>setsockoptions</em> to enable some beneficial options for our sockets.
+Explaining this options will take us out of scope, but to get an idea, they help
+in re-using a previously use address when binding and restarting the tcp server.
+You can see that for socket we specify that we are using TCP and IPv4.</p>
+
+<pre><code class="language-c">/* initializing server address socket structure */
+  host_addr.sin_family = AF_INET;       /* host byte order */
+  host_addr.sin_port = htons(S_PORT); /* port, network byte order */
+  host_addr.sin_addr.s_addr = 0;     /* use host address */
+</code></pre>
+
+<p>This piece fills some values for our server address structure. We are specifying
+the use of IPv4 and port number to use. See that we are not specifying an IP
+address. We are telling the kernel to automatically fill it with the current
+address of our active interface.</p>
+
+<pre><code class="language-c">/* bind socket to IP address */
+  if (bind(sockfd, (struct sockaddr *)&amp;host_addr, sizeof(struct sockaddr))
+          == -1)
+      perror(&quot;binding to socket&quot;);
+</code></pre>
+
+<p>After we specify our address structure and socket descriptor we bind the socket
+descriptor to the current IP on the given port.</p>
+
+<pre><code class="language-c">/* listen on socket */
+  if (listen(sockfd, 5) == -1)
+      perror(&quot;listening on socket&quot;);
+</code></pre>
+
+<p>The call to <em>listen()</em> opens the socket to accept incoming connections up to a
+maximum of 5 pending connections. All connections are sent into a queue until a
+call to <em>accept()</em> consumes a connection.</p>
+
+<pre><code class="language-c">new_sockfd = accept(sockfd, (struct sockaddr *) &amp;client_addr,
+               &amp;sin_size);
+</code></pre>
+
+<p>This last piece accepts an incoming connection returning a new socket
+descriptor. This is the descriptor that needs to be use for the read()/write()
+system calls. These are the ones that handle back and forth communication between
+client and server.</p>
+
+<p>All the piece of code presented so far is the basic structure of implementing an
+TCP server. After this, pretty much anything can be done. A web server
+is a good idea. It teaches how to go from RFC details to an actual working
+program. It is just amazing to see when you get your own web page and server
+handling requests from a web browser. Other examples are a proxy server, network
+scanners, and sniffers.</p>
+
+<p>Check the code, edit, and improve on it. Let me know if you have any question in
+the comments section.</p>
+
+<h2 id="complete-code">Complete Code</h2>
+
+<hr />
+
+<p>Here is the complete code. The <em>dump()</em> function was taken from <a href="http://www.amazon.com/Hacking-Art-Exploitation-Jon-Erickson/dp/1593271441/ref=sr_1_1?s=books&amp;ie=UTF8&amp;qid=1454054525&amp;sr=1-1&amp;keywords=jon+erickson">Jon Erickson&rsquo;s book</a></p>
+
+<pre><code>/*
+ * A simple server to demonstrate TCP sockets implementation. The server
+ * takes input from server and shows dump of the data.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+
+#define DATA 50
+#define S_PORT 7890
+
+void dump(char *, const unsigned int);
+
+int main(void)
+{
+  /* server socket variables */
+  int sockfd, new_sockfd;
+  struct sockaddr_in host_addr, client_addr;
+  socklen_t sin_size = sizeof(struct sockaddr_in);
+  int recv_length = 1, yes = 1;
+  
+  /* data holding */
+  char buffer[1024];
+
+  /* defining listening socket descriptor */
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+      perror(&quot;in socket&quot;);
+  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(int))
+          == -1)
+      perror(&quot;setting socket option SO_REUSEADDR&quot;);
+  
+  /* initializing server address socket structure */
+  host_addr.sin_family = AF_INET;       /* host byte order */
+  host_addr.sin_port = htons(S_PORT); /* port, network byte order */
+  host_addr.sin_addr.s_addr = 0;     /* use host address */
+
+  /* zero the rest of struct */
+  memset(&amp;(host_addr.sin_zero), '\0', sizeof(host_addr.sin_zero));
+
+  /* bind socket to IP address */
+  if (bind(sockfd, (struct sockaddr *)&amp;host_addr, sizeof(struct sockaddr))
+          == -1)
+      perror(&quot;binding to socket&quot;);
+  
+  /* listen on socket */
+  if (listen(sockfd, 5) == -1)
+      perror(&quot;listening on socket&quot;);
+  
+  /* main procedure */
+  while (1) {
+      new_sockfd = accept(sockfd, (struct sockaddr *) &amp;client_addr,
+               &amp;sin_size);
+      if (new_sockfd == -1)
+          perror(&quot;accepting connection&quot;);
+      printf(&quot;server: got connection from %s port %d\n&quot;,
+          inet_ntoa(client_addr.sin_addr),
+          ntohs(client_addr.sin_port));
+      recv_length = recv(new_sockfd, &amp;buffer, DATA, 0);
+
+      while (recv_length &gt; 0) {
+          printf(&quot;RECV: %d bytes\n&quot;, recv_length);
+          dump(buffer, recv_length);
+          recv_length = recv(new_sockfd, &amp;buffer, DATA, 0);
+      }
+  
+      close(new_sockfd);
+  }
+  return 0;
+}
+
+/* dumps raw memory in hex byte and printable split format */
+void dump(char *data_buffer, const unsigned int length)
+{
+  unsigned char byte;
+  unsigned int i, j;
+  
+  for (i = 0; i &lt; length; i++) {
+      byte = data_buffer[i];
+      printf(&quot;%02x &quot;, data_buffer[i]);  /* displays byte in hex */
+      
+      if (((i % 16) == 15) || (i == length - 1)) {
+          for (j = 0; j &lt; 15 - (i % 16); j++)
+              printf(&quot;   &quot;);
+          printf(&quot;| &quot;);
+          /* display printable bytes from line */
+          for (j = (i - (i % 16)); j &lt;= i; j++) {
+              byte = data_buffer[j];
+              /* outside printable char range */
+              if ((byte &gt; 31) &amp;&amp; (byte &lt; 127))
+                  printf(&quot;%c&quot;, byte);
+              else
+                  printf(&quot;.&quot;);
+          }
+          /* end of the dump line (each line 16 bytes) */
+          printf(&quot;\n&quot;);
+      }
+  }
+}
+</code></pre>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2018/06/04/introducing-the-istio-v1alpha3-routing-api/" data-toggle="tooltip" data-placement="top" title="Istio v1aplha3 routing API介绍(译文）">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/readme/" data-toggle="tooltip" data-placement="top" title="Clean White Theme for Hugo">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/development" title="Development">
+                            Development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/docker" title="Docker">
+                            Docker
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/istio" title="Istio">
+                            Istio
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/kubernetes" title="Kubernetes">
+                            Kubernetes
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="Linux">
+                            Linux
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/microservice" title="Microservice">
+                            Microservice
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/security" title="Security">
+                            Security
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/service-mesh" title="Service Mesh">
+                            Service Mesh
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/tips" title="Tips">
+                            Tips
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/development" title="development">
+                            development
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/featured" title="featured">
+                            featured
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/go" title="go">
+                            go
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/golang" title="golang">
+                            golang
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/hugo" title="hugo">
+                            hugo
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/themes" title="themes">
+                            themes
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2020
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>
