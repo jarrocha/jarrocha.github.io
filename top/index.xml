@@ -22,11 +22,13 @@ There’s a chinese saying that goes “Don’t be fearful of a slow progress, b
     
     <item>
       <title></title>
-      <link>https://jarrocha.github.io/top/books/</link>
+      <link>https://jarrocha.github.io/top/courses/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://jarrocha.github.io/top/books/</guid>
-      <description>Machine learning学习笔记 Coursera 在线课程 Machine learning 笔记 讲师: 吴恩达(Andrew Ng)  课程地址：https://www.coursera.org/learn/machine-learning</description>
+      <guid>https://jarrocha.github.io/top/courses/</guid>
+      <description>Courses on Robotics and Control Here are some course I have taken or plan to take. They are eithe free or low cost. They go hand-in-hand with a background on embedded systems and control systems. It&amp;rsquo;s about the application of theory of control systems for guidance and navigation on simulations or actual real devices.
+Space Dynamics and Control Coursera Space Dynamics and Control 
+Autonomous Navigation for Flying Robots Coursera Autonomous Navigation for Flying Robots</description>
     </item>
     
   </channel>
