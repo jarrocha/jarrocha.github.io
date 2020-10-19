@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Zephyr on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/tags/zephyr/</link>
+    <description>Recent content in Zephyr on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 02 Nov 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/tags/zephyr/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Setting up Zephyr on Linux</title>
+      <link>https://jarrocha.github.io/post/setup-zephyr-on-linux/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/setup-zephyr-on-linux/</guid>
+      <description>Intro Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
+Steps 1. Install the necessary requirements
+sudo apt-get install --no-install-recommends git cmake ninja-build gperf \ ccache dfu-util device-tree-compiler wget \ python3-pip python3-setuptools python3-wheel xz-utils file make gcc  2. Download and Install SDK
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt;  3.</description>
+    </item>
+    
+  </channel>
+</rss>

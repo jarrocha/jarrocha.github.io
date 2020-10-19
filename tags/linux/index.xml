@@ -25,6 +25,18 @@ $ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $
     </item>
     
     <item>
+      <title>Setting up Zephyr on Linux</title>
+      <link>https://jarrocha.github.io/post/setup-zephyr-on-linux/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/setup-zephyr-on-linux/</guid>
+      <description>Intro Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
+Steps 1. Install the necessary requirements
+sudo apt-get install --no-install-recommends git cmake ninja-build gperf \ ccache dfu-util device-tree-compiler wget \ python3-pip python3-setuptools python3-wheel xz-utils file make gcc  2. Download and Install SDK
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt;  3.</description>
+    </item>
+    
+    <item>
       <title>Coding Your Own Network Sniffer</title>
       <link>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</link>
       <pubDate>Sat, 11 Mar 2017 16:47:01 -0700</pubDate>

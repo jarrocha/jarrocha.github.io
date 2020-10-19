@@ -8,6 +8,11 @@
   </url>
   
   <url>
+    <loc>https://jarrocha.github.io/post/setup-zephyr-on-linux/</loc>
+    <lastmod>2019-11-02T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://jarrocha.github.io/post/2018-11-18-char-driver/</loc>
     <lastmod>2018-11-12T14:00:17-07:00</lastmod>
   </url>
@@ -67,6 +72,10 @@
   
   <url>
     <loc>https://jarrocha.github.io/top/courses/</loc>
+  </url>
+  
+  <url>
+    <loc>https://jarrocha.github.io/top/upcoming/</loc>
   </url>
   
   <url>
@@ -171,6 +180,12 @@
   
   <url>
     <loc>https://jarrocha.github.io/top/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://jarrocha.github.io/tags/zephyr/</loc>
+    <lastmod>2019-11-02T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

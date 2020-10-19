@@ -25,6 +25,18 @@ $ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $
     </item>
     
     <item>
+      <title>Setting up Zephyr on Linux</title>
+      <link>https://jarrocha.github.io/post/setup-zephyr-on-linux/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/setup-zephyr-on-linux/</guid>
+      <description>Intro Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
+Steps 1. Install the necessary requirements
+sudo apt-get install --no-install-recommends git cmake ninja-build gperf \ ccache dfu-util device-tree-compiler wget \ python3-pip python3-setuptools python3-wheel xz-utils file make gcc  2. Download and Install SDK
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt;  3.</description>
+    </item>
+    
+    <item>
       <title>Linux Kernel Modules: Character Devices</title>
       <link>https://jarrocha.github.io/post/2018-11-18-char-driver/</link>
       <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
@@ -191,7 +203,7 @@ This post serves as a quick analysis of the code in the
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/top/about/</guid>
-      <description>My name is Jaime Arrocha, I am an expericenced macOS and Linux system/kernel developer with interest in embedded systems, IoT, RTOS, computer networking, and cloud computing. I created this website with the intent of both learning and giving back to the community. I hope that the information you find here is helpful. I will try my best to keep the website alive with interesting posts and topics, while also improving on my writing skills.</description>
+      <description>About My name is Jaime Arrocha, I am an expericenced macOS and Linux system/kernel developer with interest in embedded systems, IoT, RTOS, computer networking, and cloud computing. I created this website with the intent of both learning and giving back to the community. I hope that the information you find here is helpful. I will try my best to keep the website alive with interesting posts and topics, while also improving on my writing skills.</description>
     </item>
     
     <item>
@@ -205,6 +217,17 @@ Space Dynamics and Control Coursera Space Dynamics and Control
 Autonomous Navigation for Flying Robots Coursera Autonomous Navigation for Flying Robots
 Robotics Specialization Coursera Robotics Specialization
 Modern Robotics Specialization Coursera Modern Robotics Specialization</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://jarrocha.github.io/top/upcoming/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jarrocha.github.io/top/upcoming/</guid>
+      <description>Upcoming Topics  I have always considered that teaching is a good learning tool. So I plan to revamped the site with a few good topics involving some good theory mix with actual code results on devices.
+
+Topics will include:  Kernel Drivers on Raspberry Pi and BeagleBone Black  Involved Blocked devices and I2C communication with peripherals. USB drivers  RTOS  Timing sequences differences between Linux-RT and Linux with SCHED_FIFO + affinity settings.</description>
     </item>
     
   </channel>
