@@ -76,37 +76,24 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/arm/</loc>
-    <lastmod>2020-05-04T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/categories/bash/</loc>
+    <loc>https://jarrocha.github.io/tags/bash/</loc>
     <lastmod>2016-04-18T16:25:31-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/c/</loc>
+    <loc>https://jarrocha.github.io/tags/c/</loc>
     <lastmod>2018-11-12T14:00:17-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://jarrocha.github.io/categories/</loc>
-    <lastmod>2020-05-04T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://jarrocha.github.io/tags/development/</loc>
-    <lastmod>2018-11-12T14:00:17-07:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/categories/development/</loc>
     <lastmod>2017-03-11T16:47:01-07:00</lastmod>
     <priority>0</priority>
   </url>
@@ -118,13 +105,13 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/kvm/</loc>
+    <loc>https://jarrocha.github.io/tags/kvm/</loc>
     <lastmod>2016-04-18T16:25:31-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/kernel/</loc>
+    <loc>https://jarrocha.github.io/tags/kernel/</loc>
     <lastmod>2018-11-12T14:00:17-07:00</lastmod>
     <priority>0</priority>
   </url>
@@ -136,25 +123,13 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/lkm/</loc>
-    <lastmod>2018-11-12T14:00:17-07:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://jarrocha.github.io/tags/linux/</loc>
     <lastmod>2020-05-04T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/linux/</loc>
-    <lastmod>2017-03-11T16:47:01-07:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/categories/ovs/</loc>
+    <loc>https://jarrocha.github.io/tags/ovs/</loc>
     <lastmod>2016-04-18T16:25:31-07:00</lastmod>
     <priority>0</priority>
   </url>
@@ -166,13 +141,13 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/qemu/</loc>
+    <loc>https://jarrocha.github.io/tags/qemu/</loc>
     <lastmod>2016-04-18T16:25:31-07:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/quagga/</loc>
+    <loc>https://jarrocha.github.io/tags/quagga/</loc>
     <lastmod>2016-03-23T16:06:40-07:00</lastmod>
     <priority>0</priority>
   </url>
@@ -184,12 +159,6 @@
   
   <url>
     <loc>https://jarrocha.github.io/tags/tcp/ip/</loc>
-    <lastmod>2017-03-11T16:47:01-07:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://jarrocha.github.io/categories/tcp/ip/</loc>
     <lastmod>2017-03-11T16:47:01-07:00</lastmod>
     <priority>0</priority>
   </url>
@@ -212,7 +181,7 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/categories/x86-assembly/</loc>
+    <loc>https://jarrocha.github.io/tags/x86-assembly/</loc>
     <lastmod>2016-05-18T16:43:48-07:00</lastmod>
     <priority>0</priority>
   </url>

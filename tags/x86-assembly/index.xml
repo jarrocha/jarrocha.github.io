@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>x86 Assembly on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/tags/x86-assembly/</link>
+    <description>Recent content in x86 Assembly on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 18 May 2016 16:43:48 -0700</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/tags/x86-assembly/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Code Performance Analysis With Assembly &amp; C: Part 2</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</link>
+      <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
+      <description>&lt;p&gt;In this second part, the optimization code will be shown. Specifically O1, O2,
+and O3. We are going to be able to see, what performance decisions the gcc
+compiler makes; for example, we are going to check if the compilers takes the
+function that calculates the string length calls out of the loop.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Code Performance Analysis With Assembly &amp; C: Part 1</title>
+      <link>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</link>
+      <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
+      <description>&lt;p&gt;These blog series belong to some old notes that I have and thought that could be
+useful to redo. It is always good to refresh material and what a better way than
+to write about it.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -6,27 +6,10 @@
     <description>Recent content in Development on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 12 Nov 2018 14:00:17 -0700</lastBuildDate>
+    <lastBuildDate>Sat, 11 Mar 2017 16:47:01 -0700</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/tags/development/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Linux Kernel Modules: Character Devices</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-char-driver/</link>
-      <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
-      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post will be part of a series where device drivers will be presented and
-quickly analized for people that need a quick reference of how to make device
-drivers on an updated kernel. The driver presented here was tested on a 3.2 and
-3.16 Linux Kernel. I will make a driver with more features and test it on a
-newer kernel next time.&lt;/p&gt;</description>
-    </item>
     
     <item>
       <title>Coding Your Own Network Sniffer</title>
@@ -61,35 +44,6 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&
     </item>
     
     <item>
-      <title>Implementing a Prethreaded Web Server</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</link>
-      <pubDate>Wed, 13 Jul 2016 16:53:42 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</guid>
-      <description>&lt;p&gt;p&amp;gt;In this post I will analyze an implementation of a prethreaded TCP server that
-leverages the HTTP protocol. This is a personal ongoing project that will
-continue its
-development and I found it to be at a good place to start sharing what I have
-done so far. The whole purpose of this is to later on built a tool to test its
-performance and how to break it with malformed packets. It is such an
-interesting project that everytime I sit down with it, I start thinking about
-different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Code Performance Analysis With Assembly &amp; C: Part 2</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</link>
-      <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
-      <description>&lt;p&gt;In this second part, the optimization code will be shown. Specifically O1, O2,
-and O3. We are going to be able to see, what performance decisions the gcc
-compiler makes; for example, we are going to check if the compilers takes the
-function that calculates the string length calls out of the loop.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
       <title>TCP Sockets Server</title>
       <link>https://jarrocha.github.io/post/tcp-server/</link>
       <pubDate>Wed, 18 May 2016 10:47:50 -0400</pubDate>
@@ -104,46 +58,6 @@ serves as the base to a future post explaining the basics of a web server.&lt;/p
 
 &lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
 Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Installing and Configuring OpenvSwitch With QEMU-KVM</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</link>
-      <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</guid>
-      <description>&lt;p&gt;The maturity reached by Software Defined Networking (SDN) in the lastest years
-is a very important one. We are at a point where we could see this architecture
-/framework become a standard. And what makes it so amazing is its fundamental
-idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
-is a tool used to create virtual bridges which can then connect virtual or
-physical hosts. It implements both traditional L2 switching protocols or
-Openflow.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Automating Quagga With QEMU-KVM: Part 1</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</link>
-      <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</guid>
-      <description>&lt;p&gt;Some days ago I needed a proof of concept for some routing configuration using
-Linux that was stuck in my head for days already. So I needed a way to bring up
-some Linux boxes to quickly to check this. The &lt;a href=&#34;https://opennetlinux.org/docs/routingtutorial&#34;&gt;ONL website&lt;/a&gt; proved very
-useful, but I needed to use CentOS. So I came up with a script based on the
-mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
-and configured.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Code Performance Analysis With Assembly &amp; C: Part 1</title>
-      <link>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</link>
-      <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
-      
-      <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
-      <description>&lt;p&gt;These blog series belong to some old notes that I have and thought that could be
-useful to redo. It is always good to refresh material and what a better way than
-to write about it.&lt;/p&gt;</description>
     </item>
     
     <item>
