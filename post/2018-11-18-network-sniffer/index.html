@@ -237,298 +237,152 @@ packets to listen to.</p>
 
 <p>The complete code is in its <a href="https://github.com/jarrocha/psockets/">github repository</a>.</p>
 
-<h4>main.c</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* usage function */</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">usage</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">cmd</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Usage: %s [INTERFACE]</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
 <p>Usage function. Currently, it only supports to choose on which interface to
 listen to.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">rcv_bytes</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">trx_fd</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">u_char</span> <span class="n">buffer</span><span class="p">[</span><span class="n">BUFF</span><span class="p">];</span>
-</span><span class='line'>  <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">cl_addr</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">socklen_t</span> <span class="n">cl_size</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">usage</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-</span><span class='line'>  
-</span><span class='line'>  
-</span><span class='line'>  <span class="k">if</span><span class="p">((</span><span class="n">trx_fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_PACKET</span><span class="p">,</span> <span class="n">SOCK_RAW</span><span class="p">,</span> <span class="n">htons</span><span class="p">(</span><span class="n">ETH_P_ALL</span><span class="p">)))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">err_msg</span><span class="p">(</span><span class="s">&quot;Error on socket()&quot;</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">if</span><span class="p">((</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">trx_fd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_BINDTODEVICE</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-</span><span class='line'>          <span class="n">strlen</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">err_msg</span><span class="p">(</span><span class="s">&quot;Error on setsockopt()&quot;</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="k">for</span><span class="p">(;;)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="p">((</span><span class="n">rcv_bytes</span> <span class="o">=</span> <span class="n">recvfrom</span><span class="p">(</span><span class="n">trx_fd</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">BUFF</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
-</span><span class='line'>                   <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">cl_addr</span><span class="p">,</span>
-</span><span class='line'>                   <span class="o">&amp;</span><span class="n">cl_size</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-</span><span class='line'>          <span class="n">err_msg</span><span class="p">(</span><span class="s">&quot;Error on recvfrom()&quot;</span><span class="p">);</span>
-</span><span class='line'>      <span class="n">proc_packet</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">rcv_bytes</span><span class="p">);</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">28</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">29</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">30</span>  u_int rcv_bytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">31</span>  u_int trx_fd;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">32</span>  u_char buffer[BUFF];
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">33</span>  <span style="color:#66d9ef">struct</span> sockaddr_in cl_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">34</span>  socklen_t cl_size;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">35</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">36</span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">37</span>      usage(argv[<span style="color:#ae81ff">0</span>]);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">38</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">39</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">40</span>  <span style="color:#66d9ef">if</span>((trx_fd <span style="color:#f92672">=</span> socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">41</span>      err_msg(<span style="color:#e6db74">&#34;Error on socket()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">42</span>  <span style="color:#66d9ef">if</span>((setsockopt(trx_fd, SOL_SOCKET, SO_BINDTODEVICE, argv[<span style="color:#ae81ff">1</span>],
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">43</span>          strlen(argv[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">44</span>      err_msg(<span style="color:#e6db74">&#34;Error on setsockopt()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">45</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">46</span>  <span style="color:#66d9ef">for</span>(;;) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">47</span>      <span style="color:#66d9ef">if</span>((rcv_bytes <span style="color:#f92672">=</span> recvfrom(trx_fd, buffer, BUFF, <span style="color:#ae81ff">0</span>,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">48</span>                   (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>cl_addr,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">49</span>                   <span style="color:#f92672">&amp;</span>cl_size)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">50</span>          err_msg(<span style="color:#e6db74">&#34;Error on recvfrom()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">51</span>      proc_packet(buffer, rcv_bytes);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">52</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">53</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">54</span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">55</span>}</code></pre></div>
 
 <p>The main procedure is the infite loop as you can see, it reads packet
 sequentially using one process.
 <strong>Line 13</strong>: creates the socket to be listen to every type of frame, and in/out
 direction.
 <strong>Line 15</strong>: set socket options to tell the program on which interface to
-listen to.</p>
+listen to.</p></p>
 
 <h4>procpkt.c</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* main processing function */</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">proc_packet</span><span class="p">(</span><span class="k">const</span> <span class="n">u_char</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">u_int</span> <span class="n">size</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>  
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">prot</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">dat_offs</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">tcp_hdr_sz</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">u_int</span> <span class="n">udp_hdr_sz</span><span class="p">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* print captured bytes */</span>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n\n</span><span class="s">Bytes Captured = [ %d ]</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* print L2 information */</span>
-</span><span class='line'>  <span class="n">decode_ethernet</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* obtain IP protocol number for further decoding */</span>
-</span><span class='line'>  <span class="n">prot</span> <span class="o">=</span> <span class="n">decode_ip</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">ETHER_HDR_LEN</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="k">switch</span><span class="p">(</span><span class="n">prot</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">case</span> <span class="mi">1</span><span class="o">:</span>
-</span><span class='line'>      <span class="n">decode_icmp</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">ETHER_HDR_LEN</span> <span class="o">+</span> <span class="n">IP_HDR_LEN</span><span class="p">);</span>
-</span><span class='line'>      <span class="k">break</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">case</span> <span class="mi">6</span><span class="o">:</span>
-</span><span class='line'>      <span class="n">tcp_hdr_sz</span> <span class="o">=</span> <span class="n">decode_tcp</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">ETHER_HDR_LEN</span> <span class="o">+</span> <span class="n">IP_HDR_LEN</span><span class="p">);</span>
-</span><span class='line'>      <span class="k">break</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">case</span> <span class="mi">17</span><span class="o">:</span>
-</span><span class='line'>      <span class="n">udp_hdr_sz</span> <span class="o">=</span> <span class="n">decode_udp</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">ETHER_HDR_LEN</span> <span class="o">+</span> <span class="n">IP_HDR_LEN</span><span class="p">);</span>
-</span><span class='line'>      <span class="k">break</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">default</span><span class="o">:</span>
-</span><span class='line'>      <span class="k">break</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* print raw encapsulated data */</span>
-</span><span class='line'>  <span class="n">praw</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">ETHER_HDR_LEN</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
-</span><span class='line'>              
-</span><span class='line'>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">125</span><span style="color:#75715e">/* main processing function */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">126</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_packet</span>(<span style="color:#66d9ef">const</span> u_char <span style="color:#f92672">*</span>data, u_int size)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">127</span>{  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">128</span>  u_int prot;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">129</span>  u_int dat_offs;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">130</span>  u_int tcp_hdr_sz;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">131</span>  u_int udp_hdr_sz;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">132</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">133</span>  <span style="color:#75715e">/* print captured bytes */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">134</span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">Bytes Captured = [ %d ]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, size);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">135</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">136</span>  <span style="color:#75715e">/* print L2 information */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">137</span>  decode_ethernet(data);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">138</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">139</span>  <span style="color:#75715e">/* obtain IP protocol number for further decoding */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">140</span>  prot <span style="color:#f92672">=</span> decode_ip(data <span style="color:#f92672">+</span> ETHER_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">141</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">142</span>  <span style="color:#66d9ef">switch</span>(prot) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">143</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">144</span>      decode_icmp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">145</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">146</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">6</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">147</span>      tcp_hdr_sz <span style="color:#f92672">=</span> decode_tcp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">148</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">149</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">17</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">150</span>      udp_hdr_sz <span style="color:#f92672">=</span> decode_udp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">151</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">152</span>  <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">153</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">154</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">155</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">156</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">157</span>  <span style="color:#75715e">/* print raw encapsulated data */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">158</span>  praw(data <span style="color:#f92672">+</span> ETHER_HDR_LEN, size);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">159</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">160</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">161</span>}</code></pre></div>
 
 <p>The main function of the program that handles identification of the IP
 protocol to which we then de-encapsulate and then do a print out of the data.</p>
 
 <h4>psniff.h</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="k">struct</span> <span class="n">ip_hdr</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ver_ihl</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">tos</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">len</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">id</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">frag_off</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">ttl</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">protocol</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">check</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">src_addr</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">dst_addr</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/*</span>
-</span><span class='line'><span class="cm"> * TCP</span>
-</span><span class='line'><span class="cm"> * Note: Supports Little-Endian only</span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">struct</span> <span class="n">tcp_hdr</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">src_port</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">dst_port</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">seq</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">ack</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="nl">reserved</span><span class="p">:</span><span class="mi">4</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="nl">offset</span><span class="p">:</span><span class="mi">4</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span>
-</span><span class='line'><span class="cp">#define TCP_FIN 0x01</span>
-</span><span class='line'><span class="cp">#define TCP_SYN 0x02</span>
-</span><span class='line'><span class="cp">#define TCP_RST 0x04</span>
-</span><span class='line'><span class="cp">#define TCP_PUSH 0x08</span>
-</span><span class='line'><span class="cp">#define TCP_ACK 0x10</span>
-</span><span class='line'><span class="cp">#define TCP_URG 0x20</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">window</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">checksum</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">urgent</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/*</span>
-</span><span class='line'><span class="cm"> * UDP Header</span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">struct</span> <span class="n">udp_hdr</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">src_port</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">dst_port</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">len</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">checksum</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/*</span>
-</span><span class='line'><span class="cm"> * ICMP Header</span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">struct</span> <span class="n">icmp_hdr</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">type</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">code</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">checksum</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">gateway</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span></code></pre></td></tr></table></div></figure>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">60</span><span style="color:#66d9ef">struct</span> ip_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">61</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ver_ihl;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">62</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> tos;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">63</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">64</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> id;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">65</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> frag_off;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">66</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ttl;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">67</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> protocol;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">68</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> check;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">69</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> src_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">70</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> dst_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">71</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">72</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">73</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">74</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">75</span><span style="color:#75715e"> * TCP
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">76</span><span style="color:#75715e"> * Note: Supports Little-Endian only
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">77</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">78</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">79</span><span style="color:#66d9ef">struct</span> tcp_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">80</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">81</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">82</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seq;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">83</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> ack;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">84</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> reserved:<span style="color:#ae81ff">4</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">85</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> offset:<span style="color:#ae81ff">4</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">86</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> flags;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">87</span><span style="color:#75715e">#define TCP_FIN 0x01
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">88</span><span style="color:#75715e">#define TCP_SYN 0x02
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">89</span><span style="color:#75715e">#define TCP_RST 0x04
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">90</span><span style="color:#75715e">#define TCP_PUSH 0x08
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">91</span><span style="color:#75715e">#define TCP_ACK 0x10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">92</span><span style="color:#75715e">#define TCP_URG 0x20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">93</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> window;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">94</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">95</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> urgent;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">96</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">97</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">98</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">99</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">100</span><span style="color:#75715e"> * UDP Header
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">101</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">102</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">103</span><span style="color:#66d9ef">struct</span> udp_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">104</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">105</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">106</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">107</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">108</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">109</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">110</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">111</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">112</span><span style="color:#75715e"> * ICMP Header
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">113</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">114</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">115</span><span style="color:#66d9ef">struct</span> icmp_hdr
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">116</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">117</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> type;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">118</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> code;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">119</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">120</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> gateway;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">121</span>};</code></pre></div>
 
 <p>To decode the layers the de-encapsulated data needs to be type casted to the
 appropiate data structure and from there, retrieve the information. In this
