@@ -229,113 +229,111 @@ make to your function calls.</p>
 
 <p>Complete code at its <a href="https://github.com/jarrocha/psockets/tree/master/get_http">github repository</a>.</p>
 
-<p><h4>main.c</h4></p>
+<h4>main.c</h4>
 
-<pre><code class="language-C">int main(int argc, char *argv[])
-{
-  u_int trx_fd;
-  u_int resv4;
-  u_int resv6;
-  u_int status = 1;
-  char buffer[MAX];
-  struct addrinfo hints;      /* DNS resolution processing */
-  struct addrinfo *rs;     /* DNS results */
-  struct sockaddr_in svr_addr4;
-  struct sockaddr_in *pr;
-  struct sockaddr_in6 svr_addr6;
-  struct timeval tt_wait;     /* used for recv() timeout */
-  tt_wait.tv_sec = 3;      /* 3 secs timeout */
-  tt_wait.tv_usec= 500000;
-
-  if(argc != 2) {
-      usage(argv[0]);
-      exit(0);
-  }
-
-  /* initializing addrinfo structure list */
-        hints.ai_flags = AF_INET;
-        hints.ai_family = AF_UNSPEC;
-        hints.ai_socktype = SOCK_STREAM;
-        hints.ai_protocol = 0;
-        hints.ai_addrlen = 0;
-        hints.ai_canonname = NULL;
-        hints.ai_addr = NULL;
-        hints.ai_next = NULL;
-
-  /* get IP info */
-  resv4 = inet_pton(AF_INET, argv[1], &amp;svr_addr4.sin_addr);
-  resv6 = inet_pton(AF_INET6, argv[1], &amp;svr_addr6.sin6_addr);
-
-  /* entering http server presets in structure */
-  svr_addr4.sin_port =  htons((in_port_t) 80);
-  svr_addr4.sin_family = AF_INET;
-  svr_addr6.sin6_port =  htons((in_port_t) 80);
-  svr_addr6.sin6_family = AF_INET6;
-  sprintf(buffer, &quot;GET / HTTP/1.1\r\n\r\n&quot;);
-      
-  /* checking for either IPv4 or IPv6 entered input */
-  while (status == 1) {
-      if(resv4 &gt; 0) {
-          if((trx_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-              err_msg(&quot;Error creating socket&quot;);
-          if ((setsockopt(trx_fd, SOL_SOCKET, SO_RCVTIMEO,
-                  (struct timeval *)&amp;tt_wait,
-                  sizeof(struct timeval))) == -1)
-              err_msg(&quot;setsockopt()&quot;);
-          /* get out of the loop */
-          status = 0;
-          get_http_ipv4(&amp;trx_fd, &amp;svr_addr4, buffer);
-
-      } else if(resv6 &gt; 0) {
-          if((trx_fd = socket(AF_INET6, SOCK_STREAM, 0)) == -1)
-              err_msg(&quot;Error creating socket&quot;);
-          if ((setsockopt(trx_fd, SOL_SOCKET, SO_RCVTIMEO,
-                  (struct timeval *)&amp;tt_wait,
-                  sizeof(struct timeval))) == -1)
-              err_msg(&quot;setsockopt()&quot;);
-
-          /* get out of the loop */
-          status = 0;
-          get_http_ipv6(&amp;trx_fd, &amp;svr_addr6, buffer);
-
-      } else {
-          if ((getaddrinfo(argv[1], 0, &amp;hints, &amp;rs)) != 0)
-              err_msg(gai_strerror(status));
-          resv4 = 1;
-          for(; rs != NULL; rs = rs-&gt;ai_next){
-              if(rs-&gt;ai_family == AF_INET) {
-                  /* typecasting result and assigning */
-                  pr =  (struct sockaddr_in *)rs-&gt;ai_addr;
-                  svr_addr4.sin_addr = pr-&gt;sin_addr;
-                  break;
-              }
-          }
-          /* freeing allocated struct rs memory */
-          freeaddrinfo(rs);       
-      }
-  }
-  close(trx_fd);
-  exit(EXIT_SUCCESS);
-}
-</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 0</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 1</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 2</span>  u_int trx_fd;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 3</span>  u_int resv4;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 4</span>  u_int resv6;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 5</span>  u_int status <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 6</span>  <span style="color:#66d9ef">char</span> buffer[MAX];
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 7</span>  <span style="color:#66d9ef">struct</span> addrinfo hints;      <span style="color:#75715e">/* DNS resolution processing */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 8</span>  <span style="color:#66d9ef">struct</span> addrinfo <span style="color:#f92672">*</span>rs;     <span style="color:#75715e">/* DNS results */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 9</span>  <span style="color:#66d9ef">struct</span> sockaddr_in svr_addr4;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">10</span>  <span style="color:#66d9ef">struct</span> sockaddr_in <span style="color:#f92672">*</span>pr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">11</span>  <span style="color:#66d9ef">struct</span> sockaddr_in6 svr_addr6;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">12</span>  <span style="color:#66d9ef">struct</span> timeval tt_wait;     <span style="color:#75715e">/* used for recv() timeout */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">13</span>  tt_wait.tv_sec <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>;      <span style="color:#75715e">/* 3 secs timeout */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">14</span>  tt_wait.tv_usec<span style="color:#f92672">=</span> <span style="color:#ae81ff">500000</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">15</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">16</span>  <span style="color:#66d9ef">if</span>(argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">17</span>      usage(argv[<span style="color:#ae81ff">0</span>]);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">18</span>      exit(<span style="color:#ae81ff">0</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">19</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">20</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">21</span>  <span style="color:#75715e">/* initializing addrinfo structure list */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">22</span>        hints.ai_flags <span style="color:#f92672">=</span> AF_INET;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">23</span>        hints.ai_family <span style="color:#f92672">=</span> AF_UNSPEC;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">24</span>        hints.ai_socktype <span style="color:#f92672">=</span> SOCK_STREAM;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">25</span>        hints.ai_protocol <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">26</span>        hints.ai_addrlen <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">27</span>        hints.ai_canonname <span style="color:#f92672">=</span> NULL;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">28</span>        hints.ai_addr <span style="color:#f92672">=</span> NULL;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">29</span>        hints.ai_next <span style="color:#f92672">=</span> NULL;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">30</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">31</span>  <span style="color:#75715e">/* get IP info */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">32</span>  resv4 <span style="color:#f92672">=</span> inet_pton(AF_INET, argv[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>svr_addr4.sin_addr);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">33</span>  resv6 <span style="color:#f92672">=</span> inet_pton(AF_INET6, argv[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>svr_addr6.sin6_addr);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">34</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">35</span>  <span style="color:#75715e">/* entering http server presets in structure */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">36</span>  svr_addr4.sin_port <span style="color:#f92672">=</span>  htons((in_port_t) <span style="color:#ae81ff">80</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">37</span>  svr_addr4.sin_family <span style="color:#f92672">=</span> AF_INET;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">38</span>  svr_addr6.sin6_port <span style="color:#f92672">=</span>  htons((in_port_t) <span style="color:#ae81ff">80</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">39</span>  svr_addr6.sin6_family <span style="color:#f92672">=</span> AF_INET6;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">40</span>  sprintf(buffer, <span style="color:#e6db74">&#34;GET / HTTP/1.1</span><span style="color:#ae81ff">\r\n\r\n</span><span style="color:#e6db74">&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">41</span>      
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">42</span>  <span style="color:#75715e">/* checking for either IPv4 or IPv6 entered input */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">43</span>  <span style="color:#66d9ef">while</span> (status <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">44</span>      <span style="color:#66d9ef">if</span>(resv4 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">45</span>          <span style="color:#66d9ef">if</span>((trx_fd <span style="color:#f92672">=</span> socket(AF_INET, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">46</span>              err_msg(<span style="color:#e6db74">&#34;Error creating socket&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">47</span>          <span style="color:#66d9ef">if</span> ((setsockopt(trx_fd, SOL_SOCKET, SO_RCVTIMEO,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">48</span>                  (<span style="color:#66d9ef">struct</span> timeval <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>tt_wait,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">49</span>                  <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> timeval))) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">50</span>              err_msg(<span style="color:#e6db74">&#34;setsockopt()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">51</span>          <span style="color:#75715e">/* get out of the loop */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">52</span>          status <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">53</span>          get_http_ipv4(<span style="color:#f92672">&amp;</span>trx_fd, <span style="color:#f92672">&amp;</span>svr_addr4, buffer);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">54</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">55</span>      } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span>(resv6 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">56</span>          <span style="color:#66d9ef">if</span>((trx_fd <span style="color:#f92672">=</span> socket(AF_INET6, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">57</span>              err_msg(<span style="color:#e6db74">&#34;Error creating socket&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">58</span>          <span style="color:#66d9ef">if</span> ((setsockopt(trx_fd, SOL_SOCKET, SO_RCVTIMEO,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">59</span>                  (<span style="color:#66d9ef">struct</span> timeval <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>tt_wait,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">60</span>                  <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> timeval))) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">61</span>              err_msg(<span style="color:#e6db74">&#34;setsockopt()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">62</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">63</span>          <span style="color:#75715e">/* get out of the loop */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">64</span>          status <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">65</span>          get_http_ipv6(<span style="color:#f92672">&amp;</span>trx_fd, <span style="color:#f92672">&amp;</span>svr_addr6, buffer);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">66</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">67</span>      } <span style="color:#66d9ef">else</span> {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">68</span>          <span style="color:#66d9ef">if</span> ((getaddrinfo(argv[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>hints, <span style="color:#f92672">&amp;</span>rs)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">69</span>              err_msg(gai_strerror(status));
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">70</span>          resv4 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">71</span>          <span style="color:#66d9ef">for</span>(; rs <span style="color:#f92672">!=</span> NULL; rs <span style="color:#f92672">=</span> rs<span style="color:#f92672">-&gt;</span>ai_next){
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">72</span>              <span style="color:#66d9ef">if</span>(rs<span style="color:#f92672">-&gt;</span>ai_family <span style="color:#f92672">==</span> AF_INET) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">73</span>                  <span style="color:#75715e">/* typecasting result and assigning */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">74</span>                  pr <span style="color:#f92672">=</span>  (<span style="color:#66d9ef">struct</span> sockaddr_in <span style="color:#f92672">*</span>)rs<span style="color:#f92672">-&gt;</span>ai_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">75</span>                  svr_addr4.sin_addr <span style="color:#f92672">=</span> pr<span style="color:#f92672">-&gt;</span>sin_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">76</span>                  <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">77</span>              }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">78</span>          }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">79</span>          <span style="color:#75715e">/* freeing allocated struct rs memory */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">80</span>          freeaddrinfo(rs);       
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">81</span>      }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">82</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">83</span>  close(trx_fd);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">84</span>  exit(EXIT_SUCCESS);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">85</span>}</code></pre></div>
 
 <p>The main function program. Takes care of the socket structure initialization,
 hostname resolution structure allocations, and center point of the program&rsquo;s
 execution. There are two execution paths for the socket creation which is
 determined by the user&rsquo;s input of either IPv4 or IPv6.</p>
 
-<pre><code class="language-C">if ((getaddrinfo(argv[1], 0, &amp;hints, &amp;rs)) != 0)
-              err_msg(gai_strerror(status));
-          resv4 = 1;
-          for(; rs != NULL; rs = rs-&gt;ai_next){
-              if(rs-&gt;ai_family == AF_INET) {
-                  /* typecasting result and assigning */
-                  pr =  (struct sockaddr_in *)rs-&gt;ai_addr;
-                  svr_addr4.sin_addr = pr-&gt;sin_addr;
-                  break;
-              }
-}
-</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 0</span><span style="color:#66d9ef">if</span> ((getaddrinfo(argv[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>hints, <span style="color:#f92672">&amp;</span>rs)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 1</span>              err_msg(gai_strerror(status));
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 2</span>          resv4 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 3</span>          <span style="color:#66d9ef">for</span>(; rs <span style="color:#f92672">!=</span> NULL; rs <span style="color:#f92672">=</span> rs<span style="color:#f92672">-&gt;</span>ai_next){
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 4</span>              <span style="color:#66d9ef">if</span>(rs<span style="color:#f92672">-&gt;</span>ai_family <span style="color:#f92672">==</span> AF_INET) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 5</span>                  <span style="color:#75715e">/* typecasting result and assigning */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 6</span>                  pr <span style="color:#f92672">=</span>  (<span style="color:#66d9ef">struct</span> sockaddr_in <span style="color:#f92672">*</span>)rs<span style="color:#f92672">-&gt;</span>ai_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 7</span>                  svr_addr4.sin_addr <span style="color:#f92672">=</span> pr<span style="color:#f92672">-&gt;</span>sin_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 8</span>                  <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 9</span>              }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">10</span>}</code></pre></div>
 
 <p>These are the functions that handle the obtention of html data after host IP is
 processed. You can see there&rsquo;s no much difference to handling IPv4 and IPv6.</p>
