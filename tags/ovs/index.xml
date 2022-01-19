@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>OVS on Innercoder.dev</title>
@@ -17,13 +17,7 @@
       <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</guid>
-      <description>&lt;p&gt;The maturity reached by Software Defined Networking (SDN) in the lastest years
-is a very important one. We are at a point where we could see this architecture
-/framework become a standard. And what makes it so amazing is its fundamental
-idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
-is a tool used to create virtual bridges which can then connect virtual or
-physical hosts. It implements both traditional L2 switching protocols or
-Openflow.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
   </channel>

@@ -211,206 +211,191 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#intro">Intro</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="intro">Intro</h2>
-
-<hr />
-
+                <h2 id="intro">Intro</h2>
+<hr>
 <p>This post will be part of a series where device drivers will be presented and
 quickly analized for people that need a quick reference of how to make device
 drivers on an updated kernel. The driver presented here was tested on a 3.2 and
 3.16 Linux Kernel. I will make a driver with more features and test it on a
 newer kernel next time.</p>
-
 <p>The complete code is in its <a href="https://github.com/jarrocha/k_mod">github repository</a>.</p>
-
-<p>The purpose of this particular char driver is to display &ldquo;Hello World&rdquo; a
+<p>The purpose of this particular char driver is to display “Hello World” a
 certain amount of time when pass a parameter, if not passed, it will still
 do it for a default amount. Other features it has are, dynamic major number
 allocation and dynamic node creation. Once the device is initialized, it
 allocates a buffer to store and read a string from userspace.</p>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 1</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 2</span><span style="color:#75715e"> *       Filename:  chdx.c
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 3</span><span style="color:#75715e"> *    Description:  A character driver that displays &#34;Hello World!&#34;.
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 4</span><span style="color:#75715e"> *         Author:  Jaime Arrocha 
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 5</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 6</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 7</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;      /* for modules          */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 8</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt;            /* module_init, module_exit */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79"> 9</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/moduleparam.h&gt;     /* module parameters        */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">10</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/fs.h&gt;          /* file operations      */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">11</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/slab.h&gt;            /* kernel memory allocation */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">12</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/cdev.h&gt;            /* device registration      */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">13</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/device.h&gt;      /* udev class creation      */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">14</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;asm/uaccess.h&gt;       /* copy_to/from_user        */</span><span style="color:#75715e">
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">15</span><span style="color:#75715e">#define MOD_NAME &#34;chdx&#34;
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">16</span><span style="color:#75715e"></span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">17</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">18</span><span style="color:#75715e"> * global variables
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">19</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">20</span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>kbuf;              <span style="color:#75715e">/* kernel buffer for module    */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">21</span><span style="color:#66d9ef">static</span> dev_t first;          <span style="color:#75715e">/* device registration numbers */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">22</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> device <span style="color:#f92672">*</span>chdx_dev;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">23</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> cdev <span style="color:#f92672">*</span>chdx_cdev;      <span style="color:#75715e">/* char device structure   */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">24</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> class <span style="color:#f92672">*</span>chdx_cl;       <span style="color:#75715e">/* device class            */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">25</span><span style="color:#66d9ef">int</span> qty <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;             <span style="color:#75715e">/* paramenter variable     */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">26</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> count <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">27</span><span style="color:#66d9ef">static</span> size_t kbuf_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">28</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">29</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">30</span><span style="color:#75715e"> * function prototypes 
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">31</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">32</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">chdx_open</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">33</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">chdx_close</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">34</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_read</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>, <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>, size_t, loff_t <span style="color:#f92672">*</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">35</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_write</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>, size_t, loff_t <span style="color:#f92672">*</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">36</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">37</span><span style="color:#75715e">/* 
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">38</span><span style="color:#75715e"> * module paramenter prototype
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">39</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">40</span>module_param(qty, <span style="color:#66d9ef">int</span>, S_IRUGO<span style="color:#f92672">|</span>S_IWUSR);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">41</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">42</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">43</span><span style="color:#75715e"> * file operations structure initialization
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">44</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">45</span><span style="color:#66d9ef">struct</span> file_operations chdx_fops <span style="color:#f92672">=</span> {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">46</span>  .owner <span style="color:#f92672">=</span> THIS_MODULE,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">47</span>  .open <span style="color:#f92672">=</span> chdx_open,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">48</span>  .release <span style="color:#f92672">=</span> chdx_close,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">49</span>  .read <span style="color:#f92672">=</span> chdx_read,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">50</span>  .write <span style="color:#f92672">=</span> chdx_write,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">51</span>};</code></pre></div>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span style="color:#75715e"> *       Filename:  chdx.c
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span style="color:#75715e"> *    Description:  A character driver that displays &#34;Hello World!&#34;.
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span style="color:#75715e"> *         Author:  Jaime Arrocha 
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;      /* for modules          */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt;            /* module_init, module_exit */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/moduleparam.h&gt;     /* module parameters        */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/fs.h&gt;          /* file operations      */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/slab.h&gt;            /* kernel memory allocation */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/cdev.h&gt;            /* device registration      */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/device.h&gt;      /* udev class creation      */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;asm/uaccess.h&gt;       /* copy_to/from_user        */</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span style="color:#75715e">#define MOD_NAME &#34;chdx&#34;
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span style="color:#75715e"></span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span style="color:#75715e"> * global variables
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>kbuf;              <span style="color:#75715e">/* kernel buffer for module    */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span style="color:#66d9ef">static</span> dev_t first;          <span style="color:#75715e">/* device registration numbers */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> device <span style="color:#f92672">*</span>chdx_dev;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> cdev <span style="color:#f92672">*</span>chdx_cdev;      <span style="color:#75715e">/* char device structure   */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> class <span style="color:#f92672">*</span>chdx_cl;       <span style="color:#75715e">/* device class            */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span style="color:#66d9ef">int</span> qty <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;             <span style="color:#75715e">/* paramenter variable     */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> count <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span style="color:#66d9ef">static</span> size_t kbuf_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span style="color:#75715e"> * function prototypes 
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">chdx_open</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">chdx_close</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_read</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>, <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>, size_t, loff_t <span style="color:#f92672">*</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_write</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>, size_t, loff_t <span style="color:#f92672">*</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span><span style="color:#75715e">/* 
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span><span style="color:#75715e"> * module paramenter prototype
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span>module_param(qty, <span style="color:#66d9ef">int</span>, S_IRUGO<span style="color:#f92672">|</span>S_IWUSR);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span><span style="color:#75715e"> * file operations structure initialization
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span><span style="color:#66d9ef">struct</span> file_operations chdx_fops <span style="color:#f92672">=</span> {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span>  .owner <span style="color:#f92672">=</span> THIS_MODULE,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span>  .open <span style="color:#f92672">=</span> chdx_open,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span>  .release <span style="color:#f92672">=</span> chdx_close,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span>  .read <span style="color:#f92672">=</span> chdx_read,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span>  .write <span style="color:#f92672">=</span> chdx_write,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span>};</code></pre></div>
 <p>Headers, global varaibles, and prototypes. Several comments are inplace to
 explain the different sections.</p>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">55</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">chdx_init</span>(<span style="color:#66d9ef">void</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">56</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">57</span>  <span style="color:#66d9ef">int</span> ret_val <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">58</span>  <span style="color:#66d9ef">int</span> x;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">59</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">60</span>  <span style="color:#75715e">/* dynamic allocation of major number */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">61</span>  <span style="color:#66d9ef">if</span>((ret_val <span style="color:#f92672">=</span> alloc_chrdev_region(<span style="color:#f92672">&amp;</span>first, <span style="color:#ae81ff">0</span>, count, MOD_NAME)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">62</span>      dev_err(chdx_dev,<span style="color:#e6db74">&#34;Registration error&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">63</span>      <span style="color:#66d9ef">return</span> ret_val;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">64</span>  }
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">65</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">66</span>  <span style="color:#75715e">/* device registration */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">67</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(chdx_cdev <span style="color:#f92672">=</span> cdev_alloc())) {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">68</span>      dev_err(chdx_dev, <span style="color:#e6db74">&#34;cdev_alloc() failed&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">69</span>      <span style="color:#66d9ef">goto</span> unreg1;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">70</span>  }
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">71</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">72</span>  cdev_init(chdx_cdev, <span style="color:#f92672">&amp;</span>chdx_fops);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">73</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">74</span>  <span style="color:#75715e">/* dynamic allocation of kernel buffer */</span>   
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">75</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(kbuf <span style="color:#f92672">=</span> kmalloc(kbuf_size, GFP_KERNEL)))
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">76</span>      <span style="color:#66d9ef">goto</span> unreg2;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">77</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">78</span>  <span style="color:#66d9ef">if</span>((cdev_add(chdx_cdev, first, count)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">79</span>      dev_err(chdx_dev, <span style="color:#e6db74">&#34;cdev_add() failed&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">80</span>      <span style="color:#66d9ef">goto</span> unreg3;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">81</span>  }
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">82</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">83</span>      
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">84</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(chdx_cl <span style="color:#f92672">=</span> class_create(THIS_MODULE, MOD_NAME)))
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">85</span>      <span style="color:#66d9ef">goto</span> unreg3;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">86</span>  <span style="color:#66d9ef">if</span>((chdx_dev <span style="color:#f92672">=</span> device_create(chdx_cl, NULL, first, NULL, <span style="color:#e6db74">&#34;%s&#34;</span>,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">87</span>                   MOD_NAME)) <span style="color:#f92672">==</span> NULL)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">88</span>      <span style="color:#66d9ef">goto</span> unreg4;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">89</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">90</span>  <span style="color:#75715e">/* module registration test */</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">91</span>  <span style="color:#66d9ef">if</span> (qty <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">92</span>      qty <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">93</span>  <span style="color:#66d9ef">for</span>(x <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; x <span style="color:#f92672">&lt;</span> qty; x<span style="color:#f92672">++</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">94</span>      dev_info(chdx_dev, <span style="color:#e6db74">&#34;Hello World!&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">95</span>  dev_info(chdx_dev, <span style="color:#e6db74">&#34;Major: %d, Minor: %d&#34;</span>, MAJOR(first), MINOR(first));
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">96</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">97</span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">98</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">99</span>  unreg4: device_destroy(chdx_cl, first);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">100</span>  unreg3: kfree(kbuf);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">101</span>  unreg2: cdev_del(chdx_cdev);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">102</span>  unreg1: unregister_chrdev_region(first, count);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">103</span>  <span style="color:#66d9ef">return</span> ret_val;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">104</span>}</code></pre></div>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">chdx_init</span>(<span style="color:#66d9ef">void</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span>  <span style="color:#66d9ef">int</span> ret_val <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58</span>  <span style="color:#66d9ef">int</span> x;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span>  <span style="color:#75715e">/* dynamic allocation of major number */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>  <span style="color:#66d9ef">if</span>((ret_val <span style="color:#f92672">=</span> alloc_chrdev_region(<span style="color:#f92672">&amp;</span>first, <span style="color:#ae81ff">0</span>, count, MOD_NAME)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span>      dev_err(chdx_dev,<span style="color:#e6db74">&#34;Registration error&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63</span>      <span style="color:#66d9ef">return</span> ret_val;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66</span>  <span style="color:#75715e">/* device registration */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(chdx_cdev <span style="color:#f92672">=</span> cdev_alloc())) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">68</span>      dev_err(chdx_dev, <span style="color:#e6db74">&#34;cdev_alloc() failed&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69</span>      <span style="color:#66d9ef">goto</span> unreg1;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">72</span>  cdev_init(chdx_cdev, <span style="color:#f92672">&amp;</span>chdx_fops);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">73</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">74</span>  <span style="color:#75715e">/* dynamic allocation of kernel buffer */</span>   
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">75</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(kbuf <span style="color:#f92672">=</span> kmalloc(kbuf_size, GFP_KERNEL)))
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">76</span>      <span style="color:#66d9ef">goto</span> unreg2;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">77</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">78</span>  <span style="color:#66d9ef">if</span>((cdev_add(chdx_cdev, first, count)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">79</span>      dev_err(chdx_dev, <span style="color:#e6db74">&#34;cdev_add() failed&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">80</span>      <span style="color:#66d9ef">goto</span> unreg3;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">81</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">82</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">83</span>      
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">84</span>  <span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>(chdx_cl <span style="color:#f92672">=</span> class_create(THIS_MODULE, MOD_NAME)))
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">85</span>      <span style="color:#66d9ef">goto</span> unreg3;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">86</span>  <span style="color:#66d9ef">if</span>((chdx_dev <span style="color:#f92672">=</span> device_create(chdx_cl, NULL, first, NULL, <span style="color:#e6db74">&#34;%s&#34;</span>,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">87</span>                   MOD_NAME)) <span style="color:#f92672">==</span> NULL)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">88</span>      <span style="color:#66d9ef">goto</span> unreg4;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">89</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">90</span>  <span style="color:#75715e">/* module registration test */</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">91</span>  <span style="color:#66d9ef">if</span> (qty <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">92</span>      qty <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">93</span>  <span style="color:#66d9ef">for</span>(x <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; x <span style="color:#f92672">&lt;</span> qty; x<span style="color:#f92672">++</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">94</span>      dev_info(chdx_dev, <span style="color:#e6db74">&#34;Hello World!&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">95</span>  dev_info(chdx_dev, <span style="color:#e6db74">&#34;Major: %d, Minor: %d&#34;</span>, MAJOR(first), MINOR(first));
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">96</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">97</span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">98</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">99</span>  unreg4: device_destroy(chdx_cl, first);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">100</span>  unreg3: kfree(kbuf);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">101</span>  unreg2: cdev_del(chdx_cdev);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">102</span>  unreg1: unregister_chrdev_region(first, count);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">103</span>  <span style="color:#66d9ef">return</span> ret_val;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">104</span>}</code></pre></div>
 <p>The init function. Each section is commented for its purpose done. Goto
 statements are used for easy error exits. It makes the code more readable in
 these cases. Extra attention is needed to the order of initialization of the
-different registration hearders. We should only call <strong>cdev_add()</strong> only when
+different registration hearders. We should only call <!-- raw HTML omitted -->cdev_add()<!-- raw HTML omitted --> only when
 everything is in place in regards to the character driver major and minor numbers
-and its file operation structure. After that, we call <strong>class_create()</strong> and
-<strong>device_create()</strong>, to have <strong>udev()</strong> perform <strong>mknod()</strong> for us.</p>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">106</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">chdx_exit</span>(<span style="color:#66d9ef">void</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">107</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">108</span>  device_destroy(chdx_cl, first);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">109</span>  class_destroy(chdx_cl);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">110</span>  kfree(kbuf);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">111</span>  cdev_del(chdx_cdev);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">112</span>  unregister_chrdev_region(first, count);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">113</span>  dev_info(chdx_dev, <span style="color:#e6db74">&#34;chdx unloaded&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">114</span>}</code></pre></div>
-
+and its file operation structure. After that, we call <!-- raw HTML omitted -->class_create()<!-- raw HTML omitted --> and
+<!-- raw HTML omitted -->device_create()<!-- raw HTML omitted -->, to have <!-- raw HTML omitted -->udev()<!-- raw HTML omitted --> perform <!-- raw HTML omitted -->mknod()<!-- raw HTML omitted --> for us.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">106</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">chdx_exit</span>(<span style="color:#66d9ef">void</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">107</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">108</span>  device_destroy(chdx_cl, first);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">109</span>  class_destroy(chdx_cl);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">110</span>  kfree(kbuf);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">111</span>  cdev_del(chdx_cdev);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">112</span>  unregister_chrdev_region(first, count);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">113</span>  dev_info(chdx_dev, <span style="color:#e6db74">&#34;chdx unloaded&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">114</span>}</code></pre></div>
 <p>The exit function. Takes care of everything once the driver is unloaded. Without
 this function, the driver will not unload. The order on which functions are
 called is very important.</p>
-
 <p>The read and write function, they makes sure that userspace does not read or
 write beyond the allocated space in kernel. Special functions are used to handle
 pointers received from userspace. These pointers need to be check to be safe to
 use by the kernel. If not, undefined behavior with memory references will likely
 happen.</p>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">131</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_read</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fl, <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>ubuf, size_t ubuf_len,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">132</span>                         loff_t <span style="color:#f92672">*</span>off)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">133</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">134</span>        <span style="color:#66d9ef">int</span> rbytes, maxbytes, bytes_to_rd;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">135</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">136</span>        maxbytes <span style="color:#f92672">=</span> kbuf_size <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>off;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">137</span>        bytes_to_rd <span style="color:#f92672">=</span> maxbytes <span style="color:#f92672">&gt;</span> ubuf_len<span style="color:#f92672">?</span> ubuf_len : maxbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">138</span>        <span style="color:#66d9ef">if</span> (bytes_to_rd <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">139</span>                dev_info(chdx_dev,<span style="color:#e6db74">&#34;End of buffer&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">140</span>        rbytes <span style="color:#f92672">=</span> bytes_to_rd <span style="color:#f92672">-</span> copy_to_user(ubuf, kbuf <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>off, bytes_to_rd);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">141</span>        <span style="color:#f92672">*</span>off <span style="color:#f92672">+=</span> rbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">142</span>        dev_info(chdx_dev, <span style="color:#e6db74">&#34;%d bytes read</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, rbytes);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">143</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">144</span>        <span style="color:#66d9ef">return</span> rbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">145</span>}
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">146</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">147</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">148</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_write</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fl, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>ubuf,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">149</span>                          size_t ubuf_len, loff_t <span style="color:#f92672">*</span>off)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">150</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">151</span>        <span style="color:#66d9ef">int</span> wbytes, maxbytes, bytes_to_wr;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">152</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">153</span>        maxbytes <span style="color:#f92672">=</span> kbuf_size <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>off;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">154</span>        bytes_to_wr <span style="color:#f92672">=</span> maxbytes <span style="color:#f92672">&gt;</span> ubuf_len <span style="color:#f92672">?</span> ubuf_len : maxbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">155</span>        <span style="color:#66d9ef">if</span> (bytes_to_wr <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">156</span>                dev_info(chdx_dev, <span style="color:#e6db74">&#34;Reached end of the device on a write&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">157</span>        wbytes <span style="color:#f92672">=</span> bytes_to_wr <span style="color:#f92672">-</span> copy_from_user(kbuf <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>off, ubuf, bytes_to_wr);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">158</span>        <span style="color:#f92672">*</span>off <span style="color:#f92672">+=</span> wbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">159</span>        dev_info(chdx_dev, <span style="color:#e6db74">&#34;%d bytes written</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, wbytes);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">160</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">161</span>        <span style="color:#66d9ef">return</span> wbytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">162</span>}</code></pre></div>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">131</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_read</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fl, <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>ubuf, size_t ubuf_len,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">132</span>                         loff_t <span style="color:#f92672">*</span>off)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">133</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">134</span>        <span style="color:#66d9ef">int</span> rbytes, maxbytes, bytes_to_rd;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">135</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">136</span>        maxbytes <span style="color:#f92672">=</span> kbuf_size <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>off;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">137</span>        bytes_to_rd <span style="color:#f92672">=</span> maxbytes <span style="color:#f92672">&gt;</span> ubuf_len<span style="color:#f92672">?</span> ubuf_len : maxbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">138</span>        <span style="color:#66d9ef">if</span> (bytes_to_rd <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">139</span>                dev_info(chdx_dev,<span style="color:#e6db74">&#34;End of buffer&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">140</span>        rbytes <span style="color:#f92672">=</span> bytes_to_rd <span style="color:#f92672">-</span> copy_to_user(ubuf, kbuf <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>off, bytes_to_rd);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">141</span>        <span style="color:#f92672">*</span>off <span style="color:#f92672">+=</span> rbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">142</span>        dev_info(chdx_dev, <span style="color:#e6db74">&#34;%d bytes read</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, rbytes);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">143</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">144</span>        <span style="color:#66d9ef">return</span> rbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">145</span>}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">146</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">147</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">148</span><span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">chdx_write</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fl, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>ubuf,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">149</span>                          size_t ubuf_len, loff_t <span style="color:#f92672">*</span>off)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">150</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">151</span>        <span style="color:#66d9ef">int</span> wbytes, maxbytes, bytes_to_wr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">152</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">153</span>        maxbytes <span style="color:#f92672">=</span> kbuf_size <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>off;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">154</span>        bytes_to_wr <span style="color:#f92672">=</span> maxbytes <span style="color:#f92672">&gt;</span> ubuf_len <span style="color:#f92672">?</span> ubuf_len : maxbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">155</span>        <span style="color:#66d9ef">if</span> (bytes_to_wr <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">156</span>                dev_info(chdx_dev, <span style="color:#e6db74">&#34;Reached end of the device on a write&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">157</span>        wbytes <span style="color:#f92672">=</span> bytes_to_wr <span style="color:#f92672">-</span> copy_from_user(kbuf <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>off, ubuf, bytes_to_wr);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">158</span>        <span style="color:#f92672">*</span>off <span style="color:#f92672">+=</span> wbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">159</span>        dev_info(chdx_dev, <span style="color:#e6db74">&#34;%d bytes written</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, wbytes);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">160</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">161</span>        <span style="color:#66d9ef">return</span> wbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">162</span>}</code></pre></div>
 <p>A short demonstration of the driver.</p>
-
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ make
 make -C /lib/modules/3.2.0-4-686-pae/build  M<span style="color:#f92672">=</span>/home/jaime/kmod modules;
-make<span style="color:#f92672">[</span><span style="color:#ae81ff">1</span><span style="color:#f92672">]</span>: Entering directory <span style="color:#e6db74">`</span>/usr/src/linux-headers-3.2.0-4-686-pae<span style="color:#e6db74">&#39;
+make<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>: Entering directory <span style="color:#e6db74">`</span>/usr/src/linux-headers-3.2.0-4-686-pae<span style="color:#e6db74">&#39;
 </span><span style="color:#e6db74">  CC [M]  /home/jaime/kmod/chdx.o
 </span><span style="color:#e6db74">  Building modules, stage 2.
 </span><span style="color:#e6db74">  MODPOST 1 modules
@@ -420,19 +405,18 @@ make<span style="color:#f92672">[</span><span style="color:#ae81ff">1</span><spa
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ sudo insmod chdx.ko qty<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span>
 <span style="color:#f92672">[</span>sudo<span style="color:#f92672">]</span> password <span style="color:#66d9ef">for</span> jaime:
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ dmesg | tail
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006310<span style="color:#f92672">]</span> chdx chdx: Hello World!
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006312<span style="color:#f92672">]</span> chdx chdx: Hello World!
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006313<span style="color:#f92672">]</span> chdx chdx: Hello World!
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006314<span style="color:#f92672">]</span> chdx chdx: Hello World!
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006314<span style="color:#f92672">]</span> chdx chdx: Hello World!
-<span style="color:#f92672">[</span>  <span style="color:#ae81ff">580</span>.006315<span style="color:#f92672">]</span> chdx chdx: Major: <span style="color:#ae81ff">251</span>, Minor: <span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>  580.006310<span style="color:#f92672">]</span> chdx chdx: Hello World!
+<span style="color:#f92672">[</span>  580.006312<span style="color:#f92672">]</span> chdx chdx: Hello World!
+<span style="color:#f92672">[</span>  580.006313<span style="color:#f92672">]</span> chdx chdx: Hello World!
+<span style="color:#f92672">[</span>  580.006314<span style="color:#f92672">]</span> chdx chdx: Hello World!
+<span style="color:#f92672">[</span>  580.006314<span style="color:#f92672">]</span> chdx chdx: Hello World!
+<span style="color:#f92672">[</span>  580.006315<span style="color:#f92672">]</span> chdx chdx: Major: 251, Minor: <span style="color:#ae81ff">0</span>
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ sudo chmod <span style="color:#ae81ff">666</span> /dev/chdx
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ ls -l /dev/chdx
-crw-rw-rw- <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">251</span>, <span style="color:#ae81ff">0</span> Jul  <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">13</span>:07 /dev/chdx
+crw-rw-rw- <span style="color:#ae81ff">1</span> root root 251, <span style="color:#ae81ff">0</span> Jul  <span style="color:#ae81ff">3</span> 13:07 /dev/chdx
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ echo <span style="color:#e6db74">&#34;Linux Kernel&#34;</span> &gt; /dev/chdx
 <span style="color:#f92672">[</span>jaime@LinuxServer kmod<span style="color:#f92672">]</span>$ cat /dev/chdx
 Linux Kernel</code></pre></div>
-
 <p>More to come soon&hellip;</p>
 
 
@@ -475,58 +459,40 @@ Linux Kernel</code></pre></div>
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -535,9 +501,27 @@ Linux Kernel</code></pre></div>
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

@@ -207,36 +207,23 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#intro">Intro</a></li>
-<li><a href="#complete-code">Complete Code</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#complete-code">Complete Code</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
                 <h2 id="intro">Intro</h2>
-
-<hr />
-
-<p>This post serves as a explanation of the basics of a TCP socket server, which
-serves as the base to a future post explaining the basics of a web server.</p>
-
-<p><strong>Note:</strong> the complete code of an older version is fully posted in the end.
-Check my github repo for an updated version. <a href="https://github.com/jarrocha/psockets/tree/master/tcp_server">Link</a>.</p>
-
-<p>There are good tutorials out there that explain each of the functions of the
-sockets POSIX API in detail so this post will serve mostly to understand the
-overall basics.</p>
-
-<p>As we all know, a TCP connection is also know a connection oriented protocol
-which handles acknoledgment of bytes when they are received and sent. So it
-makes sure that all packets are ordered and complete for each transaction.</p>
-
-<p>How do we start a TCP socket connection? Below is a graph of the transition
-between sockets system calls to have a TCP server up and running.</p>
-
+<hr>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <pre><code>Connection Establishment         --------
 TCP (Stream Sockets)             |      |
 Server (Passive Socket)          v
@@ -244,233 +231,166 @@ socket() --&gt; bind() --&gt; listen() --&gt; accept() --&gt; read()/write() --&
                                         |            |   ^
 Client (Active Socket)            ^     v            v   |
 socket() ----&gt; connect() ---------|-------------&gt; read()/write() --&gt; close()
-</code></pre>
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#f92672">-</span>socket()<span style="color:#f92672">:</span> creates a new socket. Opens a socket descriptor.
+<span style="color:#f92672">-</span>bind()<span style="color:#f92672">:</span> usually used in servers, binds a socket to an existing address.
+<span style="color:#f92672">-</span>listen()<span style="color:#f92672">:</span> allows a stream socket to accept incoming connections.
+<span style="color:#f92672">-</span>accept()<span style="color:#f92672">:</span> consumes a connection from a peer application on a listening stream socket.
+<span style="color:#f92672">-</span>connect()<span style="color:#f92672">:</span> establish a connection with another socket <span style="color:#66d9ef">if</span> server is available.
+            If not it waits <span style="color:#66d9ef">for</span> up to a number of pending connections.
 
-<p>A server starts by creating a socket descriptor, this particular socket is only
-used by the server to listen for incoming connections. It then binds a
-particular socket descriptor with an IP address and then sets to listen on that
-socket and IP address. Then the server sits on the accept function call. When
-the server gets a connection request with the accept function call, it creates
-another socket descriptor which is used for I/O with the client. When the I/O
-with the client is done, the server closes the socket descriptor used for I/O
-and uses the listening descriptor once again to listen for a new client.</p>
-
-<p>On the client side is much easier, you create socket descriptor for the server
-you are going to connect to and fill int some properties for this particular
-host you are after and then call connect(). If the call was successful, your
-program is ready for I/O with the server.</p>
-
-<p>Here&rsquo;s a quick summary of the function calls:</p>
-
-<pre><code class="language-c">-socket(): creates a new socket. Opens a socket descriptor.
--bind(): usually used in servers, binds a socket to an existing address.
--listen(): allows a stream socket to accept incoming connections.
--accept(): consumes a connection from a peer application on a listening stream socket.
--connect(): establish a connection with another socket if server is available.
-            If not it waits for up to a number of pending connections.
-
--calling socket() is similar to calling open. A file descriptor will be 
- obtained which can be used for I/O. When the application is done, the descriptor needs
+<span style="color:#f92672">-</span>calling socket() is similar to calling open. A file descriptor will be 
+ obtained which can be used <span style="color:#66d9ef">for</span> I<span style="color:#f92672">/</span>O. When the application is done, the descriptor needs
  to be closed.
 
- -socket I/O can be performed using the convetional read() and write() system 
- calls, or using a range of socket-specific system calls (e.g., send(), recv(),
- sendto(), and recvfrom()). By default, these system calls can block. But they
+ <span style="color:#f92672">-</span>socket I<span style="color:#f92672">/</span>O can be performed using the convetional read() and write() system 
+ calls, or using a range of socket<span style="color:#f92672">-</span>specific system calls (e.g., send(), recv(),
+ sendto(), and recvfrom()). By <span style="color:#66d9ef">default</span>, these system calls can block. But they
  can be run atomically by using the fcntl() F_SETFL operation to enable the 
  O_NONBLOCK open file status flag.
-</code></pre>
-
-<p>So now that we get an idea of what the system calls do, I&rsquo;m going to show you
-some actual code. This code belongs to a TCP server implementation in my
-<a href="https://github.com/jarrocha/psockets/tree/master/tcp_server">github account</a>. 
-I am going to analyze it in pieces.</p>
-
-<pre><code class="language-c">/* server socket variables */
-int sockfd, new_sockfd;
-struct sockaddr_in host_addr, client_addr;
-socklen_t sin_size = sizeof(struct sockaddr_in);
-int recv_length = 1, yes = 1;
-</code></pre>
-
-<p>This section declares and defines our basic variables for both of server and
-clients. <em>sockfd</em> is used to establish socket connections and <em>new_sockfd</em> is
-used for I/O. <em>struct sockaddr_in</em> is the structure holding everything regarding
-IP addressing for both the server and client in particular for IPv4. The rest of
-the variables are mostly to enable options for other socket system calls.</p>
-
-<pre><code class="language-c">/* defining listening socket descriptor */
-  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-      perror(&quot;in socket&quot;);
-  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(int))
-          == -1)
-      perror(&quot;setting socket option SO_REUSEADDR&quot;);
-</code></pre>
-
-<p>Here we finally create our socket descriptor to accept connections from clients.
-And use <em>setsockoptions</em> to enable some beneficial options for our sockets.
-Explaining this options will take us out of scope, but to get an idea, they help
-in re-using a previously use address when binding and restarting the tcp server.
-You can see that for socket we specify that we are using TCP and IPv4.</p>
-
-<pre><code class="language-c">/* initializing server address socket structure */
-  host_addr.sin_family = AF_INET;       /* host byte order */
-  host_addr.sin_port = htons(S_PORT); /* port, network byte order */
-  host_addr.sin_addr.s_addr = 0;     /* use host address */
-</code></pre>
-
-<p>This piece fills some values for our server address structure. We are specifying
-the use of IPv4 and port number to use. See that we are not specifying an IP
-address. We are telling the kernel to automatically fill it with the current
-address of our active interface.</p>
-
-<pre><code class="language-c">/* bind socket to IP address */
-  if (bind(sockfd, (struct sockaddr *)&amp;host_addr, sizeof(struct sockaddr))
-          == -1)
-      perror(&quot;binding to socket&quot;);
-</code></pre>
-
-<p>After we specify our address structure and socket descriptor we bind the socket
-descriptor to the current IP on the given port.</p>
-
-<pre><code class="language-c">/* listen on socket */
-  if (listen(sockfd, 5) == -1)
-      perror(&quot;listening on socket&quot;);
-</code></pre>
-
-<p>The call to <em>listen()</em> opens the socket to accept incoming connections up to a
-maximum of 5 pending connections. All connections are sent into a queue until a
-call to <em>accept()</em> consumes a connection.</p>
-
-<pre><code class="language-c">new_sockfd = accept(sockfd, (struct sockaddr *) &amp;client_addr,
-               &amp;sin_size);
-</code></pre>
-
-<p>This last piece accepts an incoming connection returning a new socket
-descriptor. This is the descriptor that needs to be use for the read()/write()
-system calls. These are the ones that handle back and forth communication between
-client and server.</p>
-
-<p>All the piece of code presented so far is the basic structure of implementing an
-TCP server. After this, pretty much anything can be done. A web server
-is a good idea. It teaches how to go from RFC details to an actual working
-program. It is just amazing to see when you get your own web page and server
-handling requests from a web browser. Other examples are a proxy server, network
-scanners, and sniffers.</p>
-
-<p>Check the code, edit, and improve on it. Let me know if you have any question in
-the comments section.</p>
-
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* server socket variables */</span>
+<span style="color:#66d9ef">int</span> sockfd, new_sockfd;
+<span style="color:#66d9ef">struct</span> sockaddr_in host_addr, client_addr;
+socklen_t sin_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr_in);
+<span style="color:#66d9ef">int</span> recv_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, yes <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* defining listening socket descriptor */</span>
+  <span style="color:#66d9ef">if</span> ((sockfd <span style="color:#f92672">=</span> socket(AF_INET, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;in socket&#34;</span>);
+  <span style="color:#66d9ef">if</span> (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, <span style="color:#f92672">&amp;</span>yes, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>))
+          <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;setting socket option SO_REUSEADDR&#34;</span>);
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* initializing server address socket structure */</span>
+  host_addr.sin_family <span style="color:#f92672">=</span> AF_INET;       <span style="color:#75715e">/* host byte order */</span>
+  host_addr.sin_port <span style="color:#f92672">=</span> htons(S_PORT); <span style="color:#75715e">/* port, network byte order */</span>
+  host_addr.sin_addr.s_addr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;     <span style="color:#75715e">/* use host address */</span>
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* bind socket to IP address */</span>
+  <span style="color:#66d9ef">if</span> (bind(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>host_addr, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr))
+          <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;binding to socket&#34;</span>);
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* listen on socket */</span>
+  <span style="color:#66d9ef">if</span> (listen(sockfd, <span style="color:#ae81ff">5</span>) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;listening on socket&#34;</span>);
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">new_sockfd <span style="color:#f92672">=</span> accept(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>client_addr,
+               <span style="color:#f92672">&amp;</span>sin_size);
+</code></pre></div><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <h2 id="complete-code">Complete Code</h2>
+<hr>
+<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">
+<span style="color:#75715e">/*
+</span><span style="color:#75715e"> * A simple server to demonstrate TCP sockets implementation. The server
+</span><span style="color:#75715e"> * takes input from server and shows dump of the data.
+</span><span style="color:#75715e"> */</span>
 
-<hr />
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/socket.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;netinet/in.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;arpa/inet.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#define DATA 50
+</span><span style="color:#75715e">#define S_PORT 7890
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">dump</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>);
 
-<p>Here is the complete code. The <em>dump()</em> function was taken from <a href="http://www.amazon.com/Hacking-Art-Exploitation-Jon-Erickson/dp/1593271441/ref=sr_1_1?s=books&amp;ie=UTF8&amp;qid=1454054525&amp;sr=1-1&amp;keywords=jon+erickson">Jon Erickson&rsquo;s book</a></p>
-
-<pre><code class="language-C">
-/*
- * A simple server to demonstrate TCP sockets implementation. The server
- * takes input from server and shows dump of the data.
- */
-
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;sys/socket.h&gt;
-#include &lt;netinet/in.h&gt;
-#include &lt;arpa/inet.h&gt;
-
-#define DATA 50
-#define S_PORT 7890
-
-void dump(char *, const unsigned int);
-
-int main(void)
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
 {
-  /* server socket variables */
-  int sockfd, new_sockfd;
-  struct sockaddr_in host_addr, client_addr;
-  socklen_t sin_size = sizeof(struct sockaddr_in);
-  int recv_length = 1, yes = 1;
+  <span style="color:#75715e">/* server socket variables */</span>
+  <span style="color:#66d9ef">int</span> sockfd, new_sockfd;
+  <span style="color:#66d9ef">struct</span> sockaddr_in host_addr, client_addr;
+  socklen_t sin_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr_in);
+  <span style="color:#66d9ef">int</span> recv_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, yes <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
   
-  /* data holding */
-  char buffer[1024];
+  <span style="color:#75715e">/* data holding */</span>
+  <span style="color:#66d9ef">char</span> buffer[<span style="color:#ae81ff">1024</span>];
 
-  /* defining listening socket descriptor */
-  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-      perror(&quot;in socket&quot;);
-  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(int))
-          == -1)
-      perror(&quot;setting socket option SO_REUSEADDR&quot;);
+  <span style="color:#75715e">/* defining listening socket descriptor */</span>
+  <span style="color:#66d9ef">if</span> ((sockfd <span style="color:#f92672">=</span> socket(AF_INET, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;in socket&#34;</span>);
+  <span style="color:#66d9ef">if</span> (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, <span style="color:#f92672">&amp;</span>yes, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>))
+          <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;setting socket option SO_REUSEADDR&#34;</span>);
   
-  /* initializing server address socket structure */
-  host_addr.sin_family = AF_INET;       /* host byte order */
-  host_addr.sin_port = htons(S_PORT); /* port, network byte order */
-  host_addr.sin_addr.s_addr = 0;     /* use host address */
+  <span style="color:#75715e">/* initializing server address socket structure */</span>
+  host_addr.sin_family <span style="color:#f92672">=</span> AF_INET;       <span style="color:#75715e">/* host byte order */</span>
+  host_addr.sin_port <span style="color:#f92672">=</span> htons(S_PORT); <span style="color:#75715e">/* port, network byte order */</span>
+  host_addr.sin_addr.s_addr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;     <span style="color:#75715e">/* use host address */</span>
 
-  /* zero the rest of struct */
-  memset(&amp;(host_addr.sin_zero), '\0', sizeof(host_addr.sin_zero));
+  <span style="color:#75715e">/* zero the rest of struct */</span>
+  memset(<span style="color:#f92672">&amp;</span>(host_addr.sin_zero), <span style="color:#e6db74">&#39;\0&#39;</span>, <span style="color:#66d9ef">sizeof</span>(host_addr.sin_zero));
 
-  /* bind socket to IP address */
-  if (bind(sockfd, (struct sockaddr *)&amp;host_addr, sizeof(struct sockaddr))
-          == -1)
-      perror(&quot;binding to socket&quot;);
+  <span style="color:#75715e">/* bind socket to IP address */</span>
+  <span style="color:#66d9ef">if</span> (bind(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>host_addr, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr))
+          <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;binding to socket&#34;</span>);
   
-  /* listen on socket */
-  if (listen(sockfd, 5) == -1)
-      perror(&quot;listening on socket&quot;);
+  <span style="color:#75715e">/* listen on socket */</span>
+  <span style="color:#66d9ef">if</span> (listen(sockfd, <span style="color:#ae81ff">5</span>) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+      perror(<span style="color:#e6db74">&#34;listening on socket&#34;</span>);
   
-  /* main procedure */
-  while (1) {
-      new_sockfd = accept(sockfd, (struct sockaddr *) &amp;client_addr,
-               &amp;sin_size);
-      if (new_sockfd == -1)
-          perror(&quot;accepting connection&quot;);
-      printf(&quot;server: got connection from %s port %d\n&quot;,
+  <span style="color:#75715e">/* main procedure */</span>
+  <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {
+      new_sockfd <span style="color:#f92672">=</span> accept(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>client_addr,
+               <span style="color:#f92672">&amp;</span>sin_size);
+      <span style="color:#66d9ef">if</span> (new_sockfd <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+          perror(<span style="color:#e6db74">&#34;accepting connection&#34;</span>);
+      printf(<span style="color:#e6db74">&#34;server: got connection from %s port %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
           inet_ntoa(client_addr.sin_addr),
           ntohs(client_addr.sin_port));
-      recv_length = recv(new_sockfd, &amp;buffer, DATA, 0);
+      recv_length <span style="color:#f92672">=</span> recv(new_sockfd, <span style="color:#f92672">&amp;</span>buffer, DATA, <span style="color:#ae81ff">0</span>);
 
-      while (recv_length &gt; 0) {
-          printf(&quot;RECV: %d bytes\n&quot;, recv_length);
+      <span style="color:#66d9ef">while</span> (recv_length <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+          printf(<span style="color:#e6db74">&#34;RECV: %d bytes</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, recv_length);
           dump(buffer, recv_length);
-          recv_length = recv(new_sockfd, &amp;buffer, DATA, 0);
+          recv_length <span style="color:#f92672">=</span> recv(new_sockfd, <span style="color:#f92672">&amp;</span>buffer, DATA, <span style="color:#ae81ff">0</span>);
       }
   
       close(new_sockfd);
   }
-  return 0;
+  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 }
 
-/* dumps raw memory in hex byte and printable split format */
-void dump(char *data_buffer, const unsigned int length)
+<span style="color:#75715e">/* dumps raw memory in hex byte and printable split format */</span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">dump</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>data_buffer, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> length)
 {
-  unsigned char byte;
-  unsigned int i, j;
+  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> byte;
+  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> i, j;
   
-  for (i = 0; i &lt; length; i++) {
-      byte = data_buffer[i];
-      printf(&quot;%02x &quot;, data_buffer[i]);  /* displays byte in hex */
+  <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> length; i<span style="color:#f92672">++</span>) {
+      byte <span style="color:#f92672">=</span> data_buffer[i];
+      printf(<span style="color:#e6db74">&#34;%02x &#34;</span>, data_buffer[i]);  <span style="color:#75715e">/* displays byte in hex */</span>
       
-      if (((i % 16) == 15) || (i == length - 1)) {
-          for (j = 0; j &lt; 15 - (i % 16); j++)
-              printf(&quot;   &quot;);
-          printf(&quot;| &quot;);
-          /* display printable bytes from line */
-          for (j = (i - (i % 16)); j &lt;= i; j++) {
-              byte = data_buffer[j];
-              /* outside printable char range */
-              if ((byte &gt; 31) &amp;&amp; (byte &lt; 127))
-                  printf(&quot;%c&quot;, byte);
-              else
-                  printf(&quot;.&quot;);
+      <span style="color:#66d9ef">if</span> (((i <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">15</span>) <span style="color:#f92672">||</span> (i <span style="color:#f92672">==</span> length <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)) {
+          <span style="color:#66d9ef">for</span> (j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">15</span> <span style="color:#f92672">-</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span>); j<span style="color:#f92672">++</span>)
+              printf(<span style="color:#e6db74">&#34;   &#34;</span>);
+          printf(<span style="color:#e6db74">&#34;| &#34;</span>);
+          <span style="color:#75715e">/* display printable bytes from line */</span>
+          <span style="color:#66d9ef">for</span> (j <span style="color:#f92672">=</span> (i <span style="color:#f92672">-</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span>)); j <span style="color:#f92672">&lt;=</span> i; j<span style="color:#f92672">++</span>) {
+              byte <span style="color:#f92672">=</span> data_buffer[j];
+              <span style="color:#75715e">/* outside printable char range */</span>
+              <span style="color:#66d9ef">if</span> ((byte <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">31</span>) <span style="color:#f92672">&amp;&amp;</span> (byte <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">127</span>))
+                  printf(<span style="color:#e6db74">&#34;%c&#34;</span>, byte);
+              <span style="color:#66d9ef">else</span>
+                  printf(<span style="color:#e6db74">&#34;.&#34;</span>);
           }
-          /* end of the dump line (each line 16 bytes) */
-          printf(&quot;\n&quot;);
+          <span style="color:#75715e">/* end of the dump line (each line 16 bytes) */</span>
+          printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
       }
   }
 }
-</code></pre>
+</code></pre></div>
 
                 
 
@@ -511,58 +431,40 @@ void dump(char *data_buffer, const unsigned int length)
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -571,9 +473,27 @@ void dump(char *data_buffer, const unsigned int length)
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

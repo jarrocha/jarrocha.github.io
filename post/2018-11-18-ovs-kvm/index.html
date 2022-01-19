@@ -222,233 +222,56 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
+                <nav id="TableOfContents"></nav>
                 
-                
-                <p>The maturity reached by Software Defined Networking (SDN) in the lastest years
-is a very important one. We are at a point where we could see this architecture
-/framework become a standard. And what makes it so amazing is its fundamental
-idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
-is a tool used to create virtual bridges which can then connect virtual or
-physical hosts. It implements both traditional L2 switching protocols or
-Openflow.</p>
-
-<p>The goal of this post is to use our QEMU-KVM hypervisor to bring up a virtual
-machine configured as a OpenvSwitch (OVS) server which will then virtualize other
-machines which will be chained together with it. In other words, it could be
-also considered as a OVS virtual lab, but these concepts could easily be made
-for production environments. The procedure show in this post contains no
-automation scripts, the reason is that to really understand what&rsquo;s going on, the
-user must do each steps and check the output. Once the procedure starts to make
-sense, you will begin to think of ways to automate all this.</p>
-
-<h4>What is <a href="http://openvswitch.org/">OpenvSwitch</a>?</h4>
-
-<p>OVS is a switching application used for both virtualized environment and actual
-switch hardware. Many current solutions use it for both cases.</p>
-
-<h2>Procedure</h2>
-
-<h4>What Linux distro to use?</h4>
-
-<p>Qemu and OVS are available for almost all distributions out there. For the sake
-of prototyping this solution quickly, I chose Ubuntu. We are going to use the
-OVS controller provided in the package manager but compile from source the
-actual switching application, so as to use the latest version. I tested this
-on Ubuntu 12.04 and 14.04.</p>
-
-<h4>Check for the right hardware</h4>
-
-<p>This solution will work at its best if the host OS supports virtualization
-extensions and nested virtualization.</p>
-
-<p>To check if your hardware supports virtualization, there are several options:</p>
-
-<p>To check for support of nested virtualization, look for the value in
-/sys/module/kvm_intel/parameters/nested.</p>
-
-<p>AMD processors come with this value enabled by default. Certain Intel processors
-might not have it enabled by default, like mine. A Intel Core i7 5600U.
-To enable it, append the following parameter to kernel boot command
-&ldquo;GRUB_CMDLINE_LINUX&rdquo; in /etc/default/grub</p>
-
-<p>If nested virtualization is supported then we will be able to have virtual
-machines that perform virtualization (A Matrix within a Matrix) with the use of
-hardware extensions. But in the case you are using old hardware, don&rsquo;t fret. The
-images we plan to use for nested virtualization are very small, so CPU emulation
-will also work.</p>
-
-<p>Run the following for the changes to take effect.</p>
-
-<h4>Let&rsquo;s take care of the main image</h4>
-
-<p>Create the image</p>
-
-<p>Install the Ubuntu iso</p>
-
-<p><strong>NOTE:</strong> The parameters above are self-explanatory except for the &ldquo;-cpu&rdquo;. If you
-run the virtual OS without this parameter, it is going to use the QEMU cpu which
-will not handle hardware virtualization in the guest OS.</p>
-
-<p>Shutdown and restart</p>
-
-<p>Perform basic configuration</p>
-
-<p>Now, we have the option to install the latest version of openvswitch from
-github or the latest stable version from a tar ball. We will go for the
-stable one. We are going to compile the openvswitch module with our current
-kernel headers.</p>
-
-<p><strong>NOTE:</strong> this is pretty much the part that brings almost all the errors. If you
-get any errors while compiling or loading the module. Check the file INSTALL.md
-at the top of the openvswitch directory. It is a long file but very thorough
-and clear. Check also the log files with &ldquo;tail /var/log/kern.log&rdquo; or
-&ldquo;dmesg | tail&rdquo;</p>
-
-<p>To make sure that it survives a reboot. Append it to /etc/modules</p>
-
-<p>Start the Open vSwitch daemon</p>
-
-<h3>Lab Setup</h3>
-
-<p>Once OVS is finally running, it is time to start the fun part of this tutorial.
-Which is to create the bridge, fire up the guest images, and add their ports to
-the virtual bridge.</p>
-
-<p>Add a virtual bridge. The bridge is what is what we could call a virtual switch
-where our virtual ports will connect to to create a broadcast domain. We will
-call it bridge1.</p>
-
-<p>Download the small guest images.</p>
-
-<p>Now we are going to start the small virtual images. But first copy them into the
-amount of virtual host you are planning on using. In this case we are going to
-use two.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cp linux-0.2.img host1.img
-</span><span class='line'>cp linux-0.2.img host2.img</span></code></pre></td></tr></table></div></figure>
-
-<p>Now start the images with kvm. Following the QEMU manual, all virtual machines
-should always start with 52:54 on their MAC addresses.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo kvm -m 128 -name host1 -net nic,macaddr=52:54:00:00:01:00 -net tap,ifname=r1-eth0,script=no,downscript=no -hda ./host1.img &
-</span><span class='line'>sudo kvm -m 128 -name host2 -net nic,macaddr=52:54:00:00:02:00 -net tap,ifname=r2-eth0,script=no,downscript=no -hda ./host2.img &</span></code></pre></td></tr></table></div></figure>
-
-<p>Once the images are up, we are going to see to interfaces. Eth0 and Lo. Let&rsquo;s
-configure Eth0.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>// guest VM host 1
-</span><span class='line'>ifconfig eth0 192.168.10.1 netmask 255.255.255.0 broadcast 192.168.10.255
-</span><span class='line'>
-</span><span class='line'>// guest VM host 2
-</span><span class='line'>ifconfig eth0 192.168.10.2 netmask 255.255.255.0 broadcast 192.168.10.255</span></code></pre></td></tr></table></div></figure>
-
-<p>They are not able to ping each other yet. Now if you look at the output of
-&ldquo;ip link&rdquo; on the controller machine, you will see the two interface names we
-gave to our guest VMs. They should look similar to this. Note that the state
-of the bridge and these two newly created interfaces are down.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ip link
-</span><span class='line'>
-</span><span class='line'>// output
-</span><span class='line'>...
-</span><span class='line'>
-</span><span class='line'>bridge1: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN mode DEFAULT group
-</span><span class='line'>default 
-</span><span class='line'>    link/ether ae:5f:00:c9:ce:4c brd ff:ff:ff:ff:ff:ff
-</span><span class='line'>r1-eth0: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN mode DEFAULT group
-</span><span class='line'>default qlen 500
-</span><span class='line'>    link/ether 9a:68:e7:f5:f7:0d brd ff:ff:ff:ff:ff:ff
-</span><span class='line'>r2-eth0: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN mode DEFAULT group
-</span><span class='line'>default qlen 500
-</span><span class='line'>    link/ether ee:64:e6:ba:51:36 brd ff:ff:ff:ff:ff:ff
-</span><span class='line'>
-</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
-
-<p>With the guest VMs interfaces in place, we can now add them to the bridge.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ovs-vsctl add-port bridge1 r1-eth0
-</span><span class='line'>ovs-vsctl add-port bridge1 r2-eth0</span></code></pre></td></tr></table></div></figure>
-
-<p>Check the output of &ldquo;ovs-vsctl show&rdquo;, you should now be able to see the bridge
-and the two interfaces from the guest VMs.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ovs-vsctl show
-</span><span class='line'>
-</span><span class='line'>0e92445c-3b4e-41e2-a719-1d1f294d1cbc 
-</span><span class='line'>  Bridge "bridge1"
-</span><span class='line'>      Port "r1-eth0"
-</span><span class='line'>          Interface "r1-eth0"
-</span><span class='line'>      Port "r2-eth0"
-</span><span class='line'>          Interface "r2-eth0"
-</span><span class='line'>      Port "bridge1"
-</span><span class='line'>          Interface "bridge1"
-</span><span class='line'>              type: internal</span></code></pre></td></tr></table></div></figure>
-
-<p></p>
-
-<p>We are ready now, simply enable all the guest VM interfaces and the bridge. On
-the controller machine.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ip link set bridge1 up
-</span><span class='line'>ip link set r1-eth0 up
-</span><span class='line'>ip link set r2-eth0 up</span></code></pre></td></tr></table></div></figure>
-
-<p>That&rsquo;s it. The host should be able to ping each other now.
-<img class="left" src="/images/post_image1.png" width="800" height="600" title="image" alt="images"></p>
-
-<h2>Conclusions</h2>
-
-<p>Again, we had no automation in place. We could start by creating scripts for
-the guest images to auto configure their ip addresses. And another to start
-the OVS database and daemon. There are several possibilites, I will venture
-into them and come back for another post. One idea will be to find a way to
-benchmark the performance of OVS compared to Linux bridges.</p>
-
-<p>Hope this post was helpful so please let me know your thoughts and/or feedback
-in the comments.</p>
-
-<p>Thanks for visiting.</p>
+                <!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
                 
 
@@ -489,58 +312,40 @@ in the comments.</p>
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -549,9 +354,27 @@ in the comments.</p>
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

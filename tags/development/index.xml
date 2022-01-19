@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Development on Innercoder.dev</title>
@@ -18,14 +18,8 @@
       
       <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This a small project that came to mind after reading some reference
-material while stuyding HTTP. It basically consists of using raw sockets to
-make the kernel handle L2 data/frames to the user application. From there
-anything is possible, a ping server, a traceroute appication, IP spoofing,
-man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -35,12 +29,8 @@ man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-sockets-http/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post shows a program that captures web pages&amp;rsquo;s index.html with sockets.
-To do this, it creates a TCP client socket, connects to a web server and takes
-all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -50,14 +40,9 @@ all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&
       
       <guid>https://jarrocha.github.io/post/tcp-server/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post serves as a explanation of the basics of a TCP socket server, which
-serves as the base to a future post explaining the basics of a web server.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
-Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -74,7 +59,7 @@ system calls that we will use. The man pages come real handy for this since
 we have a very good reference just a terminal screen away. This program is
 considered a good start to learn the basic of system calls and signal processing.
 This post serves as a quick analysis of the code in the
-&lt;a href=&#34;https://github.com/jarrocha/bschell&#34;&gt;github repository&lt;/a&gt;.&lt;/p&gt;</description>
+&lt;!-- raw HTML omitted --&gt;github repository&lt;!-- raw HTML omitted --&gt;.&lt;/p&gt;</description>
     </item>
     
   </channel>

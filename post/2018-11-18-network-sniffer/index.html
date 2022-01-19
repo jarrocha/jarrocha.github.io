@@ -211,186 +211,164 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#intro">Intro</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
                 <h2 id="intro">Intro</h2>
-
-<hr />
-
-<p>This a small project that came to mind after reading some reference
-material while stuyding HTTP. It basically consists of using raw sockets to
-make the kernel handle L2 data/frames to the user application. From there
-anything is possible, a ping server, a traceroute appication, IP spoofing,
-man-in-the-middle attacks, the sky is the limits.</p>
-
+<hr>
+<!-- raw HTML omitted -->
 <p>This is another project that has good potential to apply high performance server
 features. It currently reads frames sequentially which is not very
 for high bandwidth connections with lots of traffics. A multi-threaded version
 is in plan for this. Apart from that, the function to specify the type of
 packets to listen to.</p>
-
-<p>The complete code is in its <a href="https://github.com/jarrocha/psockets/">github repository</a>.</p>
-
+<p>The complete code is in its <!-- raw HTML omitted -->github repository<!-- raw HTML omitted -->.</p>
 <p>Usage function. Currently, it only supports to choose on which interface to
 listen to.</p>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">28</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">29</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">30</span>  u_int rcv_bytes;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">31</span>  u_int trx_fd;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">32</span>  u_char buffer[BUFF];
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">33</span>  <span style="color:#66d9ef">struct</span> sockaddr_in cl_addr;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">34</span>  socklen_t cl_size;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">35</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">36</span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">37</span>      usage(argv[<span style="color:#ae81ff">0</span>]);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">38</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">39</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">40</span>  <span style="color:#66d9ef">if</span>((trx_fd <span style="color:#f92672">=</span> socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">41</span>      err_msg(<span style="color:#e6db74">&#34;Error on socket()&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">42</span>  <span style="color:#66d9ef">if</span>((setsockopt(trx_fd, SOL_SOCKET, SO_BINDTODEVICE, argv[<span style="color:#ae81ff">1</span>],
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">43</span>          strlen(argv[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">44</span>      err_msg(<span style="color:#e6db74">&#34;Error on setsockopt()&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">45</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">46</span>  <span style="color:#66d9ef">for</span>(;;) {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">47</span>      <span style="color:#66d9ef">if</span>((rcv_bytes <span style="color:#f92672">=</span> recvfrom(trx_fd, buffer, BUFF, <span style="color:#ae81ff">0</span>,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">48</span>                   (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>cl_addr,
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">49</span>                   <span style="color:#f92672">&amp;</span>cl_size)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">50</span>          err_msg(<span style="color:#e6db74">&#34;Error on recvfrom()&#34;</span>);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">51</span>      proc_packet(buffer, rcv_bytes);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">52</span>  }
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">53</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">54</span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">55</span>}</code></pre></div>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span>  u_int rcv_bytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span>  u_int trx_fd;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span>  u_char buffer[BUFF];
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span>  <span style="color:#66d9ef">struct</span> sockaddr_in cl_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span>  socklen_t cl_size;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span>      usage(argv[<span style="color:#ae81ff">0</span>]);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span>  <span style="color:#66d9ef">if</span>((trx_fd <span style="color:#f92672">=</span> socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span>      err_msg(<span style="color:#e6db74">&#34;Error on socket()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span>  <span style="color:#66d9ef">if</span>((setsockopt(trx_fd, SOL_SOCKET, SO_BINDTODEVICE, argv[<span style="color:#ae81ff">1</span>],
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span>          strlen(argv[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span>      err_msg(<span style="color:#e6db74">&#34;Error on setsockopt()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span>  <span style="color:#66d9ef">for</span>(;;) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span>      <span style="color:#66d9ef">if</span>((rcv_bytes <span style="color:#f92672">=</span> recvfrom(trx_fd, buffer, BUFF, <span style="color:#ae81ff">0</span>,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span>                   (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>cl_addr,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span>                   <span style="color:#f92672">&amp;</span>cl_size)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span>          err_msg(<span style="color:#e6db74">&#34;Error on recvfrom()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span>      proc_packet(buffer, rcv_bytes);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span>}</code></pre></div>
 <p>The main procedure is the infite loop as you can see, it reads packet
 sequentially using one process.
-<strong>Line 13</strong>: creates the socket to be listen to every type of frame, and in/out
+<!-- raw HTML omitted -->Line 13<!-- raw HTML omitted -->: creates the socket to be listen to every type of frame, and in/out
 direction.
-<strong>Line 15</strong>: set socket options to tell the program on which interface to
-listen to.</p></p>
-
-<h4>procpkt.c</h4>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">125</span><span style="color:#75715e">/* main processing function */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">126</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_packet</span>(<span style="color:#66d9ef">const</span> u_char <span style="color:#f92672">*</span>data, u_int size)
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">127</span>{  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">128</span>  u_int prot;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">129</span>  u_int dat_offs;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">130</span>  u_int tcp_hdr_sz;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">131</span>  u_int udp_hdr_sz;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">132</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">133</span>  <span style="color:#75715e">/* print captured bytes */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">134</span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">Bytes Captured = [ %d ]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, size);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">135</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">136</span>  <span style="color:#75715e">/* print L2 information */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">137</span>  decode_ethernet(data);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">138</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">139</span>  <span style="color:#75715e">/* obtain IP protocol number for further decoding */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">140</span>  prot <span style="color:#f92672">=</span> decode_ip(data <span style="color:#f92672">+</span> ETHER_HDR_LEN);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">141</span>  
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">142</span>  <span style="color:#66d9ef">switch</span>(prot) {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">143</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">144</span>      decode_icmp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">145</span>      <span style="color:#66d9ef">break</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">146</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">6</span><span style="color:#f92672">:</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">147</span>      tcp_hdr_sz <span style="color:#f92672">=</span> decode_tcp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">148</span>      <span style="color:#66d9ef">break</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">149</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">17</span><span style="color:#f92672">:</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">150</span>      udp_hdr_sz <span style="color:#f92672">=</span> decode_udp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">151</span>      <span style="color:#66d9ef">break</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">152</span>  <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">153</span>      <span style="color:#66d9ef">break</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">154</span>  }
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">155</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">156</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">157</span>  <span style="color:#75715e">/* print raw encapsulated data */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">158</span>  praw(data <span style="color:#f92672">+</span> ETHER_HDR_LEN, size);
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">159</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">160</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">161</span>}</code></pre></div>
-
-<p>The main function of the program that handles identification of the IP
-protocol to which we then de-encapsulate and then do a print out of the data.</p>
-
-<h4>psniff.h</h4>
-
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">60</span><span style="color:#66d9ef">struct</span> ip_hdr {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">61</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ver_ihl;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">62</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> tos;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">63</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">64</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> id;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">65</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> frag_off;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">66</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ttl;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">67</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> protocol;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">68</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> check;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">69</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> src_addr;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">70</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> dst_addr;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">71</span>};
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">72</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">73</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">74</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">75</span><span style="color:#75715e"> * TCP
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">76</span><span style="color:#75715e"> * Note: Supports Little-Endian only
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">77</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">78</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">79</span><span style="color:#66d9ef">struct</span> tcp_hdr {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">80</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">81</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">82</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seq;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">83</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> ack;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">84</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> reserved:<span style="color:#ae81ff">4</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">85</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> offset:<span style="color:#ae81ff">4</span>;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">86</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> flags;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">87</span><span style="color:#75715e">#define TCP_FIN 0x01
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">88</span><span style="color:#75715e">#define TCP_SYN 0x02
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">89</span><span style="color:#75715e">#define TCP_RST 0x04
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">90</span><span style="color:#75715e">#define TCP_PUSH 0x08
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">91</span><span style="color:#75715e">#define TCP_ACK 0x10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">92</span><span style="color:#75715e">#define TCP_URG 0x20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">93</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> window;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">94</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">95</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> urgent;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">96</span>};
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">97</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">98</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">99</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">100</span><span style="color:#75715e"> * UDP Header
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">101</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">102</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">103</span><span style="color:#66d9ef">struct</span> udp_hdr {
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">104</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">105</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">106</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">107</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">108</span>};
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">109</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">110</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">111</span><span style="color:#75715e">/*
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">112</span><span style="color:#75715e"> * ICMP Header
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">113</span><span style="color:#75715e"> */</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">114</span>
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">115</span><span style="color:#66d9ef">struct</span> icmp_hdr
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">116</span>{
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">117</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> type;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">118</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> code;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">119</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">120</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> gateway;
-<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7c7c79">121</span>};</code></pre></div>
-
-<p>To decode the layers the de-encapsulated data needs to be type casted to the
-appropiate data structure and from there, retrieve the information. In this
-program I decided to the create my own structures for the different protocol
-headers. These user libraries are located in
-<strong>/usr/include/linux/if_ethernet.h</strong> and <strong>/usr/include/netinet/</strong>.</p>
-
-<p><strong>Note:</strong> This program is still a work in progress.</p>
+<!-- raw HTML omitted -->Line 15<!-- raw HTML omitted -->: set socket options to tell the program on which interface to
+listen to.<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">125</span><span style="color:#75715e">/* main processing function */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">126</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_packet</span>(<span style="color:#66d9ef">const</span> u_char <span style="color:#f92672">*</span>data, u_int size)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">127</span>{  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">128</span>  u_int prot;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">129</span>  u_int dat_offs;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">130</span>  u_int tcp_hdr_sz;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">131</span>  u_int udp_hdr_sz;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">132</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">133</span>  <span style="color:#75715e">/* print captured bytes */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">134</span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">Bytes Captured = [ %d ]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, size);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">135</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">136</span>  <span style="color:#75715e">/* print L2 information */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">137</span>  decode_ethernet(data);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">138</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">139</span>  <span style="color:#75715e">/* obtain IP protocol number for further decoding */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">140</span>  prot <span style="color:#f92672">=</span> decode_ip(data <span style="color:#f92672">+</span> ETHER_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">141</span>  
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">142</span>  <span style="color:#66d9ef">switch</span>(prot) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">143</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">144</span>      decode_icmp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">145</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">146</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">6</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">147</span>      tcp_hdr_sz <span style="color:#f92672">=</span> decode_tcp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">148</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">149</span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">17</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">150</span>      udp_hdr_sz <span style="color:#f92672">=</span> decode_udp(data <span style="color:#f92672">+</span> ETHER_HDR_LEN <span style="color:#f92672">+</span> IP_HDR_LEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">151</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">152</span>  <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">153</span>      <span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">154</span>  }
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">155</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">156</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">157</span>  <span style="color:#75715e">/* print raw encapsulated data */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">158</span>  praw(data <span style="color:#f92672">+</span> ETHER_HDR_LEN, size);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">159</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">160</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">161</span>}</code></pre></div>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span><span style="color:#66d9ef">struct</span> ip_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ver_ihl;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> tos;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> id;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> frag_off;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ttl;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> protocol;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">68</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> check;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> src_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> dst_addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">72</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">73</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">74</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">75</span><span style="color:#75715e"> * TCP
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">76</span><span style="color:#75715e"> * Note: Supports Little-Endian only
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">77</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">78</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">79</span><span style="color:#66d9ef">struct</span> tcp_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">80</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">81</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">82</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seq;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">83</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> ack;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">84</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> reserved:<span style="color:#ae81ff">4</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">85</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> offset:<span style="color:#ae81ff">4</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">86</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> flags;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">87</span><span style="color:#75715e">#define TCP_FIN 0x01
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">88</span><span style="color:#75715e">#define TCP_SYN 0x02
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">89</span><span style="color:#75715e">#define TCP_RST 0x04
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">90</span><span style="color:#75715e">#define TCP_PUSH 0x08
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">91</span><span style="color:#75715e">#define TCP_ACK 0x10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">92</span><span style="color:#75715e">#define TCP_URG 0x20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">93</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> window;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">94</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">95</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> urgent;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">96</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">97</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">98</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">99</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">100</span><span style="color:#75715e"> * UDP Header
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">101</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">102</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">103</span><span style="color:#66d9ef">struct</span> udp_hdr {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">104</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> src_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">105</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> dst_port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">106</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">107</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">108</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">109</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">110</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">111</span><span style="color:#75715e">/*
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">112</span><span style="color:#75715e"> * ICMP Header
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">113</span><span style="color:#75715e"> */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">114</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">115</span><span style="color:#66d9ef">struct</span> icmp_hdr
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">116</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">117</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> type;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">118</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> code;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">119</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">120</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> gateway;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">121</span>};</code></pre></div>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
                 
 
@@ -431,58 +409,40 @@ headers. These user libraries are located in
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -491,9 +451,27 @@ headers. These user libraries are located in
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

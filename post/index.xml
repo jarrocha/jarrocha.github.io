@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Innercoder.dev</title>
@@ -17,11 +17,11 @@
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</guid>
-      <description>Intro This tutorial comes from the fact that there are several steps where errors can come up.
-Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
+      <description>Intro  This tutorial comes from the fact that there are several steps where errors can come up.
+Steps  1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
 2. Install mbed-cli with python. This steps are well made from the website. Make your to be using Python3. https://os.mbed.com/docs/mbed-os/v6.3/build-tools/install-and-set-up.html
 3. Configure GCC_ARM_PATH and ARM_PATH
-$ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $ mbed config -G GCC_ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot;  Test output:</description>
+$ mbed config -G ARM_PATH &amp;#34;&amp;lt;path to ARM bin\&amp;gt;&amp;#34; $ mbed config -G GCC_ARM_PATH &amp;#34;&amp;lt;path to ARM bin\&amp;gt;&amp;#34; Test output:</description>
     </item>
     
     <item>
@@ -30,10 +30,10 @@ $ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $
       <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/post/setup-zephyr-on-linux/</guid>
-      <description>Intro Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
-Steps 1. Install the necessary requirements
-sudo apt-get install --no-install-recommends git cmake ninja-build gperf \ ccache dfu-util device-tree-compiler wget \ python3-pip python3-setuptools python3-wheel xz-utils file make gcc  2. Download and Install SDK
-wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt;  3.</description>
+      <description>Intro  Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
+Steps  1. Install the necessary requirements
+sudo apt-get install --no-install-recommends git cmake ninja-build gperf \  ccache dfu-util device-tree-compiler wget \  python3-pip python3-setuptools python3-wheel xz-utils file make gcc 2. Download and Install SDK
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt; 3.</description>
     </item>
     
     <item>
@@ -42,7 +42,7 @@ wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zeph
       <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
-      <description>Intro This post will be part of a series where device drivers will be presented and quickly analized for people that need a quick reference of how to make device drivers on an updated kernel. The driver presented here was tested on a 3.2 and 3.16 Linux Kernel. I will make a driver with more features and test it on a newer kernel next time.
+      <description>Intro  This post will be part of a series where device drivers will be presented and quickly analized for people that need a quick reference of how to make device drivers on an updated kernel. The driver presented here was tested on a 3.2 and 3.16 Linux Kernel. I will make a driver with more features and test it on a newer kernel next time.
 The complete code is in its github repository.</description>
     </item>
     
@@ -53,14 +53,8 @@ The complete code is in its github repository.</description>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This a small project that came to mind after reading some reference
-material while stuyding HTTP. It basically consists of using raw sockets to
-make the kernel handle L2 data/frames to the user application. From there
-anything is possible, a ping server, a traceroute appication, IP spoofing,
-man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -70,12 +64,8 @@ man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-sockets-http/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post shows a program that captures web pages&amp;rsquo;s index.html with sockets.
-To do this, it creates a TCP client socket, connects to a web server and takes
-all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -92,7 +82,7 @@ done so far. The whole purpose of this is to later on built a tool to test its
 performance and how to break it with malformed packets. It is such an
 interesting project that everytime I sit down with it, I start thinking about
 different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
+POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -101,10 +91,7 @@ POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
       <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
-      <description>&lt;p&gt;In this second part, the optimization code will be shown. Specifically O1, O2,
-and O3. We are going to be able to see, what performance decisions the gcc
-compiler makes; for example, we are going to check if the compilers takes the
-function that calculates the string length calls out of the loop.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -114,14 +101,9 @@ function that calculates the string length calls out of the loop.&lt;/p&gt;</des
       
       <guid>https://jarrocha.github.io/post/tcp-server/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;This post serves as a explanation of the basics of a TCP socket server, which
-serves as the base to a future post explaining the basics of a web server.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; the complete code of an older version is fully posted in the end.
-Check my github repo for an updated version. &lt;a href=&#34;https://github.com/jarrocha/psockets/tree/master/tcp_server&#34;&gt;Link&lt;/a&gt;.&lt;/p&gt;</description>
+&lt;hr&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -130,13 +112,7 @@ Check my github repo for an updated version. &lt;a href=&#34;https://github.com/
       <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</guid>
-      <description>&lt;p&gt;The maturity reached by Software Defined Networking (SDN) in the lastest years
-is a very important one. We are at a point where we could see this architecture
-/framework become a standard. And what makes it so amazing is its fundamental
-idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
-is a tool used to create virtual bridges which can then connect virtual or
-physical hosts. It implements both traditional L2 switching protocols or
-Openflow.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -145,12 +121,7 @@ Openflow.&lt;/p&gt;</description>
       <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</guid>
-      <description>&lt;p&gt;Some days ago I needed a proof of concept for some routing configuration using
-Linux that was stuck in my head for days already. So I needed a way to bring up
-some Linux boxes to quickly to check this. The &lt;a href=&#34;https://opennetlinux.org/docs/routingtutorial&#34;&gt;ONL website&lt;/a&gt; proved very
-useful, but I needed to use CentOS. So I came up with a script based on the
-mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
-and configured.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -159,9 +130,7 @@ and configured.&lt;/p&gt;</description>
       <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
-      <description>&lt;p&gt;These blog series belong to some old notes that I have and thought that could be
-useful to redo. It is always good to refresh material and what a better way than
-to write about it.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -178,7 +147,7 @@ system calls that we will use. The man pages come real handy for this since
 we have a very good reference just a terminal screen away. This program is
 considered a good start to learn the basic of system calls and signal processing.
 This post serves as a quick analysis of the code in the
-&lt;a href=&#34;https://github.com/jarrocha/bschell&#34;&gt;github repository&lt;/a&gt;.&lt;/p&gt;</description>
+&lt;!-- raw HTML omitted --&gt;github repository&lt;!-- raw HTML omitted --&gt;.&lt;/p&gt;</description>
     </item>
     
   </channel>

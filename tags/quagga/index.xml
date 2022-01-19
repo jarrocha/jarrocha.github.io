@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Quagga on Innercoder.dev</title>
@@ -17,12 +17,7 @@
       <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</guid>
-      <description>&lt;p&gt;Some days ago I needed a proof of concept for some routing configuration using
-Linux that was stuck in my head for days already. So I needed a way to bring up
-some Linux boxes to quickly to check this. The &lt;a href=&#34;https://opennetlinux.org/docs/routingtutorial&#34;&gt;ONL website&lt;/a&gt; proved very
-useful, but I needed to use CentOS. So I came up with a script based on the
-mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
-and configured.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
   </channel>

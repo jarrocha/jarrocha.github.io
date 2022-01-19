@@ -211,123 +211,82 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#intro">Intro</a></li>
-<li><a href="#steps">Steps</a></li>
-<li><a href="#final-notes">Final Notes</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#steps">Steps</a></li>
+        <li><a href="#final-notes">Final Notes</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="intro">Intro</h2>
-
-<hr />
-
+                <h2 id="intro">Intro</h2>
+<hr>
 <p>This tutorial comes from the fact that there are several steps where errors can come up.</p>
-
 <h2 id="steps">Steps</h2>
-
-<hr />
-
+<hr>
 <p><strong>1.</strong> Download the latest toolchain. It can be untar and installed where its more convinient:
 <a href="https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads">https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads</a></p>
-
 <p><strong>2.</strong>  Install mbed-cli with python. This steps are well made from the website. Make your to be using Python3.
 <a href="https://os.mbed.com/docs/mbed-os/v6.3/build-tools/install-and-set-up.html">https://os.mbed.com/docs/mbed-os/v6.3/build-tools/install-and-set-up.html</a></p>
-
 <p><strong>3.</strong> Configure GCC_ARM_PATH and ARM_PATH</p>
-
-<pre><code class="language-bash">$ mbed config -G ARM_PATH &quot;&lt;path to ARM bin\&gt;&quot;
-$ mbed config -G GCC_ARM_PATH &quot;&lt;path to ARM bin\&gt;&quot;
-</code></pre>
-
-<p>Test output:</p>
-
-<pre><code class="language-bash">[mbed] Global config:
-ARM_PATH=/home/jaime/programs/gcc-arm-none-eabi-9-2020-q2-update/bin/
-GCC_ARM_PATH=/home/jaime/programs/gcc-arm-none-eabi-9-2020-q2-update/bin/
-</code></pre>
-
-<p><strong>4.</strong> Go to the directory to create the MbedOS projects:</p>
-
-<pre><code class="language-bash">$ cd /absolute/path/to/project/dir/
-</code></pre>
-
-<p><strong>5.</strong> Add mbed-os libraries:</p>
-
-<pre><code class="language-bash">$ mbed add mbed-os
-</code></pre>
-
-<p>You will end up with the mbed-os directory at this location</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mbed config -G ARM_PATH <span style="color:#e6db74">&#34;&lt;path to ARM bin\&gt;&#34;</span>
+$ mbed config -G GCC_ARM_PATH <span style="color:#e6db74">&#34;&lt;path to ARM bin\&gt;&#34;</span>
+</code></pre></div><p>Test output:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>mbed<span style="color:#f92672">]</span> Global config:
+ARM_PATH<span style="color:#f92672">=</span>/home/jaime/programs/gcc-arm-none-eabi-9-2020-q2-update/bin/
+GCC_ARM_PATH<span style="color:#f92672">=</span>/home/jaime/programs/gcc-arm-none-eabi-9-2020-q2-update/bin/
+</code></pre></div><p><strong>4.</strong> Go to the directory to create the MbedOS projects:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cd /absolute/path/to/project/dir/
+</code></pre></div><p><strong>5.</strong> Add mbed-os libraries:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mbed add mbed-os
+</code></pre></div><p>You will end up with the mbed-os directory at this location</p>
 <p><strong>6.</strong> Configure your mbed-os sources:</p>
-
-<pre><code class="language-bash">$ mbed config -G MBED_OS_DIR /absolute/path/to/project/dir/mbed-os
-</code></pre>
-
-<p>You can test this was done with the command: $ mbed config &ndash;list</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mbed config -G MBED_OS_DIR /absolute/path/to/project/dir/mbed-os
+</code></pre></div><p>You can test this was done with the command: $ mbed config &ndash;list</p>
 <p><strong>7.</strong> Create your new project</p>
-
-<pre><code class="language-bash">$ mbed new proj1
-</code></pre>
-
-<p><strong>8.</strong> Create a test <code>main.c</code> at this location <code>/absolute/path/to/project/dir/proj1</code>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ mbed new proj1
+</code></pre></div><p><strong>8.</strong> Create a test <code>main.c</code> at this location <code>/absolute/path/to/project/dir/proj1</code>
 and use the code below from the blink test project.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">/* mbed Microcontroller Library
+</span><span style="color:#75715e"> * Copyright (c) 2019 ARM Limited
+</span><span style="color:#75715e"> * SPDX-License-Identifier: Apache-2.0
+</span><span style="color:#75715e"> */</span>
 
-<pre><code class="language-C">/* mbed Microcontroller Library
- * Copyright (c) 2019 ARM Limited
- * SPDX-License-Identifier: Apache-2.0
- */
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;mbed.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
 
-#include &quot;mbed.h&quot;
+<span style="color:#75715e">// Blinking rate in milliseconds
+</span><span style="color:#75715e"></span><span style="color:#75715e">#define BLINKING_RATE     100ms
+</span><span style="color:#75715e"></span>
 
-
-// Blinking rate in milliseconds
-#define BLINKING_RATE     100ms
-
-
-int main()
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
 {
-    // Initialise the digital pin LED1 as an output
-    DigitalOut led(LED1);
+    <span style="color:#75715e">// Initialise the digital pin LED1 as an output
+</span><span style="color:#75715e"></span>    DigitalOut led(LED1);
 
-    while (true) {
-        led = !led;
-        ThisThread::sleep_for(BLINKING_RATE);
+    <span style="color:#66d9ef">while</span> (true) {
+        led <span style="color:#f92672">=</span> <span style="color:#f92672">!</span>led;
+        ThisThread<span style="color:#f92672">::</span>sleep_for(BLINKING_RATE);
     }
 }
-</code></pre>
-
-<p><strong>9.</strong> To compile your project, make sure you are at the root location for your projects,
+</code></pre></div><p><strong>9.</strong> To compile your project, make sure you are at the root location for your projects,
 which is <code>/absolute/path/to/project/dir/</code>
 From this location you will run the compilation commands.</p>
-
 <p>I created a Makefile to make it easier to run them. Copy, paste and run this Makefile at this root location.</p>
-
-<pre><code class="language-Makefile">deps:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Makefile" data-lang="Makefile"><span style="color:#a6e22e">deps</span><span style="color:#f92672">:</span>
 	mbed toolchain GCC_ARM
 	mbed target K64F
-proj1: deps
+<span style="color:#a6e22e">proj1</span><span style="color:#f92672">:</span> deps
 	mbed compile -v -t GCC_ARM -N $@ --source $@ --source mbed-os --build ./BUILD/$@ --flash
-</code></pre>
-
-<p>Run with:</p>
-
-<pre><code class="language-bash">$ make proj1
-</code></pre>
-
-<h2 id="final-notes">Final Notes</h2>
-
-<hr />
-
+</code></pre></div><p>Run with:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ make proj1
+</code></pre></div><h2 id="final-notes">Final Notes</h2>
+<hr>
 <p>You can remove the <code>-v</code> option to remove logs and speed it up. And of course the Makefile can be improved. This was done to get it done quick.
 When you create another project, just duplicate the last two lines replacing only the project name.</p>
-
 <p>Hope this quick tutorial helps people to get up to speed fast on this environment. The actual website misses explaining some things and lacks in others.</p>
 
 
@@ -365,58 +324,40 @@ When you create another project, just duplicate the last two lines replacing onl
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -425,9 +366,27 @@ When you create another project, just duplicate the last two lines replacing onl
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

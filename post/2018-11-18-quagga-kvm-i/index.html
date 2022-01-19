@@ -222,94 +222,33 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
+                <nav id="TableOfContents"></nav>
                 
-                
-                <p>Some days ago I needed a proof of concept for some routing configuration using
-Linux that was stuck in my head for days already. So I needed a way to bring up
-some Linux boxes to quickly to check this. The <a href="https://opennetlinux.org/docs/routingtutorial">ONL website</a> proved very
-useful, but I needed to use CentOS. So I came up with a script based on the
-mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
-and configured.</p>
-
-<p>This post takes you through the basics of installing and configuring both
-QEMU-KVM and Quagga. And with the ease of a script to create multiple VMs to
-play with.</p>
-
-<h4>What is <a href="http://www.linux-kvm.org/page/Main_Page">QEMU</a>?</h4>
-
-<p>QEMU is a hypervisor, simple as that. It can emulate different hardware
-architectures and devices. It is considered a Type 2 hypervisors since it runs
-with a host OS. Other populars hypervisors in this category are ORACLE
-Virtualbox and VMware Fusion.</p>
-
-<h4>What is <a href="http://wiki.qemu.org/Main_Page">KVM</a>?</h4>
-
-<p>KVM is a Linux kernel module that allows the utilization of hardware extension
-for virtualization, in this case Intel VT-x and AMD-V. This module increases the
-performance of QEMU since instructions to the virtual cpu do not need to be
-translated by the hypervisor, they can be directly executed by the physical cpu.</p>
-
-<h4>What is <a href="http://www.nongnu.org/quagga/">Quagga</a>?</h4>
-
-<p>Quagga is a routing protocol suite. It allows for a Linux box to run routing
-protocols by way of a daemon that control the kernel&rsquo;s routing table. Another
-popular routing protocol suite is Bird.</p>
-
-<h2>Procedure</h2>
-
-<h4>Install needed packages</h4>
-```
-apt-get install kvm libvirt qemu-kvm
-```
-<h4>Get VM creation privileges</h4>
-```
-adduser YOUR_USER libvirt
-```
-<h4>Download the ISO</h4>
-
-<p>The ISO used for this small project was CentOS 7. Specifically
-<em>CentOS-7-x86_64-Minimal-1511.iso</em>. Here is the <a href="https://wiki.centos.org/Download">link</a></p>
-
-<h4>Create the image</h4>
-
-<p>With the ISO in our hands we need to create the image where it is going to be
-installed, we have to options a raw and qcow2. Raw images allow for faster I/O
-with the disadvantage that they take the full hard disk space they were created
-with. Qcow2 takes a hit on peformance but saves you space. You can choose either
-of them depending on your situation. Here is the output for a qcow2 image.
-CentOS 7 requires around ~2.5GBi of HD space.</p>
-
+                <!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <pre><code>qemu-img create -f qcow2 image_name.qcow2 3G
 Formatting 'image_name.qcow2', fmt=qcow2 size=5368709120 encryption=off
 cluster_size=65536 lazy_refcounts=off 
-</code></pre>
-
-<h4>Install CentOS on image</h4>
-
-<p>After having the created the image we are ready to install our new OS into it.
-I gave it 2 GB of RAM to speed it up.
-<em>NOTE:</em> the command is called <strong>kvm</strong> but it is actually a wrapper/backend for
-the command <strong>qemu-system-x86_64 -enable-kvm</strong></p>
-
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <pre><code>kvm -m 2048 -cdrom CentOS-7-x86_64-Minimal-1511.iso -vga vmware -hda
 router.qcow2
-</code></pre>
-
-<h4>Basic configuration of Linux box</h4>
-
+</code></pre><!-- raw HTML omitted -->
 <pre><code>kvm -m 2048 -vga vmware -hda router.qcow2
-</code></pre>
-
-<p>After a succesfull installation of the OS we reboot and get into our command
-line. We are going to do basic configuration to prepare the OS for <strong>Quagga</strong>.
-Run the image:</p>
-
-<p>QEMU will automatically brigde our network interface for internet access as the
-host.</p>
-
-<p>Run the following commands for basic configuration. The numbers belongin to the
-quagga directory could be different.</p>
-
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <pre><code>// I really dislike systemd's network interface renaming
 Append &quot;net.ifnames=0&quot; and &quot;biosdevname=0&quot; as kernel arguments to /etc/default/grub 
 &quot;GRUB_CMDLINE_LINUX&quot; then,
@@ -339,12 +278,7 @@ cp /usr/share/doc/quagga-0.99.22.4/bgpd.conf.sample /etc/quagga/bgpd.conf
 
 // Enable zebra daemon 
 systemctl enable zebra
-</code></pre>
-
-<p>So now our gold image is ready to be used for multiple purposes. One thing that
-can still be done right now or can be left for later is the hostname renaming
-and the enabling of which routing protocol daemons to enable.</p>
-
+</code></pre><!-- raw HTML omitted -->
 <pre><code>// Set hostname
 hostnamectl set-hostname routerX
 
@@ -352,44 +286,26 @@ hostnamectl set-hostname routerX
 systemctl enable ospf
 systemctl enable bgp
 systemctl enable rip
-</code></pre>
-
-<p>This will depend of what things you need to automate. We will come back to this
-at the end.</p>
-
-<h3>Automation Script</h3>
-
-<p>Now I am going to analyze our automation script to bring up the images, create,
-and setup the bridges. The full script is at my github <a href="https://github.com/jarrocha/net-routing_tools">repo</a>.</p>
-
-<pre><code class="language-bash">if [ ! -e /dev/kvm ]; then
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> ! -e /dev/kvm <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
   set +e
-  mknod /dev/kvm c 10 $(grep '\&lt;kvm\&gt;' /proc/misc | cut -f 1 -d' ')
+  mknod /dev/kvm c <span style="color:#ae81ff">10</span> <span style="color:#66d9ef">$(</span>grep <span style="color:#e6db74">&#39;\&lt;kvm\&gt;&#39;</span> /proc/misc | cut -f <span style="color:#ae81ff">1</span> -d<span style="color:#e6db74">&#39; &#39;</span><span style="color:#66d9ef">)</span>
   set -e
-fi
-</code></pre>
-
-<p>This part is essential for the use of kvm virtualization extension. This section
-makes sure there is a device node created for the kvm module. It creates it
-otherwise.</p>
-
-<pre><code class="language-bash">for bridge in $BRIDGES; do
-  printf &quot;Adding bridge $bridge\n&quot;
-  $BRCTL addbr $bridge || die &quot;$BRCTL addbr $bridge Failed&quot;
-  sleep 2
+<span style="color:#66d9ef">fi</span>
+</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> bridge in $BRIDGES; <span style="color:#66d9ef">do</span>
+  printf <span style="color:#e6db74">&#34;Adding bridge </span>$bridge<span style="color:#e6db74">\n&#34;</span>
+  $BRCTL addbr $bridge <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addbr </span>$bridge<span style="color:#e6db74"> Failed&#34;</span>
+  sleep <span style="color:#ae81ff">2</span>
   $IP link set $bridge address 00:11:11:aa:aa:aa
   $IP link set $bridge address 00:11:11:bb:bb:bb
-  sleep 2
-  printf &quot;Bringing up all bridge interfaces\n&quot;
-  $IP link set dev $bridge up || die &quot;$IP link set dev $bridge up&quot;
-done
-</code></pre>
-
-<p>This part pretty much creates the bridges for the routers and enables them. Each
-bridge requires a different MAC address. Further automation for this could be
-to perform this at the end by deducing from the amount of routers peer routers
-that are going to be configured and/or needed.</p>
-
+  sleep <span style="color:#ae81ff">2</span>
+  printf <span style="color:#e6db74">&#34;Bringing up all bridge interfaces\n&#34;</span>
+  $IP link set dev $bridge up <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$IP<span style="color:#e6db74"> link set dev </span>$bridge<span style="color:#e6db74"> up&#34;</span>
+<span style="color:#66d9ef">done</span>
+</code></pre></div><!-- raw HTML omitted -->
 <pre><code>$KVM $KVM_OPTS \
   -name router1 \
   -net nic,macaddr=52:54:00:00:01:00 -net tap,ifname=r1-eth0,script=no,downscript=no \
@@ -397,40 +313,20 @@ that are going to be configured and/or needed.</p>
   -net nic,macaddr=52:54:00:00:01:02 -net tap,ifname=r1-eth2,script=no,downscript=no \
   -hda ./images/router1.qcow2 &amp;
 sleep 5
-</code></pre>
-
-<p>This is done for every router, we create three interfaces here but this can be
-automated even further to whatever we need. For example, we could ask the user
-how many interfaces are needed for a particular router. We let the command
-take a few seconds before going with the other routers.</p>
-
-<pre><code class="language-bash">for intf in $INTF; do
+</code></pre><!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> intf in $INTF; <span style="color:#66d9ef">do</span>
   $IP link set dev $intf up
-done
-</code></pre>
-
-<p>This small piece simply brings up the newly created interfaces.</p>
-
+<span style="color:#66d9ef">done</span>
+</code></pre></div><!-- raw HTML omitted -->
 <pre><code>#### Creating physical-links/bridges for routers
 $BRCTL addif brdg1 r1-eth0 || die &quot;$BRCTL addif brdg1 r1-eth0&quot;
 $BRCTL addif brdg1 r2-eth0 || die &quot;$BRCTL addif brdg1 r2-eth0&quot;
 $BRCTL addif brdg2 r1-eth1 || die &quot;$BRCTL addif brdg1 r1-eth1&quot;
 $BRCTL addif brdg2 r3-eth0 || die &quot;$BRCTL addif brdg1 r3-eth0&quot;
-</code></pre>
-
-<p>This final part is what joins the bridges with the respective router interfaces.
-This part could be automated to ask the user what interfaces are going to be
-logically connected.</p>
-
-<p>This is it. Take a look at the script. I was able to quickly and succesfully
-bring up three routers and configure them with OSPF. I could make another post
-where OSPF, BGP ,and RIP are configured with Quagga but there are so many
-out there already.</p>
-
-<p>On Part 2, I will analyze a more automated version of this script and show the
-steps to pack this script into the image.</p>
-
-<p>Thanks for visiting.</p>
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
                 
 
@@ -471,58 +367,40 @@ steps to pack this script into the image.</p>
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -531,9 +409,27 @@ steps to pack this script into the image.</p>
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

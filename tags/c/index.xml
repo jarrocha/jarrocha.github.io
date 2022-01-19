@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>C on Innercoder.dev</title>
@@ -17,7 +17,7 @@
       <pubDate>Mon, 12 Nov 2018 14:00:17 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-char-driver/</guid>
-      <description>Intro This post will be part of a series where device drivers will be presented and quickly analized for people that need a quick reference of how to make device drivers on an updated kernel. The driver presented here was tested on a 3.2 and 3.16 Linux Kernel. I will make a driver with more features and test it on a newer kernel next time.
+      <description>Intro  This post will be part of a series where device drivers will be presented and quickly analized for people that need a quick reference of how to make device drivers on an updated kernel. The driver presented here was tested on a 3.2 and 3.16 Linux Kernel. I will make a driver with more features and test it on a newer kernel next time.
 The complete code is in its github repository.</description>
     </item>
     
@@ -35,7 +35,7 @@ done so far. The whole purpose of this is to later on built a tool to test its
 performance and how to break it with malformed packets. It is such an
 interesting project that everytime I sit down with it, I start thinking about
 different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
+POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -44,10 +44,7 @@ POSIX threads and sockets API.&lt;/p&gt;&lt;/p&gt;</description>
       <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
-      <description>&lt;p&gt;In this second part, the optimization code will be shown. Specifically O1, O2,
-and O3. We are going to be able to see, what performance decisions the gcc
-compiler makes; for example, we are going to check if the compilers takes the
-function that calculates the string length calls out of the loop.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
     <item>
@@ -56,9 +53,7 @@ function that calculates the string length calls out of the loop.&lt;/p&gt;</des
       <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
-      <description>&lt;p&gt;These blog series belong to some old notes that I have and thought that could be
-useful to redo. It is always good to refresh material and what a better way than
-to write about it.&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;</description>
     </item>
     
   </channel>

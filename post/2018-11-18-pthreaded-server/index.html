@@ -210,7 +210,7 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                
+                <nav id="TableOfContents"></nav>
                 
                 <p>p&gt;In this post I will analyze an implementation of a prethreaded TCP server that
 leverages the HTTP protocol. This is a personal ongoing project that will
@@ -220,524 +220,28 @@ done so far. The whole purpose of this is to later on built a tool to test its
 performance and how to break it with malformed packets. It is such an
 interesting project that everytime I sit down with it, I start thinking about
 different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.</p></p>
-
-<p>The current implementation of this server hanldes HTTP GET request with a pool
-of threads. The amount of threads in the pool is given as an argument to the
-program. One interesting feature that I have in mind is for the server to deduce
-the size of the thread pool based on the number of cores and the current load as
-a default option. The previous version of this server was handling threads per
-request, which is not very efficient.</p>
-
-<p>The analysis I will do is quick and to the point. These are two very
-interesting APIs (threads, &amp; sockets) that are relatively easy to follow, once
-you have some experience.</p>
-
-<p>The complete code is at its <a href="https://github.com/jarrocha/xwbserver">github repository</a>.</p>
-
-<h4>utils.c</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* usage function */</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">usage</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Usage: %s &lt;PORT&gt; &lt;DIRECTORY&gt; &lt;#THREADS&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Usage function, currently all arguments are obligatory. Another future feature
-to add is for the server to be binded to a specifi interface and work as a
-daemon.</p>
-
-<h4>main.c</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* pthread functions */</span>
-</span><span class='line'><span class="kt">void</span> <span class="o">*</span><span class="nf">thr_func</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/* initializing mutex lock */</span>
-</span><span class='line'><span class="kt">pthread_mutex_t</span> <span class="n">mtx</span> <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/* static globals */</span>
-</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">listenfd</span><span class="p">;</span>
-</span><span class='line'><span class="k">static</span> <span class="kt">char</span> <span class="n">fname</span><span class="p">[</span><span class="n">FILEDAT</span><span class="p">];</span> <span class="cm">/* holds webserver directory */</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Global variables. Here we have the funtion that is called by pthread_create(),
-the mutex initializer, the globally shared listening socket file descriptor, and
-a buffer for the server file directory.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="cm">/* server socket variables */</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">x</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">port</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">nthreads</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">optval</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">svaddr</span><span class="p">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* handling webserver arguments */</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">usage</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-</span><span class='line'>  <span class="n">port</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>      <span class="cm">/* !!No bounds checking */</span>
-</span><span class='line'>  <span class="n">strcpy</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>        <span class="cm">/* !!No bounds checking */</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* thread structure initialization */</span>
-</span><span class='line'>  <span class="n">nthreads</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
-</span><span class='line'>  <span class="k">struct</span> <span class="kr">thread</span> <span class="o">*</span><span class="n">thr_ctl</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="kr">thread</span><span class="p">)</span> <span class="o">*</span> <span class="n">nthreads</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">thr_ctl</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error allocating thr_ctl&quot;</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* initializing server address socket */</span>
-</span><span class='line'>  <span class="n">svaddr</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">svaddr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">htonl</span><span class="p">(</span><span class="n">INADDR_ANY</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">svaddr</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">short</span><span class="p">)</span> <span class="n">port</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* defining listening socket descriptor */</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">((</span><span class="n">listenfd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">svaddr</span><span class="p">.</span><span class="n">sin_family</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on socket()&quot;</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">listenfd</span><span class="p">,</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">optval</span><span class="p">,</span>
-</span><span class='line'>              <span class="k">sizeof</span><span class="p">(</span><span class="n">optval</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on setsockopt()&quot;</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* bind socket to IP address */</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">bind</span><span class="p">(</span><span class="n">listenfd</span><span class="p">,(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">svaddr</span><span class="p">,</span>
-</span><span class='line'>              <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr_in</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on bind()&quot;</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* listen on socket */</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">((</span><span class="n">listen</span><span class="p">(</span><span class="n">listenfd</span><span class="p">,</span> <span class="n">LISTENQ</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on listen()&quot;</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* pre-threading procedure */</span>
-</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">nthreads</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="p">((</span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thr_ctl</span><span class="p">[</span><span class="n">x</span><span class="p">].</span><span class="n">tid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">thr_func</span><span class="p">,(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">x</span><span class="p">))</span>
-</span><span class='line'>          <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>          <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;Thread create error&quot;</span><span class="p">);</span>
-</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">pthread_detach</span><span class="p">(</span><span class="n">thr_ctl</span><span class="p">[</span><span class="n">x</span><span class="p">].</span><span class="n">tid</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>          <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;Thread detach error&quot;</span><span class="p">);</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">for</span><span class="p">(;;)</span>
-</span><span class='line'>      <span class="n">pause</span><span class="p">();</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">return</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Tried commenting as much as possible. It sums to initializing important socket
-variables, handling arguments for port and thread number, setting up the
-server socket address structure and its setup for connections, and at the end,
-the procedure for prethreading.</p>
-
-<p>For the prethreading procedure, all threads are keep in control with a structure
-. Currently this structure is not doing anything but to keep an index to them,
-but I will later on use it for displaying statistics of thread usage and
-logging. Also, there&rsquo;s not main thread waiting for other&rsquo;s to finish, as soon
-as they are created they are detached for now.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="kt">void</span> <span class="o">*</span><span class="nf">thr_func</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="cm">/* variables to handle http process */</span>
-</span><span class='line'>  <span class="kt">char</span> <span class="n">buff</span><span class="p">[</span><span class="n">DATLEN</span><span class="p">];</span>
-</span><span class='line'>  <span class="k">struct</span> <span class="n">st_trx</span> <span class="o">*</span><span class="n">wb_trx</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">claddr</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">socklen_t</span> <span class="n">sin_size</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">claddr</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* main procedure */</span>
-</span><span class='line'>  <span class="k">for</span><span class="p">(;;)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="n">wb_trx</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">((</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">st_trx</span><span class="p">)));</span>
-</span><span class='line'>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">wb_trx</span><span class="p">)</span>
-</span><span class='line'>          <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error allocating wb_trx&quot;</span><span class="p">);</span> 
-</span><span class='line'>      
-</span><span class='line'>      <span class="cm">/* initialize web file struct */</span>
-</span><span class='line'>      <span class="n">strcpy</span><span class="p">(</span><span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">file_name</span><span class="p">,</span> <span class="n">fname</span><span class="p">);</span>
-</span><span class='line'>      <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">stat_ct</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>      <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">dyn_ct</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mtx</span><span class="p">);</span>    
-</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">trx_fd</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">listenfd</span><span class="p">,</span>
-</span><span class='line'>                      <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">claddr</span><span class="p">,</span>
-</span><span class='line'>                      <span class="o">&amp;</span><span class="n">sin_size</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>          <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on accept()&quot;</span><span class="p">);</span>
-</span><span class='line'>      <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mtx</span><span class="p">);</span>  
-</span><span class='line'>
-</span><span class='line'>      <span class="n">printf</span><span class="p">(</span><span class="s">&quot;server: got connection from %s port %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="n">inet_ntoa</span><span class="p">(</span><span class="n">claddr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">),</span>
-</span><span class='line'>              <span class="n">ntohs</span><span class="p">(</span><span class="n">claddr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">));</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="cm">/* Read request line and headers */</span>
-</span><span class='line'>      <span class="n">recv_msg</span><span class="p">(</span><span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">trx_fd</span><span class="p">,</span> <span class="n">buff</span><span class="p">,</span> <span class="n">DATLEN</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">sscanf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="s">&quot;%s %s %s&quot;</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">method</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">uri</span><span class="p">,</span>
-</span><span class='line'>             <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">ver</span><span class="p">);</span>
-</span><span class='line'>      <span class="n">printf</span><span class="p">(</span><span class="s">&quot;method: %s</span><span class="se">\n</span><span class="s">uri: %s</span><span class="se">\n</span><span class="s">ver: %s</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">method</span><span class="p">,</span>
-</span><span class='line'>             <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">uri</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">ver</span><span class="p">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">serve_rq</span><span class="p">(</span><span class="n">wb_trx</span><span class="p">);</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">return</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>With main() and serve_rq(), this is one of the most important functions so far.
-The <strong>struct st_trx *wb_trx</strong> pointer variable is allocated and contains all the
-information from a client (web browser) request. This structure is filled with
-the data read from the socket buffer and send to <strong>serve_rq()</strong> for processing.
-There are still some variables that are initialized and serve no purpose.</p>
-
-<h4>utils.c</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* serve static content */</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">serve_rq</span><span class="p">(</span><span class="k">struct</span> <span class="n">st_trx</span> <span class="o">*</span><span class="n">wb_trx</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">char</span> <span class="o">*</span><span class="n">addr</span><span class="p">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/* get file stats */</span>
-</span><span class='line'>  <span class="n">get_file_stats</span><span class="p">(</span><span class="n">wb_trx</span><span class="p">);</span>
-</span><span class='line'>      
-</span><span class='line'>  <span class="k">if</span> <span class="p">((</span><span class="n">addr</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">file_size</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="p">,</span>
-</span><span class='line'>           <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">file_fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">==</span> <span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error on mmap()&quot;</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">close</span><span class="p">(</span><span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">file_fd</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error closing filefd&quot;</span><span class="p">);</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="n">call_http</span><span class="p">(</span><span class="s">&quot;200&quot;</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">trx_fd</span><span class="p">,</span> <span class="n">wb_trx</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">send_msg</span><span class="p">(</span><span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">trx_fd</span><span class="p">,</span> <span class="n">addr</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">munmap</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">wb_trx</span><span class="o">-&gt;</span><span class="n">file_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;munmap() error&quot;</span><span class="p">);</span>
-</span><span class='line'>  <span class="cm">/* freeing web transaction */</span>
-</span><span class='line'>  <span class="n">free</span><span class="p">(</span><span class="n">wb_trx</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>This is the function that currently gets <strong>.html</strong> stored file data from server
-and calls respective http functions. The plan is to have one function with
-centralized movement, sort of spoke and hub communication. The current HTTP api
-functions need to be made to return status.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="cm">/* receive msg function */</span>
-</span><span class='line'><span class="kt">size_t</span> <span class="nf">recv_msg</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">usr_buff</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">size_t</span> <span class="n">nleft</span> <span class="o">=</span> <span class="n">nbytes</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">ssize_t</span> <span class="n">nrecv</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">char</span> <span class="o">*</span><span class="n">recv_buff</span> <span class="o">=</span> <span class="n">usr_buff</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">while</span> <span class="p">(</span><span class="n">nleft</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">nrecv</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">recv_buff</span><span class="p">,</span> <span class="n">nleft</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">==</span> <span class="n">EINTR</span><span class="p">)</span>
-</span><span class='line'>              <span class="n">nrecv</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>          <span class="k">else</span>
-</span><span class='line'>              <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;recv() error&quot;</span><span class="p">);</span>
-</span><span class='line'>      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">nrecv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="o">||</span> <span class="n">strstr</span><span class="p">(</span><span class="n">recv_buff</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">))</span>
-</span><span class='line'>          <span class="k">break</span><span class="p">;</span>
-</span><span class='line'>      <span class="n">nleft</span> <span class="o">-=</span> <span class="n">nrecv</span><span class="p">;</span>
-</span><span class='line'>      <span class="n">recv_buff</span> <span class="o">+=</span> <span class="n">nrecv</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">return</span> <span class="n">nbytes</span> <span class="o">-</span> <span class="n">nleft</span><span class="p">;</span>
-</span><span class='line'>  
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/* send msg function */</span>
-</span><span class='line'><span class="kt">size_t</span> <span class="nf">send_msg</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buff</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kt">size_t</span> <span class="n">nleft</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buff</span><span class="p">);</span>
-</span><span class='line'>  <span class="kt">ssize_t</span> <span class="n">nsend</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="cm">/* send content */</span>
-</span><span class='line'>  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Bytes to send: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="n">nleft</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">while</span> <span class="p">(</span><span class="n">nleft</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">nsend</span> <span class="o">=</span> <span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buff</span><span class="p">,</span> <span class="n">nleft</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">(</span> <span class="n">nsend</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">errno</span> <span class="o">==</span> <span class="n">EINTR</span><span class="p">)</span>
-</span><span class='line'>              <span class="n">nsend</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>          <span class="k">else</span>
-</span><span class='line'>              <span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;error with send()&quot;</span><span class="p">);</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>      <span class="n">nleft</span> <span class="o">-=</span> <span class="n">nsend</span><span class="p">;</span>
-</span><span class='line'>      <span class="n">buff</span> <span class="o">+=</span> <span class="n">nsend</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">nleft</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Send success!!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">return</span> <span class="n">nleft</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>These function still need some work with the return values and error detection
-. It is another of the high priorities. They are wrappers to the send() and
-recv() socket function calls.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-</pre></td><td class='code'><pre><code class='C'><span class='line'><span class="p">[</span><span class="n">jaime</span><span class="err">@</span><span class="n">LenoLX</span> <span class="n">xwbserver</span><span class="p">]</span><span class="err">$</span> <span class="p">.</span><span class="o">/</span><span class="n">xwbserver</span> <span class="mi">5600</span> <span class="p">.</span> <span class="mi">8</span>
-</span><span class='line'><span class="nl">server</span><span class="p">:</span> <span class="n">got</span> <span class="n">connection</span> <span class="n">from</span> <span class="mf">127.0.0.1</span> <span class="n">port</span> <span class="mi">50451</span>
-</span><span class='line'><span class="nl">method</span><span class="p">:</span> <span class="n">GET</span>
-</span><span class='line'><span class="nl">uri</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">-</span><span class="n">dyn</span><span class="p">.</span><span class="n">html</span>
-</span><span class='line'><span class="nl">ver</span><span class="p">:</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
-</span><span class='line'>
-</span><span class='line'><span class="nl">Filename</span><span class="p">:</span> <span class="p">.</span><span class="o">/</span><span class="n">home</span><span class="o">-</span><span class="n">dyn</span><span class="p">.</span><span class="n">html</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">83</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">407</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="nl">server</span><span class="p">:</span> <span class="n">got</span> <span class="n">connection</span> <span class="n">from</span> <span class="mf">127.0.0.1</span> <span class="n">port</span> <span class="mi">50452</span>
-</span><span class='line'><span class="nl">method</span><span class="p">:</span> <span class="n">GET</span>
-</span><span class='line'><span class="nl">uri</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">-</span><span class="n">pic1</span><span class="p">.</span><span class="n">html</span>
-</span><span class='line'><span class="nl">ver</span><span class="p">:</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
-</span><span class='line'>
-</span><span class='line'><span class="nl">Filename</span><span class="p">:</span> <span class="p">.</span><span class="o">/</span><span class="n">home</span><span class="o">-</span><span class="n">pic1</span><span class="p">.</span><span class="n">html</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">83</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">270</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="nl">server</span><span class="p">:</span> <span class="n">got</span> <span class="n">connection</span> <span class="n">from</span> <span class="mf">127.0.0.1</span> <span class="n">port</span> <span class="mi">50453</span>
-</span><span class='line'><span class="nl">method</span><span class="p">:</span> <span class="n">GET</span>
-</span><span class='line'><span class="nl">uri</span><span class="p">:</span> <span class="o">/</span><span class="n">smiley</span><span class="p">.</span><span class="n">gif</span>
-</span><span class='line'><span class="nl">ver</span><span class="p">:</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
-</span><span class='line'>
-</span><span class='line'><span class="nl">Filename</span><span class="p">:</span> <span class="p">.</span><span class="o">/</span><span class="n">smiley</span><span class="p">.</span><span class="n">gif</span>
-</span><span class='line'><span class="n">File</span> <span class="n">not</span> <span class="n">found</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">142</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="nl">server</span><span class="p">:</span> <span class="n">got</span> <span class="n">connection</span> <span class="n">from</span> <span class="mf">127.0.0.1</span> <span class="n">port</span> <span class="mi">50454</span>
-</span><span class='line'><span class="nl">method</span><span class="p">:</span> <span class="n">GET</span>
-</span><span class='line'><span class="nl">uri</span><span class="p">:</span> <span class="o">/</span><span class="n">landscape</span><span class="p">.</span><span class="n">jpg</span>
-</span><span class='line'><span class="nl">ver</span><span class="p">:</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
-</span><span class='line'>
-</span><span class='line'><span class="nl">Filename</span><span class="p">:</span> <span class="p">.</span><span class="o">/</span><span class="n">landscape</span><span class="p">.</span><span class="n">jpg</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">85</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span><span class='line'><span class="n">Bytes</span> <span class="n">to</span> <span class="nl">send</span><span class="p">:</span> <span class="mi">4</span>
-</span><span class='line'><span class="n">Send</span> <span class="n">success</span><span class="o">!!</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Usage example using a browser.</p>
+POSIX threads and sockets API.<!-- raw HTML omitted --></p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 
                 
 
@@ -778,58 +282,40 @@ recv() socket function calls.</p>
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -838,9 +324,27 @@ recv() socket function calls.</p>
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

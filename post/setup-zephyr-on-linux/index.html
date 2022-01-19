@@ -211,69 +211,47 @@
                     <h2>TOC</h2>
                 </header>
                 <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#intro">Intro</a></li>
-<li><a href="#steps">Steps</a></li>
-<li><a href="#final-notes">Final Notes</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#steps">Steps</a></li>
+        <li><a href="#final-notes">Final Notes</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
                 
-                
-
-<h2 id="intro">Intro</h2>
-
-<hr />
-
+                <h2 id="intro">Intro</h2>
+<hr>
 <p>Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on <strong>Debian 9</strong> with a <strong>FRDM-K64F</strong>.</p>
-
 <h2 id="steps">Steps</h2>
-
-<hr />
-
+<hr>
 <p><strong>1.</strong> Install the necessary requirements</p>
-
-<pre><code class="language-Bash">sudo apt-get install --no-install-recommends git cmake ninja-build gperf \
-  ccache dfu-util device-tree-compiler wget \
-  python3-pip python3-setuptools python3-wheel xz-utils file make gcc
-</code></pre>
-
-<p><strong>2.</strong>  Download and Install SDK</p>
-
-<pre><code class="language-Bash">wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">sudo apt-get install --no-install-recommends git cmake ninja-build gperf <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  ccache dfu-util device-tree-compiler wget <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  python3-pip python3-setuptools python3-wheel xz-utils file make gcc
+</code></pre></div><p><strong>2.</strong>  Download and Install SDK</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run
 cd &lt;sdk download directory&gt;
 sh zephyr-sdk-0.10.0-setup.run
-export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-export ZEPHYR_GCC_VARIANT=zephyr
-export ZEPHYR_SDK_INSTALL_DIR=&lt;sdk installation directory&gt;
-</code></pre>
-
-<p><strong>3.</strong> Get the kernel</p>
-
-<pre><code class="language-Bash">git clone git@github.com:zephyrproject-rtos/zephyr.git
-</code></pre>
-
-<p><strong>4.</strong> Do Hello World</p>
-
-<pre><code class="language-Bash">https://docs.zephyrproject.org/latest/boards/arm/frdm_k64f/doc/index.html
+export ZEPHYR_TOOLCHAIN_VARIANT<span style="color:#f92672">=</span>zephyr
+export ZEPHYR_GCC_VARIANT<span style="color:#f92672">=</span>zephyr
+export ZEPHYR_SDK_INSTALL_DIR<span style="color:#f92672">=</span>&lt;sdk installation directory&gt;
+</code></pre></div><p><strong>3.</strong> Get the kernel</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">git clone git@github.com:zephyrproject-rtos/zephyr.git
+</code></pre></div><p><strong>4.</strong> Do Hello World</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">https://docs.zephyrproject.org/latest/boards/arm/frdm_k64f/doc/index.html
 git checkout tags/v1.8.0
 source zephyr-env.sh
 cd $ZEPHYR_BASE/samples/hello_world
-make BOARD=frdm-k64f
-</code></pre>
-
-<h2 id="final-notes">Final Notes</h2>
-
-<hr />
-
+make BOARD<span style="color:#f92672">=</span>frdm-k64f
+</code></pre></div><h2 id="final-notes">Final Notes</h2>
+<hr>
 <p><strong>Common errors</strong>
 Install Pyyaml, elftools using</p>
-
-<pre><code class="language-Bash">sudo pip3 install -r scripts/requirements.txt 
-</code></pre>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Bash" data-lang="Bash">sudo pip3 install -r scripts/requirements.txt 
+</code></pre></div>
 
                 
 
@@ -314,58 +292,40 @@ Install Pyyaml, elftools using</p>
                         
                         
                         
-                        <a href="/tags/arm" title="ARM">
-                            ARM
+                        <a href="/tags/arm" title="arm">
+                            arm
                         </a>
                         
                         
                         
-                        <a href="/tags/bash" title="Bash">
-                            Bash
+                        <a href="/tags/bash" title="bash">
+                            bash
                         </a>
                         
                         
                         
-                        <a href="/tags/c" title="C">
-                            C
+                        <a href="/tags/c" title="c">
+                            c
                         </a>
                         
                         
                         
-                        <a href="/tags/development" title="Development">
-                            Development
-                        </a>
-                        
-                        
-                        
-                        <a href="/tags/kvm" title="KVM">
-                            KVM
+                        <a href="/tags/development" title="development">
+                            development
                         </a>
                         
                         
                         
                         
                         
-                        
-                        
-                        <a href="/tags/linux" title="Linux">
-                            Linux
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
                         </a>
                         
                         
                         
-                        
-                        
-                        <a href="/tags/qemu" title="QEMU">
-                            QEMU
-                        </a>
-                        
-                        
-                        
-                        
-                        
-                        <a href="/tags/tcp/ip" title="TCP/IP">
-                            TCP/IP
+                        <a href="/tags/linux" title="linux">
+                            linux
                         </a>
                         
                         
@@ -374,9 +334,27 @@ Install Pyyaml, elftools using</p>
                         
                         
                         
-                        <a href="/tags/x86-assembly" title="x86 Assembly">
-                            x86 Assembly
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
                         
                         
                     </div>

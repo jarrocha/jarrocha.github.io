@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ARM on Innercoder.dev</title>
@@ -17,11 +17,11 @@
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/post/setup-mbed-cli-on-linux/</guid>
-      <description>Intro This tutorial comes from the fact that there are several steps where errors can come up.
-Steps 1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
+      <description>Intro  This tutorial comes from the fact that there are several steps where errors can come up.
+Steps  1. Download the latest toolchain. It can be untar and installed where its more convinient: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
 2. Install mbed-cli with python. This steps are well made from the website. Make your to be using Python3. https://os.mbed.com/docs/mbed-os/v6.3/build-tools/install-and-set-up.html
 3. Configure GCC_ARM_PATH and ARM_PATH
-$ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $ mbed config -G GCC_ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot;  Test output:</description>
+$ mbed config -G ARM_PATH &amp;#34;&amp;lt;path to ARM bin\&amp;gt;&amp;#34; $ mbed config -G GCC_ARM_PATH &amp;#34;&amp;lt;path to ARM bin\&amp;gt;&amp;#34; Test output:</description>
     </item>
     
     <item>
@@ -30,10 +30,10 @@ $ mbed config -G ARM_PATH &amp;quot;&amp;lt;path to ARM bin\&amp;gt;&amp;quot; $
       <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
       
       <guid>https://jarrocha.github.io/post/setup-zephyr-on-linux/</guid>
-      <description>Intro Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
-Steps 1. Install the necessary requirements
-sudo apt-get install --no-install-recommends git cmake ninja-build gperf \ ccache dfu-util device-tree-compiler wget \ python3-pip python3-setuptools python3-wheel xz-utils file make gcc  2. Download and Install SDK
-wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt;  3.</description>
+      <description>Intro  Zephyr is a little easier to setup compared to Mbed OS to setup. This was done on Debian 9 with a FRDM-K64F.
+Steps  1. Install the necessary requirements
+sudo apt-get install --no-install-recommends git cmake ninja-build gperf \  ccache dfu-util device-tree-compiler wget \  python3-pip python3-setuptools python3-wheel xz-utils file make gcc 2. Download and Install SDK
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zephyr-sdk-0.10.0-setup.run cd &amp;lt;sdk download directory&amp;gt; sh zephyr-sdk-0.10.0-setup.run export ZEPHYR_TOOLCHAIN_VARIANT=zephyr export ZEPHYR_GCC_VARIANT=zephyr export ZEPHYR_SDK_INSTALL_DIR=&amp;lt;sdk installation directory&amp;gt; 3.</description>
     </item>
     
   </channel>
