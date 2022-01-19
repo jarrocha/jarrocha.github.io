@@ -19,7 +19,7 @@
       <guid>https://jarrocha.github.io/post/spi_driver_test/</guid>
       <description>Intro This is a short post on how to use a Logic Analyzer to test an SPI driver implementation when not having another device to test with.
 I recently bought a Saleae Logic Analyzer and it comes with a very convenient protocol analyzer tool to test SPI, I2C, CAN and other protocols. Here is the web guide.
-I wanted to test this for myself so I updated and uploaded an old implementation of SPI for STM32F446.</description>
+I wanted to test this for myself so I updated and uploaded an old SPI driver I wrote for STM32F446.</description>
     </item>
     
     <item>
