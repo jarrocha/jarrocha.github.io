@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>C&#43;&#43; on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/tags/c&#43;&#43;/</link>
+    <description>Recent content in C&#43;&#43; on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 20 Jun 2021 11:07:09 -0500</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/tags/c++/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Dynamic System Integration and Plotting with C&#43;&#43;</title>
+      <link>https://jarrocha.github.io/post/euler1/</link>
+      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/euler1/</guid>
+      <description>Intro  This is a quick demonstration on how to solve a state representation with the Euler method, collecting the values, and then plotting them.
+I didn&amp;rsquo;t found a solution that wasn&amp;rsquo;t easy out there so I thought on getting the easy to integrate plotting library and a good math-algebra library to work with.
+This is based on some work I did before with simulation. There&amp;rsquo;s some potential on expanding this, which I&amp;rsquo;ll do once I have more time.</description>
+    </item>
+    
+  </channel>
+</rss>

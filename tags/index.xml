@@ -6,7 +6,7 @@
     <description>Recent content in Tags on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 May 2021 11:24:35 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 20 Jun 2021 11:07:09 -0500</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,9 +14,27 @@
     <item>
       <title>C</title>
       <link>https://jarrocha.github.io/tags/c/</link>
-      <pubDate>Wed, 19 May 2021 11:24:35 -0500</pubDate>
+      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/tags/c/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43;</title>
+      <link>https://jarrocha.github.io/tags/c&#43;&#43;/</link>
+      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/c&#43;&#43;/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Dynamic System</title>
+      <link>https://jarrocha.github.io/tags/dynamic-system/</link>
+      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/dynamic-system/</guid>
       <description></description>
     </item>
     
