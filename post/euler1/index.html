@@ -10,8 +10,8 @@
     <meta property="og:type" content="article">
 
     
-    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg">
-    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg" />
+    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/tech17.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/tech17.jpg" />
     
 
     
@@ -242,7 +242,15 @@ C++</a>.</p>
 after computing the state representation for <code>x_dot</code>. This program can easily be expanded to get output to csv
 files, which I&rsquo;ll do next. And from reading matrices from a config file once it gets more robust. I have worked on
 a more robust version which I&rsquo;ll upload soon.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span style="color:#75715e">// Euler based integrator
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;matplotlibcpp.h&#34;</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;Eigen/Core&#34;</span><span style="color:#75715e">
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span style="color:#75715e"></span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span>namespace plt <span style="color:#f92672">=</span> matplotlibcpp;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span>using namespace Eigen;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span style="color:#75715e">// Euler based integrator
 </span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span style="color:#75715e"></span>MatrixXf <span style="color:#a6e22e">transition</span>(MatrixXf A, MatrixXf x, MatrixXf B, <span style="color:#66d9ef">double</span> u, <span style="color:#66d9ef">double</span> delta_t)
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span>{
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span>    MatrixXf x_dot <span style="color:#f92672">=</span> A <span style="color:#f92672">*</span> x <span style="color:#f92672">+</span> B <span style="color:#f92672">*</span> u;
