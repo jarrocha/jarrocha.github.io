@@ -38,15 +38,7 @@ The complete code is in its github repository.</description>
       <pubDate>Wed, 13 Jul 2016 16:53:42 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</guid>
-      <description>&lt;p&gt;p&amp;gt;In this post I will analyze an implementation of a prethreaded TCP server that
-leverages the HTTP protocol. This is a personal ongoing project that will
-continue its
-development and I found it to be at a good place to start sharing what I have
-done so far. The whole purpose of this is to later on built a tool to test its
-performance and how to break it with malformed packets. It is such an
-interesting project that everytime I sit down with it, I start thinking about
-different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</description>
+      <description>Intro In this post I will analyze an implementation of a prethreaded TCP server that leverages the HTTP protocol. This is a personal ongoing project that will continue its development and I found it to be at a good place to start sharing what I have done so far. The whole purpose of this is to later on built a tool to test its performance and how to break it with malformed packets.</description>
     </item>
     
     <item>
@@ -55,7 +47,9 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
       <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Introduction  In this second part, the optimization code will be shown. Specifically O1, O2, and O3. We are going to be able to see, what performance decisions the gcc compiler makes; for example, we are going to check if the compilers takes the function that calculates the string length calls out of the loop.
+O1 Optimization Here is the command to created the assembly code:
+gcc -fno-asynchronous-unwind-tables -S -O1 -o psum1_O1.</description>
     </item>
     
     <item>
@@ -64,7 +58,8 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
       <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>These blog series belong to some old notes that I have and thought that could be useful to redo. It is always good to refresh material and what a better way than to write about it.
+These series will consists of presenting an algorithm in C that will iteratively be re-coded for better performance. Assembly code will be shown so as to show what&amp;rsquo;s going on at the instruction level, gprof, valgrind, and perf will be used to assess quantitavely our coding efforts.</description>
     </item>
     
   </channel>

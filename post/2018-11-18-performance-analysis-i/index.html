@@ -208,18 +208,30 @@
                 </header>
                 <nav id="TableOfContents"></nav>
                 
-                <!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+                <p>These blog series belong to some old notes that I have and thought that could be
+useful to redo. It is always good to refresh material and what a better way than
+to write about it.</p>
+<p>These series will consists of presenting an algorithm in C that will iteratively
+be re-coded for better performance. Assembly code will be shown so as to show
+what&rsquo;s going on at the instruction level, <code>gprof</code>, <code>valgrind</code>, and <code>perf</code>
+will be used to assess quantitavely our coding efforts.
+All the code presented here is in my <a href="%22https://github.com/jarrocha/code_perf%22">github repo</a> free to use.</p>
+<p>Before I start I will like to mention that I find assembly language fascinating
+and one of the reasons I love programming. With assembly you can actually
+see what the program is doing. And it is all done by the GNU C Compiler.</p>
+<p>Reference machine processor: <code>Intel Core i7-5600U</code></p>
+<p>In the first part I will show some code that belongs to the book
+<a href="http://www.amazon.com/Computer-Systems-Programmers-Perspective-3rd/dp/i013409266X">Computer Systems: A Programmer&rsquo;s Perspective</a>,
+it consist of having an abstract data type having as members a scalar, an array, and a variable
+holding the sum of the array contents.</p>
+<p>Here is our abstract data type:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> vec {
   <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> len;
   <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> result;
   <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>data;
 };
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p><code>len</code> stores the number of elements of the array, <code>result</code> the addition of
+all of them and <code>data</code> a pointer to the allocated array.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
 {
   <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> num;
@@ -245,7 +257,9 @@
   free(vec_ptr);
   <span style="color:#66d9ef">return</span>(EXIT_SUCCESS);
 }
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>The <code>main()</code> function calls the function to  initialize our structure and then
+calls the function to perform the addition. For our test we will start with
+an array size of 500000000.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> vec <span style="color:#f92672">*</span> <span style="color:#a6e22e">new_vec</span>(<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> len)
 {
   <span style="color:#66d9ef">int</span> i;
@@ -274,7 +288,8 @@
 
   <span style="color:#66d9ef">return</span> alloc;
 }
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>This function has the simple task of allocating an array and randomizing its
+contents.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">vec_length</span>(<span style="color:#66d9ef">struct</span> vec<span style="color:#f92672">*</span> v)
 {
   <span style="color:#66d9ef">return</span> v<span style="color:#f92672">-&gt;</span>len;
@@ -299,39 +314,68 @@
   }
   v<span style="color:#f92672">-&gt;</span>result <span style="color:#f92672">=</span> dest;
 }
-</code></pre></div><!-- raw HTML omitted -->
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">combine1:
-  <span style="color:#a6e22e">pushq</span>   %rbp
-  <span style="color:#a6e22e">movq</span>    %rsp, %rbp
-  <span style="color:#a6e22e">subq</span>    <span style="color:#66d9ef">$40</span>, %rsp
-  <span style="color:#a6e22e">movq</span>    %rdi, -<span style="color:#ae81ff">40</span>(%rbp)
-  <span style="color:#a6e22e">movq</span>    <span style="color:#66d9ef">$0</span>, -<span style="color:#ae81ff">8</span>(%rbp)
-  <span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">.L8</span>
-.L9:
-  <span style="color:#a6e22e">leaq</span>    -<span style="color:#ae81ff">20</span>(%rbp), %rdx
-  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">8</span>(%rbp), %rcx
-  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
-  <span style="color:#a6e22e">movq</span>    %rcx, %rsi
-  <span style="color:#a6e22e">movq</span>    %rax, %rdi
-  <span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">get_vec_element</span>
-  <span style="color:#a6e22e">movl</span>    -<span style="color:#ae81ff">20</span>(%rbp), %eax
-  <span style="color:#a6e22e">cltq</span>
-  <span style="color:#a6e22e">addq</span>    %rax, -<span style="color:#ae81ff">16</span>(%rbp)
-  <span style="color:#a6e22e">addq</span>    <span style="color:#66d9ef">$1</span>, -<span style="color:#ae81ff">8</span>(%rbp)
-.L8:
-  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
-  <span style="color:#a6e22e">movq</span>    %rax, %rdi
-  <span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">vec_length</span>
-  <span style="color:#a6e22e">cmpq</span>    -<span style="color:#ae81ff">8</span>(%rbp), %rax
-  <span style="color:#a6e22e">jg</span>  <span style="color:#66d9ef">.L9</span>
-  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
-  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">16</span>(%rbp), %rdx
-  <span style="color:#a6e22e">movq</span>    %rdx, <span style="color:#ae81ff">8</span>(%rax)
-  <span style="color:#a6e22e">leave</span>
-  <span style="color:#a6e22e">ret</span>
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p><strong>Deficiency Analysis:</strong></p>
+<p>Here is our first version of the function. As you can see it has some very
+obvious deficiencies like calling <code>vec_length()</code> and <code>get_vec_element()</code> on every
+iteration. And also, the constant reading from memory, which you will see below.
+The function <code>vec_length()</code> simply returns the len element of
+<code>struct vec</code>, and <code>get_vec_element()</code> returns the array value given an index.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span>combine1:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span>  <span style="color:#a6e22e">pushq</span>   %rbp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span>  <span style="color:#a6e22e">movq</span>    %rsp, %rbp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span>  <span style="color:#a6e22e">subq</span>    <span style="color:#66d9ef">$40</span>, %rsp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span>  <span style="color:#a6e22e">movq</span>    %rdi, -<span style="color:#ae81ff">40</span>(%rbp)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span>  <span style="color:#a6e22e">movq</span>    <span style="color:#66d9ef">$0</span>, -<span style="color:#ae81ff">8</span>(%rbp)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span>  <span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">.L8</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span>.L9:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span>  <span style="color:#a6e22e">leaq</span>    -<span style="color:#ae81ff">20</span>(%rbp), %rdx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span>  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">8</span>(%rbp), %rcx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span>  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span>  <span style="color:#a6e22e">movq</span>    %rcx, %rsi
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span>  <span style="color:#a6e22e">movq</span>    %rax, %rdi
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span>  <span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">get_vec_element</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span>  <span style="color:#a6e22e">movl</span>    -<span style="color:#ae81ff">20</span>(%rbp), %eax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span>  <span style="color:#a6e22e">cltq</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span>  <span style="color:#a6e22e">addq</span>    %rax, -<span style="color:#ae81ff">16</span>(%rbp)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span>  <span style="color:#a6e22e">addq</span>    <span style="color:#66d9ef">$1</span>, -<span style="color:#ae81ff">8</span>(%rbp)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span>.L8:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span>  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span>  <span style="color:#a6e22e">movq</span>    %rax, %rdi
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span>  <span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">vec_length</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span>  <span style="color:#a6e22e">cmpq</span>    -<span style="color:#ae81ff">8</span>(%rbp), %rax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span>  <span style="color:#a6e22e">jg</span>  <span style="color:#66d9ef">.L9</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span>  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">40</span>(%rbp), %rax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span>  <span style="color:#a6e22e">movq</span>    -<span style="color:#ae81ff">16</span>(%rbp), %rdx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span>  <span style="color:#a6e22e">movq</span>    %rdx, <span style="color:#ae81ff">8</span>(%rax)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span>  <span style="color:#a6e22e">leave</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span>  <span style="color:#a6e22e">ret</span></code></pre></div>
+<p>This code was created with <code>gcc</code> and flags <code>-fno-asynchronous-unwind-tables -S</code>. Here&rsquo;s a brief analysis of the code above.</p>
+<p>Line 2-3: save previous frame pointer and save it on the stack. Sets new position for frame pointer.
+Line 4: creates new stack
+Line 5: %rdi contains the first argument for the function, <code>struct vec * v</code> which is saved on the stack.
+Line 6: initializes <em>i</em> to zero
+Line 7: unconditional jump to label <code>.L8</code>.
+Line 20-21: loads pointer <code>v</code> from memory to <code>%rax</code> and then onto <code>%rdi</code> for call to <code>vec_length()</code>
+Line 23: <code>vec_length()</code> returns to<code>%rax</code> which is compared to <code>i</code>.
+Line 24: if value <code>len</code> at <code>%rax</code> is greater than <code>i</code> at <code>-8(%rbp)</code>
+jump to label <code>.L9</code>. Else, exit function.
+Line 9: load pointer address for <code>val</code> to register <code>%rdx</code> as third
+argument for call to <code>get_vec_element()</code>.
+Line 10: load <code>i</code> from memory <code>again</code> :( to register <code>%rcx</code>.
+Line 11: load <code>*v</code> from memory to register <code>%rax</code>.
+Line 12-13: move the recently loaded values to the respective argument
+variables <code>%rdi</code> 1st, <code>%rsi</code> 2nd, and <code>%rdx</code> 3rd (done
+previously on line 9).
+Line 14: with the arguments ready call <code>get_vec_element()</code>.
+Line 15: <code>get_vec_element()</code> modified <code>-20(%rbp)</code>, load int value to
+<code>%eax</code>.
+Line 16: cltq is equivalent to  <code>movslq %eax, %rax</code>, sign extending 32-bit
+<code>%eax</code> to <code>%rax</code>.
+Line 17: add quad words located <code>%rax</code> (previously obtained) with value at
+<code>-16(%rbp)</code> and store it at <code>-16(%rbp)</code> (<code>dest</code>) .
+Line 18: add immediate value of 1 to value pointed at location <code>-8(%rbp)(i)</code>.</p>
+<p>Continue cycle until comparison at Line 23 branches to the exit.</p>
+<p>Here is the gprof output. Again with a test value of 500000000.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">Flat</span> <span style="color:#66d9ef">profile</span>:
 
 <span style="color:#a6e22e">Each</span> <span style="color:#66d9ef">sample</span> <span style="color:#66d9ef">counts</span> <span style="color:#66d9ef">as</span> <span style="color:#ae81ff">0</span><span style="color:#66d9ef">.01</span> <span style="color:#66d9ef">seconds.</span>
@@ -342,8 +386,11 @@
  <span style="color:#960050;background-color:#1e0010">23</span><span style="color:#a6e22e">.45</span>      <span style="color:#ae81ff">6</span><span style="color:#66d9ef">.01</span>     <span style="color:#ae81ff">1</span><span style="color:#66d9ef">.68</span>        <span style="color:#ae81ff">1</span>     <span style="color:#ae81ff">1</span><span style="color:#66d9ef">.68</span>     <span style="color:#ae81ff">4</span><span style="color:#66d9ef">.99</span>  <span style="color:#66d9ef">combine1</span>
  <span style="color:#960050;background-color:#1e0010">16</span><span style="color:#a6e22e">.78</span>      <span style="color:#ae81ff">7</span><span style="color:#66d9ef">.22</span>     <span style="color:#ae81ff">1</span><span style="color:#66d9ef">.20</span> <span style="color:#ae81ff">500000001</span>     <span style="color:#ae81ff">0</span><span style="color:#66d9ef">.00</span>     <span style="color:#ae81ff">0</span><span style="color:#66d9ef">.00</span>  <span style="color:#66d9ef">vec_length</span>
   <span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">.07</span>      <span style="color:#ae81ff">7</span><span style="color:#66d9ef">.22</span>     <span style="color:#ae81ff">0</span><span style="color:#66d9ef">.01</span>                             <span style="color:#66d9ef">frame_dummy</span>
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>It is shown that this code spents close to 60% of its time with calls to
+<!-- raw HTML omitted -->get_vec_element()<!-- raw HTML omitted --> and <!-- raw HTML omitted -->vec_length()<!-- raw HTML omitted -->. We can easily correct this.</p>
+<p>Running with perf with the command <!-- raw HTML omitted -->perf stat -r 1 -e
+task-clock,cycles,instructions,cache-references,cache-misses,branches,branch-misses
+./psum1 500000000<!-- raw HTML omitted --></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"> <span style="color:#a6e22e">Performance</span> <span style="color:#66d9ef">counter</span> <span style="color:#66d9ef">stats</span> <span style="color:#66d9ef">for</span> <span style="color:#960050;background-color:#1e0010">&#39;</span>.<span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">psum1</span> <span style="color:#ae81ff">500000000</span><span style="color:#960050;background-color:#1e0010">&#39;</span> (<span style="color:#ae81ff">10</span> <span style="color:#66d9ef">runs</span>):
 
       <span style="color:#960050;background-color:#1e0010">15588</span><span style="color:#a6e22e">.601346</span>      <span style="color:#66d9ef">task-clock</span> (<span style="color:#66d9ef">msec</span>)         <span style="color:#75715e">#    1.001 CPUs utilized
@@ -363,13 +410,43 @@
 
       <span style="color:#960050;background-color:#1e0010">15</span><span style="color:#a6e22e">.579928644</span> <span style="color:#66d9ef">seconds</span> <span style="color:#66d9ef">time</span> <span style="color:#66d9ef">elapsed</span>
 <span style="color:#960050;background-color:#1e0010">(</span> <span style="color:#960050;background-color:#1e0010">+-</span>  <span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">.77</span><span style="color:#960050;background-color:#1e0010">%</span> )
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>Two important measurements from this output and the ones I am going to refer to
+are the <!-- raw HTML omitted -->cycles per instructions<!-- raw HTML omitted --> (CPI), the lower the CPI the more efficient
+is the processor at executing the program. And the
+<!-- raw HTML omitted -->ratio of cache-misses to instructions<!-- raw HTML omitted -->, this tell us how well is cache
+management for the program, the lower the ratio the better our program is with
+memory access. From my investigations, a good ratio is smaller than 5%. But I
+think we can do much better that it is right now.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Name                                  psum1
+CPI                                   0.429
+cache-misses / instructions <span style="color:#f92672">(</span>%<span style="color:#f92672">)</span>       0.56798
+instructions                          114,537,661,031
+</code></pre></div><p>To have a better idea of what instructions are creating the cache misses, I
+ran <!-- raw HTML omitted -->valgrind –tool=cachegrind ./psum1 500000000<!-- raw HTML omitted -->. This program simulates
+cache usage in a program and can at least give us an idea of where are the
+branches being missed. After running this application, there will be an output
+file called <!-- raw HTML omitted -->cachegrind.out.pid<!-- raw HTML omitted --> where pid will be a random number obtained
+at the moment of running. Run the output file like this <!-- raw HTML omitted -->cg_annotate
+cachegrind.out.pid<!-- raw HTML omitted -->. This program help us to get a better idea of what
+functions are creating cache misses.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">psum1.c:  get_vec_element 
+D1mr: 31,250,002
+DLmr: 31,250,002
+psum1.c:  new_vec
+D1mw: 31,250,000
+DLmw: 31,250,000
+</code></pre></div><p><code>mr</code> stands for write misses, <code>mr</code> for read misses, <code>DL</code> last level cache,
+and <code>D1</code> for data cache, which in our case it is referring to Level 2.
+The constant calling to <code>get_vec_element()</code> and <code>new_vec()</code> make the program
+misspredict branches. In our current case <code>new_vec()</code> won’t be able to be
+reduced due to the need of creating values to our newly created array.
+More information about cachegrind can be found
+<a href="https://courses.cs.washington.edu/courses/cse326/05wi/valgrind-doc/cg_main.html#cg-top">here</a>
+and <a href="http://valgrind.org/docs/manual/manual.html">here</a>.</p>
+<p>On Part 2, we will test with gcc compiler optimizations. And will also do a
+another full assembly code analysis with their respective gprof and perf
+profiles.</p>
+
 
                 
 
@@ -377,13 +454,13 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/post/2018-11-18-shell-prog-basics/" data-toggle="tooltip" data-placement="top" title="Linux Shell Programming Basics">&larr;
+                        <a href="/post/2018-11-18-shell-prog-basics/" data-toggle="tooltip" data-placement="top" title="Programming a Linux Shell Terminal">&larr;
                             Previous Post</a>
                     </li>
                     
                     
                     <li class="next">
-                        <a href="/post/2018-11-18-quagga-kvm-i/" data-toggle="tooltip" data-placement="top" title="Automating Quagga With QEMU-KVM: Part 1">Next
+                        <a href="/post/2018-11-18-quagga-kvm-i/" data-toggle="tooltip" data-placement="top" title="Automating Quagga With QEMU-KVM">Next
                             Post &rarr;</a>
                     </li>
                     

@@ -15,15 +15,15 @@
     
 
     
-    <meta name="title" content="Automating Quagga With QEMU-KVM: Part 1" />
-    <meta property="og:title" content="Automating Quagga With QEMU-KVM: Part 1" />
-    <meta property="twitter:title" content="Automating Quagga With QEMU-KVM: Part 1" />
+    <meta name="title" content="Automating Quagga With QEMU-KVM" />
+    <meta property="og:title" content="Automating Quagga With QEMU-KVM" />
+    <meta property="twitter:title" content="Automating Quagga With QEMU-KVM" />
     
 
     
-    <meta name="description" content="Network automation with QEMU-KVM Part 1">
-    <meta property="og:description" content="Network automation with QEMU-KVM Part 1" />
-    <meta property="twitter:description" content="Network automation with QEMU-KVM Part 1" />
+    <meta name="description" content="Network automation with QEMU-KVM">
+    <meta property="og:description" content="Network automation with QEMU-KVM" />
+    <meta property="twitter:description" content="Network automation with QEMU-KVM" />
     
 
     
@@ -34,7 +34,7 @@
     <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>Automating Quagga With QEMU-KVM: Part 1-Innercoder.dev</title>
+    <title>Automating Quagga With QEMU-KVM-Innercoder.dev</title>
 
     <link rel="canonical" href="/post/2018-11-18-quagga-kvm-i/">
 
@@ -182,7 +182,7 @@
                         </a>
                         
                     </div>
-                    <h1>Automating Quagga With QEMU-KVM: Part 1</h1>
+                    <h1>Automating Quagga With QEMU-KVM</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by 
@@ -218,79 +218,126 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                <nav id="TableOfContents"></nav>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
                 
-                <!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<pre><code>qemu-img create -f qcow2 image_name.qcow2 3G
-Formatting 'image_name.qcow2', fmt=qcow2 size=5368709120 encryption=off
-cluster_size=65536 lazy_refcounts=off 
-</code></pre><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<pre><code>kvm -m 2048 -cdrom CentOS-7-x86_64-Minimal-1511.iso -vga vmware -hda
+                <h2 id="introduction">Introduction</h2>
+<hr>
+<p>Some days ago I needed a proof of concept for some routing configuration using
+Linux that was stuck in my head for days already. So I needed a way to bring up
+some Linux boxes to quickly to check this. The <a href="https://opennetlinux.org/docs/routingtutorial">ONL website</a>
+proved very useful, but I needed to use CentOS. So I came up with a script based on the
+mentioned tutorial that brings up QEMU-KVM images with Quagga already installed
+and configured.</p>
+<p>This post takes you through the basics of installing and configuring both
+QEMU-KVM and Quagga. And with the ease of a script to create multiple VMs to
+play with.</p>
+<h3 id="what-is-qemuhttpwikiqemuorgmain_page">What is <a href="http://wiki.qemu.org/Main_Page">QEMU</a>?</h3>
+<p>QEMU is a hypervisor, simple as that. It can emulate different hardware
+architectures and devices. It is considered a Type 2 hypervisors since it runs
+with a host OS. Other populars hypervisors in this category are ORACLE
+Virtualbox and VMware Fusion.</p>
+<h3 id="what-is-kvmhttpwwwlinux-kvmorgpagemain_page">What is <a href="http://www.linux-kvm.org/page/Main_Page">KVM</a>?</h3>
+<p>KVM is a Linux kernel module that allows the utilization of hardware extension
+for virtualization, in this case Intel VT-x and AMD-V. This module increases the
+performance of QEMU since instructions to the virtual cpu do not need to be
+translated by the hypervisor, they can be directly executed by the physical cpu.</p>
+<h3 id="what-is-quaggahttpwwwnongnuorgquagga">What is <a href="http://www.nongnu.org/quagga/">Quagga</a>?</h3>
+<p>Quagga is a routing protocol suite. It allows for a Linux box to run routing
+protocols by way of a daemon that control the kernel’s routing table. Another
+popular routing protocol suite is Bird.</p>
+<h3 id="procedure">Procedure</h3>
+<h4 id="install-needed-packages">Install needed packages</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apt-get install kvm libvirt qemu-kvm
+</code></pre></div><h4 id="get-vm-creation-privileges">Get VM creation privileges</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">adduser YOUR_USER libvirt
+</code></pre></div><h3 id="download-the-iso">Download the ISO</h3>
+<p>The ISO used for this small project was CentOS 7. Specifically
+<code>CentOS-7-x86_64-Minimal-1511.iso</code>. Here is the <a href="https://wiki.centos.org/Download%22">link</a></p>
+<h3 id="create-the-image">Create the image</h3>
+<p>With the ISO in our hands we need to create the image where it is going to be
+installed, we have to options a raw and qcow2. Raw images allow for faster I/O
+with the disadvantage that they take the full hard disk space they were created
+with. Qcow2 takes a hit on peformance but saves you space. You can choose either
+of them depending on your situation. Here is the output for a qcow2 image.
+CentOS 7 requires around ~2.5GBi of HD space.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">qemu-img create -f qcow2 image_name.qcow2 3G
+Formatting <span style="color:#e6db74">&#39;image_name.qcow2&#39;</span>, fmt<span style="color:#f92672">=</span>qcow2 size<span style="color:#f92672">=</span><span style="color:#ae81ff">5368709120</span> encryption<span style="color:#f92672">=</span>off
+cluster_size<span style="color:#f92672">=</span><span style="color:#ae81ff">65536</span> lazy_refcounts<span style="color:#f92672">=</span>off 
+</code></pre></div><h3 id="install-centos-on-image">Install CentOS on image</h3>
+<p>After having the created the image we are ready to install our new OS into it.
+I gave it 2 GB of RAM to speed it up.
+<strong>NOTE:</strong> the command is called <!-- raw HTML omitted -->kvm<!-- raw HTML omitted --> but it is actually a wrapper/backend for
+the command <!-- raw HTML omitted -->qemu-system-x86_64 -enable-kvm<!-- raw HTML omitted --></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kvm -m <span style="color:#ae81ff">2048</span> -cdrom CentOS-7-x86_64-Minimal-1511.iso -vga vmware -hda
 router.qcow2
-</code></pre><!-- raw HTML omitted -->
-<pre><code>kvm -m 2048 -vga vmware -hda router.qcow2
-</code></pre><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<pre><code>// I really dislike systemd's network interface renaming
-Append &quot;net.ifnames=0&quot; and &quot;biosdevname=0&quot; as kernel arguments to /etc/default/grub 
-&quot;GRUB_CMDLINE_LINUX&quot; then,
+</code></pre></div><h3 id="basic-configuration-of-linux-box">Basic configuration of Linux box</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kvm -m <span style="color:#ae81ff">2048</span> -vga vmware -hda router.qcow2
+</code></pre></div><p>After a succesfull installation of the OS we reboot and get into our command
+line. We are going to do basic configuration to prepare the OS for <strong>Quagga</strong>.
+Run the image:</p>
+<p>QEMU will automatically brigde our network interface for internet access as the
+host.</p>
+<p>Run the following commands for basic configuration. The numbers belongin to the
+quagga directory could be different.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># I don&#39;t like systemd&#39;s network interface renaming, you can remote it with this</span>
+<span style="color:#75715e"># Append &#34;net.ifnames=0&#34; and &#34;biosdevname=0&#34; as kernel arguments to /etc/default/grub in &#34;GRUB_CMDLINE_LINUX&#34; then,</span>
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
-// This might take a while
+<span style="color:#75715e"># This might take a while</span>
 yum update
 yum install quagga
 
-// Allow changes to Zebra's configuration file
-setsebool -P zebra_write_config 1
+<span style="color:#75715e"># Allow changes to Zebra&#39;s configuration file</span>
+setsebool -P zebra_write_config <span style="color:#ae81ff">1</span>
 
-// Enables IP forwading between interfaces inside the host
-echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt; /etc/sysctl.conf
+<span style="color:#75715e"># Enables IP forwading between interfaces inside the host</span>
+echo <span style="color:#e6db74">&#34;net.ipv4.ip_forward = 1&#34;</span> &gt;&gt; /etc/sysctl.conf
 
-// Obtain zebra configuration file
+<span style="color:#75715e"># Obtain zebra configuration file</span>
 cp /usr/share/doc/quagga-0.99.22.4/zebra.conf.sample /etc/quagga/zebra.conf
 
-// Obtain ospf configuration file
+<span style="color:#75715e"># Obtain ospf configuration file</span>
 cp /usr/share/doc/quagga-0.99.22.4/ospfd.conf.sample /etc/quagga/ospfd.conf
 
-// Obtain rip configuration file
+<span style="color:#75715e"># Obtain rip configuration file</span>
 cp /usr/share/doc/quagga-0.99.22.4/ripd.conf.sample /etc/quagga/ripd.conf
 
-// Obtain bgp configuration file 
+<span style="color:#75715e"># Obtain bgp configuration file</span> 
 cp /usr/share/doc/quagga-0.99.22.4/bgpd.conf.sample /etc/quagga/bgpd.conf
 
-// Enable zebra daemon 
+<span style="color:#75715e"># Enable zebra daemon</span> 
 systemctl enable zebra
-</code></pre><!-- raw HTML omitted -->
-<pre><code>// Set hostname
+</code></pre></div><p>So now our gold image is ready to be used for multiple purposes. One thing that
+can still be done right now or can be left for later is the hostname renaming
+and the enabling of which routing protocol daemons to enable.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Set hostname</span>
 hostnamectl set-hostname routerX
 
-// Enable routing protocol daemons
+<span style="color:#75715e"># Enable routing protocol daemons</span>
 systemctl enable ospf
 systemctl enable bgp
 systemctl enable rip
-</code></pre><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>This will depend of what things you need to automate. We will come back to this
+at the end.</p>
+<h3 id="automation-script">Automation Script</h3>
+<p>Now I am going to analyze our automation script to bring up the images, create,
+and setup the bridges. The full script is at my github <!-- raw HTML omitted -->repo<!-- raw HTML omitted -->.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> ! -e /dev/kvm <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
   set +e
   mknod /dev/kvm c <span style="color:#ae81ff">10</span> <span style="color:#66d9ef">$(</span>grep <span style="color:#e6db74">&#39;\&lt;kvm\&gt;&#39;</span> /proc/misc | cut -f <span style="color:#ae81ff">1</span> -d<span style="color:#e6db74">&#39; &#39;</span><span style="color:#66d9ef">)</span>
   set -e
 <span style="color:#66d9ef">fi</span>
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>This part is essential for the use of kvm virtualization extension. This section
+makes sure there is a device node created for the kvm module. It creates it
+otherwise.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> bridge in $BRIDGES; <span style="color:#66d9ef">do</span>
   printf <span style="color:#e6db74">&#34;Adding bridge </span>$bridge<span style="color:#e6db74">\n&#34;</span>
   $BRCTL addbr $bridge <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addbr </span>$bridge<span style="color:#e6db74"> Failed&#34;</span>
@@ -301,28 +348,41 @@ systemctl enable rip
   printf <span style="color:#e6db74">&#34;Bringing up all bridge interfaces\n&#34;</span>
   $IP link set dev $bridge up <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$IP<span style="color:#e6db74"> link set dev </span>$bridge<span style="color:#e6db74"> up&#34;</span>
 <span style="color:#66d9ef">done</span>
-</code></pre></div><!-- raw HTML omitted -->
-<pre><code>$KVM $KVM_OPTS \
-  -name router1 \
-  -net nic,macaddr=52:54:00:00:01:00 -net tap,ifname=r1-eth0,script=no,downscript=no \
-  -net nic,macaddr=52:54:00:00:01:01 -net tap,ifname=r1-eth1,script=no,downscript=no \
-  -net nic,macaddr=52:54:00:00:01:02 -net tap,ifname=r1-eth2,script=no,downscript=no \
-  -hda ./images/router1.qcow2 &amp;
-sleep 5
-</code></pre><!-- raw HTML omitted -->
+</code></pre></div><p>This part pretty much creates the bridges for the routers and enables them. Each
+bridge requires a different MAC address. Further automation for this could be
+to perform this at the end by deducing from the amount of routers peer routers
+that are going to be configured and/or needed.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$KVM $KVM_OPTS <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -name router1 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -net nic,macaddr<span style="color:#f92672">=</span>52:54:00:00:01:00 -net tap,ifname<span style="color:#f92672">=</span>r1-eth0,script<span style="color:#f92672">=</span>no,downscript<span style="color:#f92672">=</span>no <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -net nic,macaddr<span style="color:#f92672">=</span>52:54:00:00:01:01 -net tap,ifname<span style="color:#f92672">=</span>r1-eth1,script<span style="color:#f92672">=</span>no,downscript<span style="color:#f92672">=</span>no <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -net nic,macaddr<span style="color:#f92672">=</span>52:54:00:00:01:02 -net tap,ifname<span style="color:#f92672">=</span>r1-eth2,script<span style="color:#f92672">=</span>no,downscript<span style="color:#f92672">=</span>no <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -hda ./images/router1.qcow2 &amp;
+sleep <span style="color:#ae81ff">5</span>
+</code></pre></div><p>This is done for every router, we create three interfaces here but this can be
+automated even further to whatever we need. For example, we could ask the user
+how many interfaces are needed for a particular router. We let the command
+take a few seconds before going with the other routers.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> intf in $INTF; <span style="color:#66d9ef">do</span>
   $IP link set dev $intf up
 <span style="color:#66d9ef">done</span>
-</code></pre></div><!-- raw HTML omitted -->
-<pre><code>#### Creating physical-links/bridges for routers
-$BRCTL addif brdg1 r1-eth0 || die &quot;$BRCTL addif brdg1 r1-eth0&quot;
-$BRCTL addif brdg1 r2-eth0 || die &quot;$BRCTL addif brdg1 r2-eth0&quot;
-$BRCTL addif brdg2 r1-eth1 || die &quot;$BRCTL addif brdg1 r1-eth1&quot;
-$BRCTL addif brdg2 r3-eth0 || die &quot;$BRCTL addif brdg1 r3-eth0&quot;
-</code></pre><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>This small piece simply brings up the newly created interfaces.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#### Creating physical-links/bridges for routers</span>
+$BRCTL addif brdg1 r1-eth0 <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addif brdg1 r1-eth0&#34;</span>
+$BRCTL addif brdg1 r2-eth0 <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addif brdg1 r2-eth0&#34;</span>
+$BRCTL addif brdg2 r1-eth1 <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addif brdg1 r1-eth1&#34;</span>
+$BRCTL addif brdg2 r3-eth0 <span style="color:#f92672">||</span> die <span style="color:#e6db74">&#34;</span>$BRCTL<span style="color:#e6db74"> addif brdg1 r3-eth0&#34;</span>
+</code></pre></div><p>This final part is what joins the bridges with the respective router interfaces.
+This part could be automated to ask the user what interfaces are going to be
+logically connected.</p>
+<p>This is it. Take a look at the script. I was able to quickly and succesfully
+bring up three routers and configure them with OSPF. I could make another post
+where OSPF, BGP ,and RIP are configured with Quagga but there are so many
+out there already.</p>
+<p>On Part 2, I will analyze a more automated version of this script and show the
+steps to pack this script into the image.</p>
+<p>Thanks for visiting.</p>
+
 
                 
 

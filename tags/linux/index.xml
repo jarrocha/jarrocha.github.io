@@ -44,7 +44,11 @@ wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zeph
       <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+&lt;p&gt;This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -55,7 +59,9 @@ wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zeph
       <guid>https://jarrocha.github.io/post/2018-11-18-sockets-http/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+&lt;p&gt;This post shows a program that captures web pages’s index.html with sockets.
+To do this, it creates a TCP client socket, connects to a web server and takes
+all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -64,15 +70,7 @@ wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.0/zeph
       <pubDate>Wed, 13 Jul 2016 16:53:42 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-pthreaded-server/</guid>
-      <description>&lt;p&gt;p&amp;gt;In this post I will analyze an implementation of a prethreaded TCP server that
-leverages the HTTP protocol. This is a personal ongoing project that will
-continue its
-development and I found it to be at a good place to start sharing what I have
-done so far. The whole purpose of this is to later on built a tool to test its
-performance and how to break it with malformed packets. It is such an
-interesting project that everytime I sit down with it, I start thinking about
-different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</description>
+      <description>Intro In this post I will analyze an implementation of a prethreaded TCP server that leverages the HTTP protocol. This is a personal ongoing project that will continue its development and I found it to be at a good place to start sharing what I have done so far. The whole purpose of this is to later on built a tool to test its performance and how to break it with malformed packets.</description>
     </item>
     
     <item>
@@ -81,7 +79,9 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
       <pubDate>Wed, 18 May 2016 16:43:48 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-ii/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Introduction  In this second part, the optimization code will be shown. Specifically O1, O2, and O3. We are going to be able to see, what performance decisions the gcc compiler makes; for example, we are going to check if the compilers takes the function that calculates the string length calls out of the loop.
+O1 Optimization Here is the command to created the assembly code:
+gcc -fno-asynchronous-unwind-tables -S -O1 -o psum1_O1.</description>
     </item>
     
     <item>
@@ -90,10 +90,9 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
       <pubDate>Wed, 18 May 2016 10:47:50 -0400</pubDate>
       
       <guid>https://jarrocha.github.io/post/tcp-server/</guid>
-      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-&lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Intro  This post serves as a explanation of the basics of a TCP socket server, which serves as the base to a future post explaining the basics of a web server.
+Note: the complete code of an older version is fully posted in the end. Check my github repo for an updated version. Link.
+There are good tutorials out there that explain each of the functions of the sockets POSIX API in detail so this post will serve mostly to understand the overall basics.</description>
     </item>
     
     <item>
@@ -106,12 +105,12 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
     </item>
     
     <item>
-      <title>Automating Quagga With QEMU-KVM: Part 1</title>
+      <title>Automating Quagga With QEMU-KVM</title>
       <link>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</link>
       <pubDate>Wed, 23 Mar 2016 16:06:40 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-quagga-kvm-i/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Introduction  Some days ago I needed a proof of concept for some routing configuration using Linux that was stuck in my head for days already. So I needed a way to bring up some Linux boxes to quickly to check this. The ONL website proved very useful, but I needed to use CentOS. So I came up with a script based on the mentioned tutorial that brings up QEMU-KVM images with Quagga already installed and configured.</description>
     </item>
     
     <item>
@@ -120,24 +119,17 @@ POSIX threads and sockets API.&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</descrip
       <pubDate>Fri, 19 Feb 2016 12:38:59 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-performance-analysis-i/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>These blog series belong to some old notes that I have and thought that could be useful to redo. It is always good to refresh material and what a better way than to write about it.
+These series will consists of presenting an algorithm in C that will iteratively be re-coded for better performance. Assembly code will be shown so as to show what&amp;rsquo;s going on at the instruction level, gprof, valgrind, and perf will be used to assess quantitavely our coding efforts.</description>
     </item>
     
     <item>
-      <title>Linux Shell Programming Basics</title>
+      <title>Programming a Linux Shell Terminal</title>
       <link>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</link>
       <pubDate>Tue, 12 Jan 2016 10:30:20 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</guid>
-      <description>&lt;p&gt;A shell is an interactive program that in its core forks for new processes
-and wait for their termination. In other words, we present a prompt, the
-user enters the commands, we parse the input , and execute it. Good error
-and signal handling is needed, as well as the return values of the different
-system calls that we will use. The man pages come real handy for this since
-we have a very good reference just a terminal screen away. This program is
-considered a good start to learn the basic of system calls and signal processing.
-This post serves as a quick analysis of the code in the
-&lt;!-- raw HTML omitted --&gt;github repository&lt;!-- raw HTML omitted --&gt;.&lt;/p&gt;</description>
+      <description>Introduction A shell is an interactive program that in its core forks for new processes and wait for their termination. In other words, we present a prompt, the user enters the commands, we parse the input , and execute it. Good error and signal handling is needed, as well as the return values of the different system calls that we will use. The man pages come real handy for this since we have a very good reference just a terminal screen away.</description>
     </item>
     
   </channel>

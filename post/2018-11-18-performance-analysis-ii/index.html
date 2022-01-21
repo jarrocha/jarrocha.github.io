@@ -206,27 +206,147 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                <nav id="TableOfContents"></nav>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
                 
-                <!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+                <h2 id="introduction">Introduction</h2>
+<hr>
+<p>In this second part, the optimization code will be shown. Specifically O1, O2,
+and O3. We are going to be able to see, what performance decisions the gcc
+compiler makes; for example, we are going to check if the compilers takes the
+function that calculates the string length calls out of the loop.</p>
+<h3 id="o1-optimization">O1 Optimization</h3>
+<p>Here is the command to created the assembly code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcc -fno-asynchronous-unwind-tables -S -O1 -o psum1_O1.s psum1.c
+</code></pre></div><h3 id="code-to-analyze">Code to analyze:</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span style="color:#66d9ef">struct</span> vec {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span>	<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span>	<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> result;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span>	<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>data;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span>};
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">vec_length</span>(<span style="color:#66d9ef">struct</span> vec<span style="color:#f92672">*</span> v)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span>	<span style="color:#66d9ef">return</span> v<span style="color:#f92672">-&gt;</span>len;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span>}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">get_vec_element</span>(<span style="color:#66d9ef">struct</span> vec <span style="color:#f92672">*</span> v, <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">int</span> index, <span style="color:#66d9ef">int</span><span style="color:#f92672">*</span> dest)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span>	<span style="color:#66d9ef">if</span> (index <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> index <span style="color:#f92672">&gt;=</span> v<span style="color:#f92672">-&gt;</span>len)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span>		<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span>	<span style="color:#f92672">*</span>dest <span style="color:#f92672">=</span> v<span style="color:#f92672">-&gt;</span>data[index];
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span>}</code></pre></div>
+<h3 id="assembly-output">Assembly output:</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span>combine1:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span>	pushq	<span style="color:#f92672">%</span>r12
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span>	pushq	<span style="color:#f92672">%</span>rbp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span>	pushq	<span style="color:#f92672">%</span>rbx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span>	subq	<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">16</span>, <span style="color:#f92672">%</span>rsp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span>	movq	<span style="color:#f92672">%</span>rdi, <span style="color:#f92672">%</span>rbp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span>	cmpq	<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">0</span>, (<span style="color:#f92672">%</span>rdi)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span>	jle	.L7
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span>	movl	<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">0</span>, <span style="color:#f92672">%</span>ebx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span>.L8:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span>	leaq	<span style="color:#ae81ff">12</span>(<span style="color:#f92672">%</span>rsp), <span style="color:#f92672">%</span>rdx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span>	movq	<span style="color:#f92672">%</span>rbx, <span style="color:#f92672">%</span>rsi
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span>	movq	<span style="color:#f92672">%</span>rbp, <span style="color:#f92672">%</span>rdi
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span>	call	get_vec_element
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span>	movslq	<span style="color:#ae81ff">12</span>(<span style="color:#f92672">%</span>rsp), <span style="color:#f92672">%</span>rax
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span>	addq	<span style="color:#f92672">%</span>rax, <span style="color:#f92672">%</span>r12
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span>	addq	<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">1</span>, <span style="color:#f92672">%</span>rbx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span>	cmpq	<span style="color:#ae81ff">0</span>(<span style="color:#f92672">%</span>rbp), <span style="color:#f92672">%</span>rbx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span>	jl	.L8
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span>.L7:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span>	movq	<span style="color:#f92672">%</span>r12, <span style="color:#ae81ff">8</span>(<span style="color:#f92672">%</span>rbp)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span>	addq	<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">16</span>, <span style="color:#f92672">%</span>rsp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span>	popq	<span style="color:#f92672">%</span>rbx
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span>	popq	<span style="color:#f92672">%</span>rbp
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span>	popq	<span style="color:#f92672">%</span>r12
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span>	ret
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span>	.size	combine1, .<span style="color:#f92672">-</span>combine1
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span>	.section	.rodata.str1<span style="color:#ae81ff">.1</span>,<span style="color:#e6db74">&#34;aMS&#34;</span>,<span style="color:#960050;background-color:#1e0010">@</span>progbits,<span style="color:#ae81ff">1</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span>.LC0:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58</span>	.string	<span style="color:#e6db74">&#34;Error allocating&#34;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59</span>.LC1:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span>	.string	<span style="color:#e6db74">&#34;Invalid len size. Quitting&#34;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>.LC2:
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span>	.string	<span style="color:#e6db74">&#34;Error allocating data&#34;</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63</span>	.text
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64</span>	.globl	new_vec
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65</span>	.type	new_vec, <span style="color:#960050;background-color:#1e0010">@</span>function</code></pre></div>
+<h3 id="analysis-of-the-code">Analysis of the code:</h3>
+<p><strong>NOTE:</strong> <code>%rdi</code> contains the first argument of the function which in our case
+is <code>struct vec* v</code>.</p>
+<ul>
+<li>Line 2-4: save register values <code>%r12</code>, <code>%rbx</code>, and <code>rbp</code>.</li>
+<li>Line 5: stack is created by 16 bytes. <code>%rsp</code> is updated to reflect this.</li>
+<li>Line 6: 1st argument <code>*v</code> is also moved to <code>%rbp</code>.</li>
+<li>Line 7: the value of the <code>*v</code> is compared to 0. If the result is less or equal the function exits.</li>
+<li>Line 9: the initial value of <code>i</code> which is 0, is hold at <code>ebx</code>.</li>
+<li>Line 11-13: memory address held at <code>%rsp +12</code>, &amp;val, is moved to <code>%rdx</code>, <code>i</code>
+is moved to <code>%rsi</code>, and <code>*v</code> is moved to <code>%rdi</code> in preparation of call to <code>get_vec_element</code>.</li>
+<li>Line 15: the value pointed by <code>&amp;amp;val</code> being an int is converted to a quad
+word and moved to to <code>%rax</code>.</li>
+<li>Line 16: the dereferenced value of <code>&amp;amp;val</code> is added to <code>dest</code> at <code>%r12</code>
+and saved there.</li>
+<li>Line 17: 1 is added to <code>i</code>.</li>
+<li>Line 18: the dereferenced value at <code>%rbp + 0</code> is compared to <code>i</code>, if <code>i</code>
+is less than this value, the loop is repeated, else the function set <code>%rsp</code> to
+its previous value, pops saved values from the stack and exits.</li>
+</ul>
+<h3 id="o1-analysis">O1 Analysis</h3>
+<p>The optimization done at this level is that the compiler understands that
+<code>vec_length()</code> function looks at a value already been saved in memory from at
+a offset from <code>%rbp</code>
+within combine1. So, instead of calling to this function on every iteration of
+the for loop, it just looks up the value at is saved structure pointer in
+<code>%rbp</code> with the offset of 0, which is <code>int len</code>.</p>
+<h4 id="perf-output-for-command">Perf output for command:</h4>
+<pre><code>perf stat -r 10 -e task-clock,cycles,instructions,cache-references,cache-misses,branches,branch-misses ./psum1_O1 500000000
+</code></pre><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Performance counter stats <span style="color:#66d9ef">for</span> ./psum1_O1 <span style="color:#ae81ff">500000000</span> <span style="color:#f92672">(</span><span style="color:#ae81ff">10</span> runs<span style="color:#f92672">)</span>:
+    5499.112338     task-clock <span style="color:#f92672">(</span>msec<span style="color:#f92672">)</span>       <span style="color:#75715e">#    1.001 CPUs utilized</span>
+<span style="color:#f92672">(</span>+-0.35%<span style="color:#f92672">)</span>
+    17,367,704,415  cycles                  <span style="color:#75715e">#    3.158 GHz</span>
+<span style="color:#f92672">(</span>+-0.37%<span style="color:#f92672">)[</span>66.63%<span style="color:#f92672">]</span>
+    43,526,536,942  instructions            <span style="color:#75715e">#    2.51  insns per cycle</span>
+<span style="color:#f92672">(</span>+-0.01%<span style="color:#f92672">)[</span>83.32%<span style="color:#f92672">]</span>
+    66,824,057  cache-references            <span style="color:#75715e">#   12.152 M/sec</span>
+<span style="color:#f92672">(</span>+-0.21%<span style="color:#f92672">)[</span>83.34%<span style="color:#f92672">]</span>
+    64,574,297  cache-misses                <span style="color:#75715e">#   96.633 % of all cache refs</span>
+<span style="color:#f92672">(</span>+-0.03%<span style="color:#f92672">)[</span>83.36%<span style="color:#f92672">]</span>
+    10,676,703,525  branches                <span style="color:#75715e"># 1941.532 M/sec</span>
+<span style="color:#f92672">(</span>+-0.01%<span style="color:#f92672">)[</span>83.38%<span style="color:#f92672">]</span>
+    20,223,608  branch-misses               <span style="color:#75715e">#    0.19% of all branches</span>
+<span style="color:#f92672">(</span>+-0.53%<span style="color:#f92672">)[</span>83.33%<span style="color:#f92672">]</span>
+    5.496328323  seconds time elapsed
+<span style="color:#f92672">(</span>+-0.35%<span style="color:#f92672">)</span>
+</code></pre></div><pre><code>Name            CPI     cache-misses / instructions (%)    instructions 
+psum1           0.429       0.56798                          114,537,661,031
+psum1 - O1      0.398       1.487459                          43,526,536,942
+
+</code></pre><p>Cache misses per instruction ratio went up due to a decrease in the number of
+instructions needed this time. The CPI also went down to show this. Cachegrind
+returns the same cache miss results since we have not made any changes related
+to these two functions.</p>
+<pre><code>psum1.c:  get_vec_element
+D1mr: 31,250,001
+DLmr: 31,250,001
+psum1.c:  new_vec
+D1mw: 31,250,000
+DLmw: 31,250,000
+</code></pre><p><code>mr</code> stands for write misses, <code>mr</code> for read misses, <code>DL</code> last level cache,
+and <code>D1</code> for data cache, which in our case it is referring to Level 2.</p>
+
 
                 
 

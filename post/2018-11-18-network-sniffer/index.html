@@ -218,7 +218,11 @@
                 
                 <h2 id="intro">Intro</h2>
 <hr>
-<!-- raw HTML omitted -->
+<p>This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.</p>
 <p>This is another project that has good potential to apply high performance server
 features. It currently reads frames sequentially which is not very
 for high bandwidth connections with lots of traffics. A multi-threaded version
@@ -260,7 +264,7 @@ sequentially using one process.
 <!-- raw HTML omitted -->Line 13<!-- raw HTML omitted -->: creates the socket to be listen to every type of frame, and in/out
 direction.
 <!-- raw HTML omitted -->Line 15<!-- raw HTML omitted -->: set socket options to tell the program on which interface to
-listen to.<!-- raw HTML omitted --></p>
+listen to.</p>
 <!-- raw HTML omitted -->
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">125</span><span style="color:#75715e">/* main processing function */</span>
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">126</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_packet</span>(<span style="color:#66d9ef">const</span> u_char <span style="color:#f92672">*</span>data, u_int size)
@@ -299,7 +303,8 @@ listen to.<!-- raw HTML omitted --></p>
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">159</span>
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">160</span>
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">161</span>}</code></pre></div>
-<!-- raw HTML omitted -->
+<p>The main function of the program that handles identification of the IP
+protocol to which we then de-encapsulate and then do a print out of the data.</p>
 <!-- raw HTML omitted -->
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span><span style="color:#66d9ef">struct</span> ip_hdr {
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> ver_ihl;
@@ -363,8 +368,12 @@ listen to.<!-- raw HTML omitted --></p>
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">119</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span> checksum;
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">120</span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> gateway;
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">121</span>};</code></pre></div>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<p>To decode the layers the de-encapsulated data needs to be type casted to the
+appropiate data structure and from there, retrieve the information. In this
+program I decided to the create my own structures for the different protocol
+headers. These user libraries are located in
+<code>usr/include/linux/if_ethernet.h&lt;/strong&gt;</code> and <code>/usr/include/netinet/</code>.</p>
+<p><strong>Note:</strong> This program is still a work in progress.</p>
 
                 
 

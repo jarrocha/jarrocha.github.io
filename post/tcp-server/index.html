@@ -215,21 +215,38 @@
                 
                 <h2 id="intro">Intro</h2>
 <hr>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<pre><code>Connection Establishment         --------
-TCP (Stream Sockets)             |      |
-Server (Passive Socket)          v
+<p>This post serves as a explanation of the basics of a TCP socket server, which
+serves as the base to a future post explaining the basics of a web server.</p>
+<p><strong>Note:</strong> the complete code of an older version is fully posted in the end.
+Check my github repo for an updated version. <a href="https://github.com/jarrocha/psockets/tree/master/tcp_server">Link</a>.</p>
+<p>There are good tutorials out there that explain each of the functions of the
+sockets POSIX API in detail so this post will serve mostly to understand the
+overall basics.</p>
+<p>As we all know, a TCP connection is also know a connection oriented protocol
+which handles acknoledgment of bytes when they are received and sent. So it
+makes sure that all packets are ordered and complete for each transaction.</p>
+<p>How do we start a TCP socket connection? Below is a graph of the transition
+between sockets system calls to have a TCP server up and running.</p>
+<pre><code>Connection Establishment    ------------
+TCP (Stream Sockets)        |          |
+Server (Passive Socket)     v          v
 socket() --&gt; bind() --&gt; listen() --&gt; accept() --&gt; read()/write() --&gt; close()
-                                        |            |   ^
-Client (Active Socket)            ^     v            v   |
-socket() ----&gt; connect() ---------|-------------&gt; read()/write() --&gt; close()
-</code></pre><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+                                      ^  |            |   ^
+Client (Active Socket)                |  v            v   |
+socket() ----&gt; connect() -----------------------&gt; read()/write() --&gt; close()
+</code></pre><p>A server starts by creating a socket descriptor, this particular socket is only
+used by the server to listen for incoming connections. It then binds a
+particular socket descriptor with an IP address and then sets to listen on that
+socket and IP address. Then the server sits on the accept function call. When
+the server gets a connection request with the accept function call, it creates
+another socket descriptor which is used for I/O with the client. When the I/O
+with the client is done, the server closes the socket descriptor used for I/O
+and uses the listening descriptor once again to listen for a new client.</p>
+<p>On the client side is much easier, you create socket descriptor for the server
+you are going to connect to and fill int some properties for this particular
+host you are after and then call connect(). If the call was successful, your
+program is ready for I/O with the server.</p>
+<p>Here&rsquo;s a quick summary of the function calls:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#f92672">-</span>socket()<span style="color:#f92672">:</span> creates a new socket. Opens a socket descriptor.
 <span style="color:#f92672">-</span>bind()<span style="color:#f92672">:</span> usually used in servers, binds a socket to an existing address.
 <span style="color:#f92672">-</span>listen()<span style="color:#f92672">:</span> allows a stream socket to accept incoming connections.
@@ -246,42 +263,69 @@ socket() ----&gt; connect() ---------|-------------&gt; read()/write() --&gt; cl
  sendto(), and recvfrom()). By <span style="color:#66d9ef">default</span>, these system calls can block. But they
  can be run atomically by using the fcntl() F_SETFL operation to enable the 
  O_NONBLOCK open file status flag.
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>So now that we get an idea of what the system calls do, I’m going to show you
+some actual code. This code belongs to a TCP server implementation in my
+<!-- raw HTML omitted -->github account<!-- raw HTML omitted -->.
+I am going to analyze it in pieces.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* server socket variables */</span>
 <span style="color:#66d9ef">int</span> sockfd, new_sockfd;
 <span style="color:#66d9ef">struct</span> sockaddr_in host_addr, client_addr;
 socklen_t sin_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr_in);
 <span style="color:#66d9ef">int</span> recv_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, yes <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>This section declares and defines our basic variables for both of server and
+clients. <!-- raw HTML omitted -->sockfd<!-- raw HTML omitted --> is used to establish socket connections and <!-- raw HTML omitted -->new_sockfd<!-- raw HTML omitted --> is
+used for I/O. <!-- raw HTML omitted -->struct sockaddr_in<!-- raw HTML omitted --> is the structure holding everything regarding
+IP addressing for both the server and client in particular for IPv4. The rest of
+the variables are mostly to enable options for other socket system calls.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* defining listening socket descriptor */</span>
   <span style="color:#66d9ef">if</span> ((sockfd <span style="color:#f92672">=</span> socket(AF_INET, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
       perror(<span style="color:#e6db74">&#34;in socket&#34;</span>);
   <span style="color:#66d9ef">if</span> (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, <span style="color:#f92672">&amp;</span>yes, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>))
           <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
       perror(<span style="color:#e6db74">&#34;setting socket option SO_REUSEADDR&#34;</span>);
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>Here we finally create our socket descriptor to accept connections from clients.
+And use <!-- raw HTML omitted -->setsockoptions<!-- raw HTML omitted --> to enable some beneficial options for our sockets.
+Explaining this options will take us out of scope, but to get an idea, they help
+in re-using a previously use address when binding and restarting the tcp server.
+You can see that for socket we specify that we are using TCP and IPv4.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* initializing server address socket structure */</span>
   host_addr.sin_family <span style="color:#f92672">=</span> AF_INET;       <span style="color:#75715e">/* host byte order */</span>
   host_addr.sin_port <span style="color:#f92672">=</span> htons(S_PORT); <span style="color:#75715e">/* port, network byte order */</span>
   host_addr.sin_addr.s_addr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;     <span style="color:#75715e">/* use host address */</span>
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>This piece fills some values for our server address structure. We are specifying
+the use of IPv4 and port number to use. See that we are not specifying an IP
+address. We are telling the kernel to automatically fill it with the current
+address of our active interface.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* bind socket to IP address */</span>
   <span style="color:#66d9ef">if</span> (bind(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>host_addr, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr))
           <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
       perror(<span style="color:#e6db74">&#34;binding to socket&#34;</span>);
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>After we specify our address structure and socket descriptor we bind the socket
+descriptor to the current IP on the given port.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* listen on socket */</span>
   <span style="color:#66d9ef">if</span> (listen(sockfd, <span style="color:#ae81ff">5</span>) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
       perror(<span style="color:#e6db74">&#34;listening on socket&#34;</span>);
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><p>The call to <!-- raw HTML omitted -->listen()<!-- raw HTML omitted --> opens the socket to accept incoming connections up to a
+maximum of 5 pending connections. All connections are sent into a queue until a
+call to <!-- raw HTML omitted -->accept()<!-- raw HTML omitted --> consumes a connection.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">new_sockfd <span style="color:#f92672">=</span> accept(sockfd, (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>client_addr,
                <span style="color:#f92672">&amp;</span>sin_size);
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>This last piece accepts an incoming connection returning a new socket
+descriptor. This is the descriptor that needs to be use for the read()/write()
+system calls. These are the ones that handle back and forth communication between
+client and server.</p>
+<p>All the piece of code presented so far is the basic structure of implementing an
+TCP server. After this, pretty much anything can be done. A web server
+is a good idea. It teaches how to go from RFC details to an actual working
+program. It is just amazing to see when you get your own web page and server
+handling requests from a web browser. Other examples are a proxy server, network
+scanners, and sniffers.</p>
+<p>Check the code, edit, and improve on it. Let me know if you have any question in
+the comments section.</p>
 <h2 id="complete-code">Complete Code</h2>
 <hr>
-<!-- raw HTML omitted -->
+<p>Here is the complete code. The <code>dump()</code> function was taken from
+<a href="http://www.amazon.com/Hacking-Art-Exploitation-Jon-Erickson/dp/1593271441/ref=sr_1_1?s=books&amp;ie=UTF8&amp;qid=1454054525&amp;sr=1-1&amp;keywords=jon+erickson">Jon Erickson&rsquo;s book</a></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">
 <span style="color:#75715e">/*
 </span><span style="color:#75715e"> * A simple server to demonstrate TCP sockets implementation. The server

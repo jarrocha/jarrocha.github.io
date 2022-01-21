@@ -19,7 +19,11 @@
       <guid>https://jarrocha.github.io/post/2018-11-18-network-sniffer/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+&lt;p&gt;This a small project that came to mind after reading some reference
+material while stuyding HTTP. It basically consists of using raw sockets to
+make the kernel handle L2 data/frames to the user application. From there
+anything is possible, a ping server, a traceroute appication, IP spoofing,
+man-in-the-middle attacks, the sky is the limits.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -30,7 +34,9 @@
       <guid>https://jarrocha.github.io/post/2018-11-18-sockets-http/</guid>
       <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+&lt;p&gt;This post shows a program that captures web pages’s index.html with sockets.
+To do this, it creates a TCP client socket, connects to a web server and takes
+all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -39,27 +45,18 @@
       <pubDate>Wed, 18 May 2016 10:47:50 -0400</pubDate>
       
       <guid>https://jarrocha.github.io/post/tcp-server/</guid>
-      <description>&lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
-&lt;hr&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Intro  This post serves as a explanation of the basics of a TCP socket server, which serves as the base to a future post explaining the basics of a web server.
+Note: the complete code of an older version is fully posted in the end. Check my github repo for an updated version. Link.
+There are good tutorials out there that explain each of the functions of the sockets POSIX API in detail so this post will serve mostly to understand the overall basics.</description>
     </item>
     
     <item>
-      <title>Linux Shell Programming Basics</title>
+      <title>Programming a Linux Shell Terminal</title>
       <link>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</link>
       <pubDate>Tue, 12 Jan 2016 10:30:20 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-shell-prog-basics/</guid>
-      <description>&lt;p&gt;A shell is an interactive program that in its core forks for new processes
-and wait for their termination. In other words, we present a prompt, the
-user enters the commands, we parse the input , and execute it. Good error
-and signal handling is needed, as well as the return values of the different
-system calls that we will use. The man pages come real handy for this since
-we have a very good reference just a terminal screen away. This program is
-considered a good start to learn the basic of system calls and signal processing.
-This post serves as a quick analysis of the code in the
-&lt;!-- raw HTML omitted --&gt;github repository&lt;!-- raw HTML omitted --&gt;.&lt;/p&gt;</description>
+      <description>Introduction A shell is an interactive program that in its core forks for new processes and wait for their termination. In other words, we present a prompt, the user enters the commands, we parse the input , and execute it. Good error and signal handling is needed, as well as the return values of the different system calls that we will use. The man pages come real handy for this since we have a very good reference just a terminal screen away.</description>
     </item>
     
   </channel>

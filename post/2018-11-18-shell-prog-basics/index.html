@@ -15,15 +15,15 @@
     
 
     
-    <meta name="title" content="Linux Shell Programming Basics" />
-    <meta property="og:title" content="Linux Shell Programming Basics" />
-    <meta property="twitter:title" content="Linux Shell Programming Basics" />
+    <meta name="title" content="Programming a Linux Shell Terminal" />
+    <meta property="og:title" content="Programming a Linux Shell Terminal" />
+    <meta property="twitter:title" content="Programming a Linux Shell Terminal" />
     
 
     
-    <meta name="description" content="A basic command shell for Linux">
-    <meta property="og:description" content="A basic command shell for Linux" />
-    <meta property="twitter:description" content="A basic command shell for Linux" />
+    <meta name="description" content="A basic terminal command shell for Linux">
+    <meta property="og:description" content="A basic terminal command shell for Linux" />
+    <meta property="twitter:description" content="A basic terminal command shell for Linux" />
     
 
     
@@ -34,7 +34,7 @@
     <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>Linux Shell Programming Basics-Innercoder.dev</title>
+    <title>Programming a Linux Shell Terminal-Innercoder.dev</title>
 
     <link rel="canonical" href="/post/2018-11-18-shell-prog-basics/">
 
@@ -166,7 +166,7 @@
                         </a>
                         
                     </div>
-                    <h1>Linux Shell Programming Basics</h1>
+                    <h1>Programming a Linux Shell Terminal</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by 
@@ -202,21 +202,37 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                <nav id="TableOfContents"></nav>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
                 
-                <p>A shell is an interactive program that in its core forks for new processes
+                <h2 id="introduction">Introduction</h2>
+<p>A shell is an interactive program that in its core forks for new processes
 and wait for their termination. In other words, we present a prompt, the
 user enters the commands, we parse the input , and execute it. Good error
 and signal handling is needed, as well as the return values of the different
 system calls that we will use. The man pages come real handy for this since
 we have a very good reference just a terminal screen away. This program is
 considered a good start to learn the basic of system calls and signal processing.
-This post serves as a quick analysis of the code in the
-<!-- raw HTML omitted -->github repository<!-- raw HTML omitted -->.</p>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+This post serves as a quick analysis of the code in the <a href="https://github.com/jarrocha/bschell">github repository</a>.</p>
+<p><strong>Note:</strong> the complete code of an older version is fully
+posted in the end. Check my github repo for an updated version. Use the link above.</p>
+<p>This shell features some basic error and signal handling, use of system calls
+(fork, waitpid, execve), background processes, and directory change. And more
+than implementing a lot of features from the beginning, it is going to focus on a
+smaller set of features but well implemented.</p>
+<p>Below is the basic structure for each new process. This structure can also be
+used later on when a job list is implemented. This is still in the TODO list and
+can serve as the second part for the development of this project.</p>
+<p>The last two members are for storing the input buffer and an array of pointers
+to it, respectively. Since the same buffer variable is used to capture the input,
+each process structure will hold its own input.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> proc_st {
         <span style="color:#66d9ef">int</span> bg;
         <span style="color:#66d9ef">int</span> exec;
@@ -227,17 +243,29 @@ This post serves as a quick analysis of the code in the
         <span style="color:#66d9ef">char</span> pbuff[MAX_LEN];
         <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>commv[];
 };
-</code></pre></div><!-- raw HTML omitted -->
-<pre><code>/* function prototypes */
-void error_msg(char *);
-void sig_handler(int);
-void comm_identi(struct proc_st *, char *);
-</code></pre><!-- raw HTML omitted -->
+</code></pre></div><p>Here are the function prototypes of the program so far. The used for error
+feedback, signal handling, and command identification respectively.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* function prototypes */</span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">error_msg</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sig_handler</span>(<span style="color:#66d9ef">int</span>);
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">comm_identi</span>(<span style="color:#66d9ef">struct</span> proc_st <span style="color:#f92672">*</span>, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
+</code></pre></div><p>The following are for the initialization of the signal handlers. The signal function
+call’s first argument is used to identify the signal and the second argument is set the
+action to perform when received. SIG_IGN is used for ignoring the signal. For the signal
+SIGCHLD, a handler function is given. Why the special case for SIGCHLD? Since we are
+allowing background processes and the signal is by default ignored, the shell needs to
+know about the finished background processes so as to not leave zombie processes behind.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* initialize signal handlers */</span>
 signal(SIGINT, SIG_IGN);
 signal(SIGQUIT, SIG_IGN);
 signal(SIGCHLD, sig_handler);
-</code></pre></div><!-- raw HTML omitted -->
+</code></pre></div><ul>
+<li>Line 4: obtains input from the user.</li>
+<li>Line 10: sets an internal flag to let the program know to send the command arguments for execution.</li>
+<li>Line 11: send the obtained string input for parsing and identification.</li>
+<li>Line 13-20: if command is executable, then proceed to fork and wait if it is not a background job.</li>
+<li>Line 23-28: check if the command is set to be performed in the background.</li>
+</ul>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printf(<span style="color:#e6db74">&#34;[SHELL]&gt; &#34;</span>);
 <span style="color:#66d9ef">for</span> (;;) {
 
@@ -271,8 +299,15 @@ signal(SIGCHLD, sig_handler);
   }
 }
 exit(<span style="color:#ae81ff">0</span>);
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>The other important function peforms parsing of the input string buffer and
+command identification for built-in commands. Parsing is done with the strtok()
+function. There are many ways to implement the parsing though. The function
+strcmp() is used for a simple identification of built-in functions.</p>
+<ul>
+<li>Line 5-14: performs parsing with the strtok() function.</li>
+<li>Line 16: necessary limiting for command pointer array.</li>
+<li>Line 19-36: this section checks for built-in commands.</li>
+</ul>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">comm_identi</span>(<span style="color:#66d9ef">struct</span> proc_st <span style="color:#f92672">*</span>proc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer)
 {
         <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>tmp;
@@ -312,10 +347,20 @@ exit(<span style="color:#ae81ff">0</span>);
 
         <span style="color:#66d9ef">return</span>;
 }
-</code></pre></div><!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+</code></pre></div><p>If interested, download the code and modify it to your liking. Fix any bugs or
+improve on it. That’s the only way to learn. If you are unsure about any <!-- raw HTML omitted -->libc<!-- raw HTML omitted -->
+funtion use the man pages. Though for beginners it might be a little puzzling
+at first, they are straight to the point and very informative.
+I also recommend Stevens <!-- raw HTML omitted -->Advanced Programming in the Unix Environment<!-- raw HTML omitted -->,
+Kerrisk <!-- raw HTML omitted -->The Linux Programming Interface<!-- raw HTML omitted -->, and O&rsquo;Hallaron <!-- raw HTML omitted -->Computer Systems: A
+Programmer’s Perspective<!-- raw HTML omitted -->.</p>
+<p>Update for <a href="https://github.com/jarrocha/bscshell">Basic Shell v2</a>:</p>
+<ul>
+<li>better handling of signals. Removed unsafe function calls. But sigaction() is still needed for a even better handling.</li>
+<li>implemented a jump table for built-in commands.</li>
+<li>removed unneeded allocation and frees.</li>
+</ul>
+
 
                 
 

@@ -206,38 +206,292 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                <nav id="TableOfContents"></nav>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#utilsc">utils.c</a></li>
+        <li><a href="#mainc">main.c</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
                 
-                <p>p&gt;In this post I will analyze an implementation of a prethreaded TCP server that
+                <h2 id="intro">Intro</h2>
+<p>In this post I will analyze an implementation of a prethreaded TCP server that
 leverages the HTTP protocol. This is a personal ongoing project that will
-continue its
-development and I found it to be at a good place to start sharing what I have
-done so far. The whole purpose of this is to later on built a tool to test its
-performance and how to break it with malformed packets. It is such an
+continue its development and I found it to be at a good place to start sharing
+what I have done so far. The whole purpose of this is to later on built a tool
+to test its performance and how to break it with malformed packets. It is such an
 interesting project that everytime I sit down with it, I start thinking about
 different features to implement on it. Again all this is coded in C with the
-POSIX threads and sockets API.<!-- raw HTML omitted --></p>
+POSIX threads and sockets API.</p>
+<p>The current implementation of this server hanldes HTTP GET request with a pool
+of threads. The amount of threads in the pool is given as an argument to the
+program. One interesting feature that I have in mind is for the server to deduce
+the size of the thread pool based on the number of cores and the current load as
+a default option. The previous version of this server was handling threads per
+request, which is not very efficient.</p>
+<p>The analysis I will do is quick and to the point. These are two very
+interesting APIs (threads and sockets) that are relatively easy to follow.</p>
+<p>The complete code is at its <a href="https://github.com/jarrocha/xwbserver">github repository</a>.</p>
+<h2 id="utilsc">utils.c</h2>
+<p>Usage function, currently all arguments are obligatory. Another future feature
+to add is for the server to be binded to a specific interface and work as a
+daemon.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">183</span><span style="color:#75715e">/* usage function */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">184</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">usage</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">185</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">186</span>	printf(<span style="color:#e6db74">&#34;Usage: %s &lt;PORT&gt; &lt;DIRECTORY&gt; &lt;#THREADS&gt;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">187</span>	exit(EXIT_SUCCESS);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">188</span>}</code></pre></div>
+<h2 id="mainc">main.c</h2>
+<p>Global variables. Here we have the funtion that is called by pthread_create(),
+the mutex initializer, the globally shared listening socket file descriptor, and
+a buffer for the server file directory.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span style="color:#75715e">/* pthread functions */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">thr_func</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span style="color:#75715e">/* initializing mutex lock */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span>pthread_mutex_t mtx <span style="color:#f92672">=</span> PTHREAD_MUTEX_INITIALIZER;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span style="color:#75715e">/* static globals */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> listenfd;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span> fname[FILEDAT];	<span style="color:#75715e">/* holds webserver directory */</span></code></pre></div>
+<p>This part sums to initializing important socket
+variables, handling arguments for port and thread number, setting up the
+server socket address structure and its setup for connections, and at the end,
+the procedure for prethreading.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span>	<span style="color:#75715e">/* server socket variables */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span>	<span style="color:#66d9ef">int</span> x;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span>	<span style="color:#66d9ef">int</span> port;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span>	<span style="color:#66d9ef">int</span> nthreads;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span>	<span style="color:#66d9ef">int</span> optval <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span>	<span style="color:#66d9ef">struct</span> sockaddr_in svaddr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span>	<span style="color:#75715e">/* handling webserver arguments */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span>	<span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span>		usage(argv[<span style="color:#ae81ff">0</span>]);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span>	port <span style="color:#f92672">=</span> atoi(argv[<span style="color:#ae81ff">1</span>]);		<span style="color:#75715e">/* !!No bounds checking */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span>	strcpy(fname, argv[<span style="color:#ae81ff">2</span>]);		<span style="color:#75715e">/* !!No bounds checking */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span>	<span style="color:#75715e">/* thread structure initialization */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span>	nthreads <span style="color:#f92672">=</span> atoi(argv[<span style="color:#ae81ff">3</span>]);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span>	<span style="color:#66d9ef">struct</span> <span style="color:#66d9ef">thread</span> <span style="color:#f92672">*</span>thr_ctl <span style="color:#f92672">=</span> malloc(<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> <span style="color:#66d9ef">thread</span>) <span style="color:#f92672">*</span> nthreads);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>thr_ctl)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span>		error_msg(<span style="color:#e6db74">&#34;error allocating thr_ctl&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span>	<span style="color:#75715e">/* initializing server address socket */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span>	svaddr.sin_family <span style="color:#f92672">=</span> AF_INET;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span>	svaddr.sin_addr.s_addr <span style="color:#f92672">=</span> htonl(INADDR_ANY);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58</span>	svaddr.sin_port <span style="color:#f92672">=</span> htons((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">short</span>) port);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span>	<span style="color:#75715e">/* listening socket descriptor */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>	<span style="color:#66d9ef">if</span> ((listenfd <span style="color:#f92672">=</span> socket(svaddr.sin_family, SOCK_STREAM, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> )
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span>		error_msg(<span style="color:#e6db74">&#34;error on socket()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63</span>	<span style="color:#66d9ef">if</span> (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, <span style="color:#f92672">&amp;</span>optval, 
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64</span>				<span style="color:#66d9ef">sizeof</span>(optval)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65</span>		error_msg(<span style="color:#e6db74">&#34;error on setsockopt()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67</span>	<span style="color:#75715e">/* bind socket to IP address */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">68</span>	<span style="color:#66d9ef">if</span> (bind(listenfd,(<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>svaddr, 
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69</span>				<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> sockaddr_in)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70</span>		error_msg(<span style="color:#e6db74">&#34;error on bind()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">72</span>	<span style="color:#75715e">/* listen on socket */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">73</span>	<span style="color:#66d9ef">if</span> ((listen(listenfd, LISTENQ)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">74</span>		error_msg(<span style="color:#e6db74">&#34;error on listen()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">75</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">76</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">77</span>	<span style="color:#75715e">/* pre-threading procedure */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">78</span>	<span style="color:#66d9ef">for</span> (x <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; x <span style="color:#f92672">&lt;</span> nthreads; x<span style="color:#f92672">++</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">79</span>		<span style="color:#66d9ef">if</span>((pthread_create(<span style="color:#f92672">&amp;</span>thr_ctl[x].tid, NULL, thr_func,(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>x))
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">80</span>			<span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">81</span>			error_msg(<span style="color:#e6db74">&#34;Thread create error&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">82</span>		<span style="color:#66d9ef">if</span> ((pthread_detach(thr_ctl[x].tid)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">83</span>			error_msg(<span style="color:#e6db74">&#34;Thread detach error&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">84</span>	}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">85</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">86</span>	<span style="color:#66d9ef">for</span>(;;)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">87</span>		pause();
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">88</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">89</span>	<span style="color:#66d9ef">return</span>(EXIT_SUCCESS);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">90</span>}</code></pre></div>
+<p>For the prethreading procedure, all threads are keep in control with a structure
+. Currently this structure is not doing anything but to keep an index to them,
+but I will later on use it for displaying statistics of thread usage and
+logging. Also, there’s not main thread waiting for other’s to finish, as soon
+as they are created they are detached for now.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">93</span><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">thr_func</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">94</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">95</span>	<span style="color:#75715e">/* variables to handle http process */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">96</span>	<span style="color:#66d9ef">char</span> buff[DATLEN];
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">97</span>	<span style="color:#66d9ef">struct</span> st_trx <span style="color:#f92672">*</span>wb_trx;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">98</span>	<span style="color:#66d9ef">struct</span> sockaddr_in claddr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">99</span>	socklen_t sin_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(claddr);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">100</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">101</span>	<span style="color:#75715e">/* main procedure */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">102</span>	<span style="color:#66d9ef">for</span>(;;) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">103</span>		wb_trx <span style="color:#f92672">=</span> malloc((<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> st_trx)));
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">104</span>		<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>wb_trx)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">105</span>			error_msg(<span style="color:#e6db74">&#34;error allocating wb_trx&#34;</span>);	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">106</span>		
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">107</span>		<span style="color:#75715e">/* initialize web file struct */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">108</span>		strcpy(wb_trx<span style="color:#f92672">-&gt;</span>file_name, fname);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">109</span>		wb_trx<span style="color:#f92672">-&gt;</span>stat_ct <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">110</span>		wb_trx<span style="color:#f92672">-&gt;</span>dyn_ct <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">111</span>		
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">112</span>		pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mtx);	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">113</span>		<span style="color:#66d9ef">if</span> ((wb_trx<span style="color:#f92672">-&gt;</span>trx_fd <span style="color:#f92672">=</span> accept(listenfd,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">114</span>					    (<span style="color:#66d9ef">struct</span> sockaddr <span style="color:#f92672">*</span>) <span style="color:#f92672">&amp;</span>claddr,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">115</span>					    <span style="color:#f92672">&amp;</span>sin_size)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">116</span>			error_msg(<span style="color:#e6db74">&#34;error on accept()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">117</span>		pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>mtx);	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">118</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">119</span>		printf(<span style="color:#e6db74">&#34;server: got connection from %s port %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">120</span>				inet_ntoa(claddr.sin_addr),
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">121</span>				ntohs(claddr.sin_port));
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">122</span>		
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">123</span>		<span style="color:#75715e">/* Read request line and headers */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">124</span>		recv_msg(wb_trx<span style="color:#f92672">-&gt;</span>trx_fd, buff, DATLEN);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">125</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">126</span>		sscanf(buff, <span style="color:#e6db74">&#34;%s %s %s&#34;</span>, wb_trx<span style="color:#f92672">-&gt;</span>method, wb_trx<span style="color:#f92672">-&gt;</span>uri,
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">127</span>		       wb_trx<span style="color:#f92672">-&gt;</span>ver);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">128</span>		printf(<span style="color:#e6db74">&#34;method: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">uri: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">ver: %s</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>, wb_trx<span style="color:#f92672">-&gt;</span>method, 
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">129</span>		       wb_trx<span style="color:#f92672">-&gt;</span>uri, wb_trx<span style="color:#f92672">-&gt;</span>ver);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">130</span>		
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">131</span>		serve_rq(wb_trx);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">132</span>	}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">133</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">134</span>	<span style="color:#66d9ef">return</span>(EXIT_SUCCESS);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">135</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">136</span>}</code></pre></div>
+<p>With main() and serve_rq(), this is one of the most important functions so far.
+The <!-- raw HTML omitted -->struct st_trx *wb_trx<!-- raw HTML omitted --> pointer variable is allocated and contains all the
+information from a client (web browser) request. This structure is filled with
+the data read from the socket buffer and send to <!-- raw HTML omitted -->serve_rq()<!-- raw HTML omitted --> for processing.
+There are still some variables that are initialized and serve no purpose.</p>
 <!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">150</span><span style="color:#75715e">/* serve static content */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">151</span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">serve_rq</span>(<span style="color:#66d9ef">struct</span> st_trx <span style="color:#f92672">*</span>wb_trx)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">152</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">153</span>	<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>addr;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">154</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">155</span>	<span style="color:#75715e">/* get file stats */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">156</span>	get_file_stats(wb_trx);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">157</span>		
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">158</span>	<span style="color:#66d9ef">if</span> ((addr <span style="color:#f92672">=</span> mmap(<span style="color:#ae81ff">0</span>, wb_trx<span style="color:#f92672">-&gt;</span>file_size, PROT_READ, MAP_PRIVATE, 
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">159</span>			 wb_trx<span style="color:#f92672">-&gt;</span>file_fd, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> ((<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>) <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">160</span>		error_msg(<span style="color:#e6db74">&#34;error on mmap()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">161</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">162</span>	<span style="color:#66d9ef">if</span> (close(wb_trx<span style="color:#f92672">-&gt;</span>file_fd) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">163</span>		error_msg(<span style="color:#e6db74">&#34;error closing filefd&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">164</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">165</span>	call_http(<span style="color:#e6db74">&#34;200&#34;</span>, wb_trx<span style="color:#f92672">-&gt;</span>trx_fd, wb_trx);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">166</span>	send_msg(wb_trx<span style="color:#f92672">-&gt;</span>trx_fd, addr);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">167</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">168</span>	<span style="color:#66d9ef">if</span> (munmap(addr, wb_trx<span style="color:#f92672">-&gt;</span>file_size) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">169</span>		error_msg(<span style="color:#e6db74">&#34;munmap() error&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">170</span>	<span style="color:#75715e">/* freeing web transaction */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">171</span>	free(wb_trx);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">172</span>}</code></pre></div>
+<p>This is the function that currently gets <!-- raw HTML omitted -->.html<!-- raw HTML omitted --> stored file data from server
+and calls respective http functions. The plan is to have one function with
+centralized movement, sort of spoke and hub communication. The current HTTP api
+functions need to be made to return status.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span><span style="color:#75715e">/* receive msg function */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span>size_t <span style="color:#a6e22e">recv_msg</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>usr_buff, size_t nbytes)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span>	size_t nleft <span style="color:#f92672">=</span> nbytes;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span>	ssize_t nrecv;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span>	<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>recv_buff <span style="color:#f92672">=</span> usr_buff;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span>	<span style="color:#66d9ef">while</span> (nleft <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span>		<span style="color:#66d9ef">if</span> ((nrecv <span style="color:#f92672">=</span> recv(fd, recv_buff, nleft, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span>			<span style="color:#66d9ef">if</span> (errno <span style="color:#f92672">==</span> EINTR)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span>				nrecv <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span>			<span style="color:#66d9ef">else</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span>				error_msg(<span style="color:#e6db74">&#34;recv() error&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span>		} <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> ((nrecv <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> ) <span style="color:#f92672">||</span> strstr(recv_buff, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\r\n</span><span style="color:#e6db74">&#34;</span>))
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span>			<span style="color:#66d9ef">break</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span>		nleft <span style="color:#f92672">-=</span> nrecv;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span>		recv_buff <span style="color:#f92672">+=</span> nrecv;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span>	}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59</span>	<span style="color:#66d9ef">return</span> nbytes <span style="color:#f92672">-</span> nleft;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span>	
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span>}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63</span><span style="color:#75715e">/* send msg function */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64</span>size_t <span style="color:#a6e22e">send_msg</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buff)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65</span>{
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66</span>	size_t nleft <span style="color:#f92672">=</span> strlen(buff);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67</span>	ssize_t nsend <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">68</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69</span>	<span style="color:#75715e">/* send content */</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70</span>	printf(<span style="color:#e6db74">&#34;Bytes to send: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, (<span style="color:#66d9ef">int</span>) nleft);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71</span>	<span style="color:#66d9ef">while</span> (nleft <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">72</span>		<span style="color:#66d9ef">if</span> ((nsend <span style="color:#f92672">=</span> send(fd, buff, nleft, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span> ) {
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">73</span>			<span style="color:#66d9ef">if</span> ( nsend <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> errno <span style="color:#f92672">==</span> EINTR)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">74</span>				nsend <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">75</span>			<span style="color:#66d9ef">else</span>
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">76</span>				error_msg(<span style="color:#e6db74">&#34;error with send()&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">77</span>		}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">78</span>		nleft <span style="color:#f92672">-=</span> nsend;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">79</span>		buff <span style="color:#f92672">+=</span> nsend;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">80</span>	}
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">81</span>	<span style="color:#66d9ef">if</span> (nleft <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">82</span>		printf(<span style="color:#e6db74">&#34;Send success!!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">83</span>	<span style="color:#66d9ef">return</span> nleft;
+<span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">84</span>}</code></pre></div>
+<p>These function still need some work with the return values and error detection
+. It is another of the high priorities. They are wrappers to the send() and
+recv() socket function calls.</p>
+<p>Usage example using a browser.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>jaime@LenoLX xwbserver<span style="color:#f92672">]</span>$ ./xwbserver <span style="color:#ae81ff">5600</span> . <span style="color:#ae81ff">8</span>
+server: got connection from 127.0.0.1 port <span style="color:#ae81ff">50451</span>
+method: GET
+uri: /home-dyn.html
+ver: HTTP/1.1
+
+Filename: ./home-dyn.html
+Bytes to send: <span style="color:#ae81ff">83</span>
+Send success!!
+Bytes to send: <span style="color:#ae81ff">407</span>
+Send success!!
+server: got connection from 127.0.0.1 port <span style="color:#ae81ff">50452</span>
+method: GET
+uri: /home-pic1.html
+ver: HTTP/1.1
+
+Filename: ./home-pic1.html
+Bytes to send: <span style="color:#ae81ff">83</span>
+Send success!!
+Bytes to send: <span style="color:#ae81ff">270</span>
+Send success!!
+server: got connection from 127.0.0.1 port <span style="color:#ae81ff">50453</span>
+method: GET
+uri: /smiley.gif
+ver: HTTP/1.1
+
+Filename: ./smiley.gif
+File not found
+Bytes to send: <span style="color:#ae81ff">142</span>
+Send success!!
+server: got connection from 127.0.0.1 port <span style="color:#ae81ff">50454</span>
+method: GET
+uri: /landscape.jpg
+ver: HTTP/1.1
+
+Filename: ./landscape.jpg
+Bytes to send: <span style="color:#ae81ff">85</span>
+Send success!!
+Bytes to send: <span style="color:#ae81ff">4</span>
+Send success!!</code></pre></div>
+
 
                 
 

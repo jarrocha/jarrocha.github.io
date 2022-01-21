@@ -214,9 +214,13 @@
                 
                 <h2 id="intro">Intro</h2>
 <hr>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<p>This post shows a program that captures web pages’s index.html with sockets.
+To do this, it creates a TCP client socket, connects to a web server and takes
+all the data to stdout. The input supports IPv4, IPv6, and hostname resolution.</p>
+<p>As simple as it may sound, there are always little things to take into account,
+which gets you to start investigating about special options and tweaks you can
+make to your function calls.</p>
+<p>Complete code at its <!-- raw HTML omitted -->github repository<!-- raw HTML omitted -->.</p>
 <!-- raw HTML omitted -->
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span>{
@@ -304,7 +308,10 @@
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">84</span>  close(trx_fd);
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">85</span>  exit(EXIT_SUCCESS);
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">86</span>}</code></pre></div>
-<!-- raw HTML omitted -->
+<p>The main function program. Takes care of the socket structure initialization,
+hostname resolution structure allocations, and center point of the program’s
+execution. There are two execution paths for the socket creation which is
+determined by the user’s input of either IPv4 or IPv6.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69</span><span style="color:#66d9ef">if</span> ((getaddrinfo(argv[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>hints, <span style="color:#f92672">&amp;</span>rs)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70</span>              err_msg(gai_strerror(status));
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71</span>          resv4 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
@@ -316,7 +323,8 @@
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">77</span>                  <span style="color:#66d9ef">break</span>;
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">78</span>              }
 <span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">79</span>}</code></pre></div>
-<!-- raw HTML omitted -->
+<p>These are the functions that handle the obtention of html data after host IP is
+processed. You can see there’s no much difference to handling IPv4 and IPv6.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>jaime@LenoLX get_http<span style="color:#f92672">]</span>$ ./get_http google.com
 Connect success
 HTTP/1.1 <span style="color:#ae81ff">200</span> OK
@@ -341,9 +349,12 @@ Transfer-Encoding: chunked
 from your <span style="color:#ae81ff">\u</span>003Ca href<span style="color:#f92672">=</span><span style="color:#ae81ff">\&#34;</span>/history<span style="color:#ae81ff">\&#34;\u</span>003EWeb History<span style="color:#ae81ff">\u</span>003C/a<span style="color:#ae81ff">\u</span>003E<span style="color:#e6db74">&#34;,&#34;</span>psrl<span style="color:#e6db74">&#34;:&#34;</span>Remove<span style="color:#e6db74">&#34;,&#34;</span>sbit<span style="color:#e6db74">&#34;:&#34;</span>Search by image<span style="color:#e6db74">&#34;,&#34;</span>srch<span style="color:#e6db74">&#34;:&#34;</span>Google Search<span style="color:#e6db74">&#34;},&#34;</span>nds<span style="color:#e6db74">&#34;:true,&#34;</span>ovr<span style="color:#e6db74">&#34;:{},&#34;</span>pq<span style="color:#e6db74">&#34;:&#34;&#34;,&#34;</span>refpd<span style="color:#e6db74">&#34;:true,&#34;</span>rfs<span style="color:#e6db74">&#34;:[],&#34;</span>scd<span style="color:#e6db74">&#34;:10,&#34;</span>sce<span style="color:#e6db74">&#34;:5,&#34;</span>stok<span style="color:#e6db74">&#34;:&#34;</span>u8v0kV7gXuv6UGgEJLZk39LT_Ww<span style="color:#e6db74">&#34;},&#34;</span>d<span style="color:#e6db74">&#34;:{}};google.y.first.push(function(){if(google.med){google.med(&#39;init&#39;);google.initHistory();google.med(&#39;history&#39;);}});if(google.j&amp;&amp;google.j.en&amp;&amp;google.j.xi){window.setTimeout(google.j.xi,0);}
 </span><span style="color:#e6db74">&lt;/script&gt;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;
 </span><span style="color:#e6db74">0</span></code></pre></div>
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<p>The program works as expected, above is an example of its functioning.</p>
+<p>I still have to think of other features for this program. One of them could be
+to extent the input from just getting
+<!-- raw HTML omitted -->index.html<!-- raw HTML omitted -->. Or download a complete website to a specified directory. Apart
+from that I will also be working to test for correct input.</p>
+<p>More to come.</p>
 
                 
 
