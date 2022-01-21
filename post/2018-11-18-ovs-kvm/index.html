@@ -218,56 +218,152 @@
                 <header>
                     <h2>TOC</h2>
                 </header>
-                <nav id="TableOfContents"></nav>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#procedure">Procedure</a></li>
+        <li><a href="#conclusions">Conclusions</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
                 
-                <!-- raw HTML omitted -->
+                <h2 id="introduction">Introduction</h2>
+<hr>
+<p>The maturity reached by Software Defined Networking (SDN) in the lastest years
+is a very important one. We are at a point where we could see this architecture
+/framework become a standard. And what makes it so amazing is its fundamental
+idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS)
+is a tool used to create virtual bridges which can then connect virtual or
+physical hosts. It implements both traditional L2 switching protocols or
+Openflow.</p>
+<p>The goal of this post is to use our QEMU-KVM hypervisor to bring up a virtual
+machine configured as a OpenvSwitch (OVS) server which will then virtualize other
+machines which will be chained together with it. In other words, it could be
+also considered as a OVS virtual lab, but these concepts could easily be made
+for production environments. The procedure show in this post contains no
+automation scripts, the reason is that to really understand what’s going on, the
+user must do each steps and check the output. Once the procedure starts to make
+sense, you will begin to think of ways to automate all this.</p>
+<h3 id="what-is-openvswitchhttpopenvswitchorg">What is <a href="http://openvswitch.org/">OpenvSwitch</a>?</h3>
+<p>OVS is a switching application used for both virtualized environment and actual
+switch hardware. Many current solutions use it for both cases.</p>
+<h2 id="procedure">Procedure</h2>
+<h3 id="what-linux-distro-to-use">What Linux distro to use?</h3>
+<p>Qemu and OVS are available for almost all distributions out there. For the sake
+of prototyping this solution quickly, I chose Ubuntu. We are going to use the
+OVS controller provided in the package manager but compile from source the
+actual switching application, so as to use the latest version. I tested this
+on Ubuntu 12.04 and 14.04.</p>
+<h3 id="check-for-the-right-hardware">Check for the right hardware</h3>
+<p>This solution will work at its best if the host OS supports virtualization
+extensions and nested virtualization.</p>
+<p>To check if your hardware supports virtualization, there are several options:</p>
+<p>To check for support of nested virtualization, look for the value in
+/sys/module/kvm_intel/parameters/nested.</p>
+<p>AMD processors come with this value enabled by default. Certain Intel processors
+might not have it enabled by default, like mine. A Intel Core i7 5600U.
+To enable it, append the following parameter to kernel boot command
+<code>&quot;GRUB_CMDLINE_LINUX&quot;</code> in <code>/etc/default/grub</code>.</p>
+<p>If nested virtualization is supported then we will be able to have virtual
+machines that perform virtualization (A Matrix within a Matrix) with the use of
+hardware extensions. But in the case you are using old hardware, don&rsquo;t fret. The
+images we plan to use for nested virtualization are very small, so CPU emulation
+will also work.</p>
+<p>Let&rsquo;s take care of the main image</p>
+<h3 id="create-the-image">Create the image</h3>
+<p>Install the Ubuntu iso</p>
+<p><strong>NOTE:</strong> The parameters above are self-explanatory except for the “-cpu”. If you
+run the virtual OS without this parameter, it is going to use the QEMU cpu which
+will not handle hardware virtualization in the guest OS.</p>
+<p>Shutdown and restart</p>
+<p>Perform basic configuration</p>
+<p>Now, we have the option to install the latest version of openvswitch from
+github or the latest stable version from a tar ball. We will go for the
+stable one. We are going to compile the openvswitch module with our current
+kernel headers.</p>
+<p><!-- raw HTML omitted -->NOTE:<!-- raw HTML omitted --> this is pretty much the part that brings almost all the errors. If you
+get any errors while compiling or loading the module. Check the file INSTALL.md
+at the top of the openvswitch directory. It is a long file but very thorough
+and clear. Check also the log files with “tail /var/log/kern.log” or
+“dmesg | tail”</p>
+<p>To make sure that it survives a reboot. Append it to /etc/modules</p>
+<p>Start the Open vSwitch daemon</p>
 <!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
-<!-- raw HTML omitted -->
+<p>Once OVS is finally running, it is time to start the fun part of this tutorial.
+Which is to create the bridge, fire up the guest images, and add their ports to
+the virtual bridge.</p>
+<p>Add a virtual bridge. The bridge is what is what we could call a virtual switch
+where our virtual ports will connect to to create a broadcast domain. We will
+call it bridge1.</p>
+<p>Download the small guest images.</p>
+<p>Now we are going to start the small virtual images. But first copy them into the
+amount of virtual host you are planning on using. In this case we are going to
+use two.</p>
+<pre><code>cp linux-0.2.img host1.img
+cp linux-0.2.img host2.img
+</code></pre><p>Now start the images with kvm. Following the QEMU manual, all virtual machines
+should always start with 52:54 on their MAC addresses.</p>
+<pre><code>sudo kvm -m 128 -name host1 -net nic,macaddr=52:54:00:00:01:00 -net tap,ifname=r1-eth0,script=no,downscript=no -hda ./host1.img &amp;
+sudo kvm -m 128 -name host2 -net nic,macaddr=52:54:00:00:02:00 -net tap,ifname=r2-eth0,script=no,downscript=no -hda ./host2.img &amp;
+</code></pre><p>Once the images are up, we are going to see to interfaces. Eth0 and Lo. Let’s
+configure Eth0.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># guest VM host 1</span>
+ifconfig eth0 192.168.10.1 netmask 255.255.255.0 broadcast 192.168.10.255
+
+<span style="color:#75715e"># guest VM host 2</span>
+ifconfig eth0 192.168.10.2 netmask 255.255.255.0 broadcast 192.168.10.255&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+</code></pre></div><p>They are not able to ping each other yet. Now if you look at the output of
+<code>ip link</code> on the controller machine, you will see the two interface names we
+gave to our guest VMs. They should look similar to this. Note that the state
+of the bridge and these two newly created interfaces are down.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ip link
+<span style="color:#75715e"># output</span>
+...
+bridge1: BROADCAST,MULTICAST mtu <span style="color:#ae81ff">1500</span> qdisc noop state DOWN mode DEFAULT group
+default 
+    link/ether ae:5f:00:c9:ce:4c brd ff:ff:ff:ff:ff:ff
+r1-eth0: BROADCAST,MULTICAST mtu <span style="color:#ae81ff">1500</span> qdisc noop state DOWN mode DEFAULT group
+default qlen <span style="color:#ae81ff">500</span>
+    link/ether 9a:68:e7:f5:f7:0d brd ff:ff:ff:ff:ff:ff
+r2-eth0: BROADCAST,MULTICAST mtu <span style="color:#ae81ff">1500</span> qdisc noop state DOWN mode DEFAULT group
+default qlen <span style="color:#ae81ff">500</span>
+    link/ether ee:64:e6:ba:51:36 brd ff:ff:ff:ff:ff:ff
+...
+</code></pre></div><p>With the guest VMs interfaces in place, we can now add them to the bridge.</p>
+<pre><code>ovs-vsctl add-port bridge1 r1-eth0
+ovs-vsctl add-port bridge1 r2-eth0
+</code></pre><p>Check the output of <code>ovs-vsctl show</code>, you should now be able to see the bridge
+and the two interfaces from the guest VMs.</p>
+<pre><code>ovs-vsctl show
+0e92445c-3b4e-41e2-a719-1d1f294d1cbc 
+  Bridge &quot;bridge1&quot;
+      Port &quot;r1-eth0&quot;
+          Interface &quot;r1-eth0&quot;
+      Port &quot;r2-eth0&quot;
+          Interface &quot;r2-eth0&quot;
+      Port &quot;bridge1&quot;
+          Interface &quot;bridge1&quot;
+              type: internal
+</code></pre><p>We are ready now, simply enable all the guest VM interfaces and the bridge. On
+the controller machine.</p>
+<pre><code>ip link set bridge1 up
+ip link set r1-eth0 up
+ip link set r2-eth0 up
+</code></pre><p>That&rsquo;s it. The host should be able to ping each other now.
+<!-- raw HTML omitted --></p>
+<h2 id="conclusions">Conclusions</h2>
+<p>Again, we had no automation in place. We could start by creating scripts for
+the guest images to auto configure their ip addresses. And another to start
+the OVS database and daemon. There are several possibilites, I will venture
+into them and come back for another post. One idea will be to find a way to
+benchmark the performance of OVS compared to Linux bridges.</p>
+<p>Hope this post was helpful so please let me know your thoughts and/or feedback
+in the comments.</p>
+<p>Thanks for visiting.</p>
+
 
                 
 

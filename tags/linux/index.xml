@@ -101,7 +101,7 @@ There are good tutorials out there that explain each of the functions of the soc
       <pubDate>Mon, 18 Apr 2016 16:25:31 -0700</pubDate>
       
       <guid>https://jarrocha.github.io/post/2018-11-18-ovs-kvm/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;</description>
+      <description>Introduction  The maturity reached by Software Defined Networking (SDN) in the lastest years is a very important one. We are at a point where we could see this architecture /framework become a standard. And what makes it so amazing is its fundamental idea of openness, just like Linux did it around 20 years ago. OpenvSwitch (OVS) is a tool used to create virtual bridges which can then connect virtual or physical hosts.</description>
     </item>
     
     <item>
