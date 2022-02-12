@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg" />
+    
+
+    
+    <meta name="title" content="Quadrotor Autopilot Design Part 1: Dynamics" />
+    <meta property="og:title" content="Quadrotor Autopilot Design Part 1: Dynamics" />
+    <meta property="twitter:title" content="Quadrotor Autopilot Design Part 1: Dynamics" />
+    
+
+    
+    <meta name="description" content="Dynamics of a quadrotor">
+    <meta property="og:description" content="Dynamics of a quadrotor" />
+    <meta property="twitter:description" content="Dynamics of a quadrotor" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Quadrotor Autopilot Design Part 1: Dynamics-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/quadrotor_dynamics/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                    
+                    
+		    
+                        <li><a href="/top/upcoming/">UPCOMING</a></li>
+                    
+                        <li><a href="/top/courses/">COURSES</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/backgrounds/iot.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/quadrotor" title="Quadrotor">
+                            Quadrotor
+                        </a>
+                        
+                        <a class="tag" href="/tags/dynamic-systems" title="Dynamic Systems">
+                            Dynamic Systems
+                        </a>
+                        
+                    </div>
+                    <h1>Quadrotor Autopilot Design Part 1: Dynamics</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Friday, November 12, 2021
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#derivation">Derivation</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                
+                <h2 id="intro">Intro</h2>
+<hr>
+<p>In this post I will show the derivations of the equations to describe the behavior of a
+quadrotor. This is will be a 3-5 part series that will consist on dynamics, system simulation,
+control design with PID, control design with Optimal Control, EKF, and finally to see it
+on an actual quadrotor. This is based on what I learned from the Udacity Nanodegree course
+on <a href="https://www.udacity.com/course/flying-car-nanodegree--nd787">quadrotor autopilot</a>
+design with some further study on my own. I will definetely recommend this course to anyone
+interested on building your own autopilot and learning on drone control systems.</p>
+<p>The quadrotor chosen for this series is the Crazyflie 2.1 from
+<a href="https://www.bitcraze.io/products/crazyflie-2-1/">bitcraze.io</a>.</p>
+<p>This part will consist on demonstrating on the initial part consisting on the mathematical
+description of the quadrotor dynamics. In the next part I will use a simulation system based
+on C++ to show the system with test inputs.</p>
+<h2 id="derivation">Derivation</h2>
+<hr>
+<p>We will start by describing some assumptions of the system:</p>
+<ul>
+<li>Two reference frames will be used: an inertial-fixed and body-mobile attached
+to the quadrotor.*</li>
+<li>The fixed frame will follow a NED (North-East-Down) system.</li>
+<li>The quadrotor has symmetry with the four arms aligned with the x- and y-axes.</li>
+</ul>
+<p>Some facts to keep in mind are:</p>
+<ul>
+<li>The attitude and position of the quadrotor can be controlled to desired values by
+changing the speed of the four motors. These are our inputs.</li>
+<li>The following forces and moments can be performed on the quadrotor:
+<ul>
+<li>thrust caused by the rotor rotations</li>
+<li>pitching and rolling moment caused by difference of the four rotor thrust</li>
+<li>gravity</li>
+<li>gyroscopic effect</li>
+<li>drag</li>
+<li>yawing moment</li>
+</ul>
+</li>
+<li>Gyroscopic effect only appears in light quadrotors and the yawning moment is caused
+by the unbalance of the four rotor speeds.</li>
+</ul>
+<h3 id="degrees-of-freedom">Degrees of Freedom</h3>
+<p>The quadrotor has vertical, lateral, forward, and backward movement plus roll, pitch, and yaw
+orientations.
+But only 4 control inputs which are the rotational speed of each of the 4 rotors. So, the
+system is considered underactuated.</p>
+<h3 id="euler-angles">Euler Angles</h3>
+<p>These are the angles used to describe the orientation of a rigid body. We use a rotation
+matrix to convert the angles between the body and inertial frame.</p>
+<p>We are going to describe the relationship between body and inertial angular velocities
+and position the following way. The values on the right represent the body frame representation and
+the left, the inertial frame equivalents.</p>
+<p>
+  <img src="/img/quadrotor/pic1.png" alt="pic1">
+
+</p>
+<p>
+  <img src="/img/quadrotor/pic2.png" alt="pic1">
+
+</p>
+<p>Where <strong>R</strong> is the rotation matrix in the roll, pitch, yaw (1,2,3) sequence.</p>
+<p>
+  <img src="/img/quadrotor/pic3.png" alt="pic1">
+
+</p>
+<p>And <strong>T</strong> is the matrix for angular transformation. This is an inverted matrix.</p>
+<p>
+  <img src="/img/quadrotor/pic11.png" alt="pic1">
+
+</p>
+<p>If we plugging the values from the pictures above, we get the following definitions for the inertial
+linear velocityes and angular rates.</p>
+<p>
+  <img src="/img/quadrotor/pic4.png" alt="pic1">
+
+</p>
+<p>Some definitions:</p>
+<p>
+  <img src="/img/quadrotor/pic5.png" alt="pic1">
+
+</p>
+<p>As stated before, the inertia tensor is assumed to be an identity matrix.</p>
+<p>We now are going to use the Transport Theorem as defined in [1]. The transport theorem allows us to take the
+derivative of a vector taken relative from a body frame to an intertial frame.</p>
+<p>In this case, we will use it to obtain the equations for torque of the quadrotor from the body frame to
+the inertial frame.</p>
+<p>
+  <img src="/img/quadrotor/pic6.png" alt="pic1">
+
+</p>
+<p>Taking into consideration that the rotation speed matrix is skew-symmetric, we get the following:</p>
+<p>
+  <img src="/img/quadrotor/pic12.png" alt="pic1">
+
+</p>
+<p>Solving and plugging the values:</p>
+<p>
+  <img src="/img/quadrotor/pic13.png" alt="pic1">
+
+</p>
+<p>
+  <img src="/img/quadrotor/pic14.png" alt="pic1">
+
+</p>
+<p>
+  <img src="/img/quadrotor/pic15.png" alt="pic1">
+
+</p>
+<p>Solving for the angular rates:</p>
+<p>
+  <img src="/img/quadrotor/pic16.png" alt="pic1">
+
+</p>
+<p>Where the torqes can be defined with the following equations:</p>
+<p>
+  <img src="/img/quadrotor/pic17.png" alt="pic1">
+
+</p>
+<p>Now we work to get the equation for acceleration with Euler-Newton equations:</p>
+<p>
+  <img src="/img/quadrotor/pic18.png" alt="pic1">
+
+</p>
+<p>We will use this equation to get the acceleration in the inertial frame:</p>
+<p>
+  <img src="/img/quadrotor/pic7.png" alt="pic1">
+
+</p>
+<p>We now have all 12 equations to create our State-Space representation.</p>
+<p>
+  <img src="/img/quadrotor/pic8.png" alt="pic1">
+
+</p>
+<p>Here&rsquo;s the general equation for State-Space representation:</p>
+<p>
+  <img src="/img/quadrotor/pic9.png" alt="pic1">
+
+</p>
+<p>
+  <img src="/img/quadrotor/pic10.png" alt="pic1">
+
+</p>
+<h2 id="conclusion">Conclusion</h2>
+<hr>
+<p>As you can see all this are <strong>nonlinear</strong> equations. To be able to simulate the system we will need
+to linearize it.</p>
+<p>In the next part, we will use given values for constant based on the chose quadrotor and simulate
+and graph with the system integrator designed in a previous post.</p>
+<h2 id="references">References</h2>
+<hr>
+<p>[1] Schaub, &ldquo;Analytical Mechanics of Space Systems, Fourth Edition&rdquo;, 2018</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/euler1/" data-toggle="tooltip" data-placement="top" title="Dynamic System Integration and Plotting with C&#43;&#43;">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/arm" title="arm">
+                            arm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/bash" title="bash">
+                            bash
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/c" title="c">
+                            c
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/development" title="development">
+                            development
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/dynamic-systems" title="dynamic-systems">
+                            dynamic-systems
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="linux">
+                            linux
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

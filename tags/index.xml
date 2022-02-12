@@ -6,10 +6,28 @@
     <description>Recent content in Tags on Innercoder.dev</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Jun 2021 11:07:09 -0500</lastBuildDate>
+    <lastBuildDate>Fri, 12 Nov 2021 17:09:43 -0500</lastBuildDate>
     
 	<atom:link href="https://jarrocha.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dynamic Systems</title>
+      <link>https://jarrocha.github.io/tags/dynamic-systems/</link>
+      <pubDate>Fri, 12 Nov 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/dynamic-systems/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Quadrotor</title>
+      <link>https://jarrocha.github.io/tags/quadrotor/</link>
+      <pubDate>Fri, 12 Nov 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/quadrotor/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>C</title>
@@ -17,24 +35,6 @@
       <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/tags/c/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>C&#43;&#43;</title>
-      <link>https://jarrocha.github.io/tags/c&#43;&#43;/</link>
-      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
-      
-      <guid>https://jarrocha.github.io/tags/c&#43;&#43;/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Dynamic System</title>
-      <link>https://jarrocha.github.io/tags/dynamic-system/</link>
-      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
-      
-      <guid>https://jarrocha.github.io/tags/dynamic-system/</guid>
       <description></description>
     </item>
     
