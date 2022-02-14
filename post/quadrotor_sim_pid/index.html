@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/tech18.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/tech18.jpg" />
+    
+
+    
+    <meta name="title" content="Quadrotor C&#43;&#43; PID Controller for Simulator" />
+    <meta property="og:title" content="Quadrotor C&#43;&#43; PID Controller for Simulator" />
+    <meta property="twitter:title" content="Quadrotor C&#43;&#43; PID Controller for Simulator" />
+    
+
+    
+    <meta name="description" content="Design of a C&#43;&#43; based PID controller for a quadrotor simulator ">
+    <meta property="og:description" content="Design of a C&#43;&#43; based PID controller for a quadrotor simulator " />
+    <meta property="twitter:description" content="Design of a C&#43;&#43; based PID controller for a quadrotor simulator " />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Quadrotor C&#43;&#43; PID Controller for Simulator-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/quadrotor_sim_pid/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                    
+                    
+		    
+                        <li><a href="/top/upcoming/">UPCOMING</a></li>
+                    
+                        <li><a href="/top/courses/">COURSES</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/backgrounds/tech6.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/quadrotor" title="Quadrotor">
+                            Quadrotor
+                        </a>
+                        
+                        <a class="tag" href="/tags/dynamic-systems" title="Dynamic Systems">
+                            Dynamic Systems
+                        </a>
+                        
+                    </div>
+                    <h1>Quadrotor C&#43;&#43; PID Controller for Simulator</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Wednesday, August 25, 2021
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro"><strong>Intro</strong></a></li>
+        <li><a href="#implemented-controller"><strong>Implemented Controller</strong></a></li>
+        <li><a href="#__flight-evaluation__"><strong>Flight Evaluation</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                
+                <h2 id="intro"><strong>Intro</strong></h2>
+<hr>
+<p>This project is the result for the training course for the <a href="https://github.com/udacity/FCND-Controls-CPP">Flying Car Nanodegree.</a>
+The project consists on building a complete cascaded controller on C++. To verify each step of the
+design, the simulator contains customized scenerios to test each part as it is developed.</p>
+<p>The figure below helps to keep in mind the different parts that we need to develop.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic1.png" alt="Quad Image">
+
+</p>
+<p>The attitude controller part consists of three controllers.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic2.png" alt="Quad Image">
+
+</p>
+<h2 id="implemented-controller"><strong>Implemented Controller</strong></h2>
+<hr>
+<h3 id="implement-calculating-the-motor-commands-given-commanded-thrust-and-moments"><strong>Implement calculating the motor commands given commanded thrust and moments</strong></h3>
+<p>One of the most important parts. It takes the desired moments plus the collective thrust obtained
+from the controllers and convert this to desired thrust for each of the four propellers.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic9.png" alt="Quad Image">
+
+</p>
+<h3 id="implemented-body-rate-control"><strong>Implemented body rate control</strong></h3>
+<p>The body rate controller obtains the commanded rotation rates and current rotation rates to
+calculate commanded moments for X, Y, and Z axes.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic3.png" alt="Quad Image">
+
+</p>
+<h3 id="implement-roll-pitch-control"><strong>Implement roll pitch control</strong></h3>
+<p>The roll-pitch controller receive commanded acceleration on X and Y axes with commanded thrust. This
+controller was the complicated to do. The complication was how to handle the clamping for axes
+acceleration. Without this single part, your roll-pitch controller can break.
+I could not get an intuition to relate clamping angles with acceleration ratios. I used mentor&rsquo;s help for
+this part.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic4.png" alt="Quad Image">
+
+</p>
+<h3 id="implement-altitude-controller"><strong>Implement altitude controller</strong></h3>
+<p>This controller was tricky. I had to debug this part very closely because the thrust was comming out
+negative. After some reasoning, I understood that the output needs to be positive. Also, the recommended
+constraints were also to high both the max and the minimum, per the mentor&rsquo;s reference code. I did not
+included this at the beginning but still needed it for the rest of the scenarios.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic5.png" alt="Quad Image">
+
+</p>
+<h3 id="implement-lateral-position-control"><strong>Implement lateral position control</strong></h3>
+<p>This controller was pretty straight forward. It&rsquo;s configuration is <strong>PD controller</strong>.
+It&rsquo;s purpose is to receive desired position, velocities, and accelerations to produce commanded
+lateral accelerations as output.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic6.png" alt="Quad Image">
+
+</p>
+<h3 id="implement-yaw-control"><strong>Implement yaw control</strong></h3>
+<p>This controller was also not difficult. It is decoupled so it is very independent in calculations.
+Instead of using <strong>fmodf</strong>, I used the <strong>CONSTRAIN</strong> macro. This is a <strong>P controller</strong> that receives
+commanded <strong>Yaw</strong> and output the desired <strong>Yaw Rate</strong>.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic7.png" alt="Quad Image">
+
+</p>
+<h2 id="__flight-evaluation__"><strong>Flight Evaluation</strong></h2>
+<hr>
+<h3 id="scenario-1"><strong>Scenario 1</strong></h3>
+<p>Scenarior one consisted on setting the correct weight for the drone. So that the controller could produce
+correct lift to hold it for a short moment.</p>
+<p>
+  <img src="/img/quad_sim_p1/vid1.gif" alt="Quad Image">
+
+</p>
+<p>
+  <img src="/img/quad_sim_p1/pic10.png" alt="Quad Image">
+
+</p>
+<h3 id="scenario-2"><strong>Scenario 2</strong></h3>
+<p>Scenario to test <strong>GenerateMotorCommands()</strong> and <strong>BodyRateControl()</strong>. It does not test
+<strong>RollPitchControl()</strong>. Scenario 3 test for the latter one but you need to have <strong>LateralPositionControl()</strong> and <strong>AltitudeControl()</strong> to really understand the output. So that&rsquo;s why it was harder to troubleshoot.</p>
+<p>
+  <img src="/img/quad_sim_p1/vid2.gif" alt="Quad Image">
+
+</p>
+<p>
+  <img src="/img/quad_sim_p1/pic11.png" alt="Quad Image">
+
+</p>
+<h3 id="scenario-3"><strong>Scenario 3</strong></h3>
+<p>This scenario is to test <strong>LateralPositionControl()</strong> and <strong>AltitudeControl()</strong> but really, it test
+everything you have worked on so far.</p>
+<p>
+  <img src="/img/quad_sim_p1/vid3.gif" alt="Quad Image">
+
+</p>
+<p>
+  <img src="/img/quad_sim_p1/pic12.png" alt="Quad Image">
+
+</p>
+<h3 id="scenario-4"><strong>Scenario 4</strong></h3>
+<p>Test everything you have worked on so far. Adding a PID controller to <strong>AltitudeControl()</strong> helps
+on tracking.</p>
+<p>
+  <img src="/img/quad_sim_p1/vid4.gif" alt="Quad Image">
+
+</p>
+<p>
+  <img src="/img/quad_sim_p1/pic13.png" alt="Quad Image">
+
+</p>
+<h3 id="parameters"><strong>Parameters</strong></h3>
+<p>Here&rsquo;s a screenshot of the parameters used.</p>
+<p>
+  <img src="/img/quad_sim_p1/pic14.png" alt="Quad Image">
+
+</p>
+<h2 id="conclusion"><strong>Conclusion</strong></h2>
+<hr>
+<p>This was a project to learn about the basic of controller design. After studying the dynamics
+we were asked to put all this into code. This inspire me into studying autopilots on freeRTOS
+which is actually my next project.</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/adv_lane_finding/" data-toggle="tooltip" data-placement="top" title="Advanced Road Lane Detection with OpenCV and Python">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/spi_driver_test/" data-toggle="tooltip" data-placement="top" title="STM32 SPI Driver Testing with Logic Analyzer">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/bash" title="bash">
+                            bash
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/c" title="c">
+                            c
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/development" title="development">
+                            development
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/dynamic-systems" title="dynamic-systems">
+                            dynamic-systems
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="linux">
+                            linux
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/opencv" title="opencv">
+                            opencv
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/python" title="python">
+                            python
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/quadrotor" title="quadrotor">
+                            quadrotor
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

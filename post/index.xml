@@ -32,6 +32,17 @@ I wanted to test this for myself so I updated and uploaded an old SPI driver I w
     </item>
     
     <item>
+      <title>Quadrotor C&#43;&#43; PID Controller for Simulator</title>
+      <link>https://jarrocha.github.io/post/quadrotor_sim_pid/</link>
+      <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_sim_pid/</guid>
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree. The project consists on building a complete cascaded controller on C++. To verify each step of the design, the simulator contains customized scenerios to test each part as it is developed.
+The figure below helps to keep in mind the different parts that we need to develop.
+ The attitude controller part consists of three controllers.</description>
+    </item>
+    
+    <item>
       <title>Advanced Road Lane Detection with OpenCV and Python</title>
       <link>https://jarrocha.github.io/post/adv_lane_finding/</link>
       <pubDate>Tue, 10 Aug 2021 09:25:34 -0500</pubDate>
