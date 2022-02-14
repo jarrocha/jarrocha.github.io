@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg" />
+    
+
+    
+    <meta name="title" content="Advanced Road Lane Detection with OpenCV and Python" />
+    <meta property="og:title" content="Advanced Road Lane Detection with OpenCV and Python" />
+    <meta property="twitter:title" content="Advanced Road Lane Detection with OpenCV and Python" />
+    
+
+    
+    <meta name="description" content="Road lane detection with advanced algorithms with OpenCV.">
+    <meta property="og:description" content="Road lane detection with advanced algorithms with OpenCV." />
+    <meta property="twitter:description" content="Road lane detection with advanced algorithms with OpenCV." />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Advanced Road Lane Detection with OpenCV and Python-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/adv_lane_finding/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                    
+                    
+		    
+                        <li><a href="/top/upcoming/">UPCOMING</a></li>
+                    
+                        <li><a href="/top/courses/">COURSES</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/backgrounds/iot.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/opencv" title="OpenCV">
+                            OpenCV
+                        </a>
+                        
+                        <a class="tag" href="/tags/python" title="Python">
+                            Python
+                        </a>
+                        
+                    </div>
+                    <h1>Advanced Road Lane Detection with OpenCV and Python</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Tuesday, August 10, 2021
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#__introduction__"><strong>Introduction</strong></a></li>
+        <li><a href="#__development__"><strong>Development</strong></a></li>
+        <li><a href="#__result-and-discussion__"><strong>Result and Discussion</strong></a></li>
+        <li><a href="#__code__"><strong>Code</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                
+                <h2 id="__introduction__"><strong>Introduction</strong></h2>
+<hr>
+<p>This project consisted on the following topics. Some of the code used is similar to the previous one.</p>
+<ul>
+<li>Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.</li>
+<li>Apply a distortion correction to raw images.</li>
+<li>Use color transforms, gradients, etc., to create a thresholded binary image.</li>
+<li>Apply a perspective transform to rectify binary image (&ldquo;birds-eye view&rdquo;).</li>
+<li>Detect lane pixels and fit to find the lane boundary.</li>
+<li>Determine the curvature of the lane and vehicle position with respect to center.</li>
+<li>Warp the detected lane boundaries back onto the original image.</li>
+<li>Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.</li>
+</ul>
+<h2 id="__development__"><strong>Development</strong></h2>
+<hr>
+<h3 id="__camera-calibration__"><strong>Camera Calibration</strong></h3>
+<h4 id="__computed-camera-matrix-and-distortion-coefficients__"><strong>Computed camera matrix and distortion coefficients</strong></h4>
+<p>The first step consist on the camera calibration. We use the functions
+<code>cv2.findChessboardCorners()</code> supplend with the number of corners for find
+in the checkered pictured. From it, we call <code>cv2.calibrateCamera()</code> and
+<code>cv2.undistort()</code> to obtain the coefficients <code>mxt</code> and <code>dist</code> for
+correction of camera images. All this is needed so as to compute correct mearurements
+from the noisy images.</p>
+<p>Checkered image with object points:
+
+  <img src="/img/adv_lane_finding/pic1.png" alt="img1">
+
+</p>
+<p>Undistorted checkered image:
+
+  <img src="/img/adv_lane_finding/pic2.png" alt="img1">
+
+</p>
+<h3 id="__pipeline-single-images__"><strong>Pipeline (single images)</strong></h3>
+<h4 id="__distortion-corrected-image__"><strong>Distortion-corrected image</strong></h4>
+<p>Here&rsquo;s a capture of before and after of the camera calibration and undistortion of
+the image.</p>
+<p><strong>Distorted Images:</strong>
+
+  <img src="/img/adv_lane_finding/pic3.png" alt="img1">
+
+</p>
+<p><strong>UnDistorted Images:</strong>
+
+  <img src="/img/adv_lane_finding/pic4.png" alt="img1">
+
+</p>
+<h4 id="__usage-of-color-transforms-gradients-or-other-methods-to-create-a-thresholded-binary-image__"><strong>Usage of color transforms, gradients or other methods to create a thresholded binary image.</strong></h4>
+<p>For this step we get convert the image to HLS color space and obtain the Saturation channel
+to send it through an X-directional Sobel filter. We scale it and write to a new
+binary image. This was done after the image was calibrated, for this example. But for the
+video, we perform this on a vertically warped image to identify the lanes. This screenshot
+below is an example image.</p>
+<p>This is done in <code>CalibrateImages()</code> and <code>UndistortImg()</code>.</p>
+<p><strong>Binary Image:</strong>
+
+  <img src="/img/adv_lane_finding/pic5.png" alt="img1">
+
+</p>
+<p><strong>Lane Binary Image:</strong></p>
+<p>
+  <img src="/img/adv_lane_finding/pic8.png" alt="img1">
+
+</p>
+<h4 id="__perspective-transform__"><strong>Perspective transform</strong></h4>
+<p>The warp transformation was tricky. This is done in <code>GetImgRoI()</code>.
+I didn&rsquo;t know we were given hardcoded values so I
+created a function to manipulate the creation of a trapeziod and do this by trial and error.
+The only reference I had was a screenshot example with the trapezoid and I base myself
+from that. This code was from my previous Lane Detection project.</p>
+<p>
+  <img src="/img/adv_lane_finding/pic6.png" alt="img1">
+
+</p>
+<p>
+  <img src="/img/adv_lane_finding/pic7.png" alt="img1">
+
+</p>
+<h4 id="__identified-lane-line-pixels-and-fit-their-positions-with-a-polynomial__"><strong>Identified lane-line pixels and fit their positions with a polynomial</strong></h4>
+<p>This part is done in the function <code>fit_polynomial()</code>. This is part is quite complex
+and divided in another function <code>find_lane_pixels()</code>
+to perform a fit of the lanes into polynomials by creating
+a histogram of all the points in both lanes. This is done to compute the curvature and
+calculate the car&rsquo;s position within the lanes. This procedure is very similar to what
+we did in the previous project.</p>
+<p><strong>Fitted Line:</strong></p>
+<p>
+  <img src="/img/adv_lane_finding/pic9.png" alt="img1">
+
+</p>
+<h4 id="__example-image-plotted-back-down-onto-the-road__"><strong>Example image plotted back down onto the road</strong></h4>
+<p>The last section was to fill a polygon between the fitted lines which represents
+the lanes. This is done in the function <code>DrawBoundaries()</code>.</p>
+<p>
+  <img src="/img/adv_lane_finding/pic10.png" alt="img1">
+
+</p>
+<p>
+  <img src="/img/adv_lane_finding/pic11.png" alt="img1">
+
+</p>
+<h2 id="__result-and-discussion__"><strong>Result and Discussion</strong></h2>
+<hr>
+<p>This was a very interesting project. I&rsquo;m new into this field and I&rsquo;m surprised to the amount of
+depth it has. There are endless possibilities to improve this. As you can see in the video, the
+algorithms get jittery on shadows and when the pavement is not as dark. To improve this will
+require passing the image through more filters or simply using an estimation filter to make the
+car more stable to noises like this. But a combination of both will be better.</p>
+<p>
+  <img src="/img/adv_lane_finding/video1.gif" alt="img1">
+
+</p>
+<h2 id="__code__"><strong>Code</strong></h2>
+<hr>
+<p>Below is the code for the production of the videos.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">import</span> matplotlib.image <span style="color:#f92672">as</span> mpimg
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> cv2
+<span style="color:#f92672">import</span> jdc
+<span style="color:#f92672">import</span> copy
+<span style="color:#f92672">%</span>matplotlib inline
+
+<span style="color:#f92672">import</span> glob
+<span style="color:#f92672">import</span> os
+
+<span style="color:#f92672">from</span> moviepy.editor <span style="color:#f92672">import</span> VideoFileClip
+<span style="color:#f92672">from</span> IPython.display <span style="color:#f92672">import</span> HTML
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LaneProc</span>():
+    <span style="color:#66d9ef">def</span> __init__ (self, mtx, dist):
+            <span style="color:#75715e"># Define conversions in x and y from pixels space to meters</span>
+        self<span style="color:#f92672">.</span>ym_per_pix <span style="color:#f92672">=</span> <span style="color:#ae81ff">30</span><span style="color:#f92672">/</span><span style="color:#ae81ff">720</span> <span style="color:#75715e"># meters per pixel in y dimension</span>
+        self<span style="color:#f92672">.</span>xm_per_pix <span style="color:#f92672">=</span> <span style="color:#ae81ff">3.7</span><span style="color:#f92672">/</span><span style="color:#ae81ff">700</span> <span style="color:#75715e"># meters per pixel in x dimension</span>
+        self<span style="color:#f92672">.</span>mtx <span style="color:#f92672">=</span> mtx
+        self<span style="color:#f92672">.</span>dist <span style="color:#f92672">=</span> dist
+        self<span style="color:#f92672">.</span>img <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>src <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>dst <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>M <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>dist <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+
+        self<span style="color:#f92672">.</span>left_fit <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>right_fit <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>left_fit_m <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>right_fit_m <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>leftCurvature <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>rightCurvature <span style="color:#f92672">=</span> None
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">UndistortImg</span>(self):
+        imgCopy <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(self<span style="color:#f92672">.</span>img)
+        <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>undistort(imgCopy, self<span style="color:#f92672">.</span>mtx, self<span style="color:#f92672">.</span>dist, None, self<span style="color:#f92672">.</span>mtx)
+    
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">WarpImg</span>(self, img, debug<span style="color:#f92672">=</span>False):
+    
+        <span style="color:#75715e"># Draw lines for debugging</span>
+        <span style="color:#66d9ef">if</span> debug <span style="color:#f92672">==</span> True:
+            drawImg <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(img)
+            image <span style="color:#f92672">=</span> draw_lines(drawImg, self<span style="color:#f92672">.</span>src)
+            plt<span style="color:#f92672">.</span>imshow(image)
+            plt<span style="color:#f92672">.</span>show()
+
+        <span style="color:#75715e"># Create a work image through copy</span>
+        workImg <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(img)
+
+        <span style="color:#75715e"># Warp procedure</span>
+        self<span style="color:#f92672">.</span>M <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>getPerspectiveTransform(self<span style="color:#f92672">.</span>src, self<span style="color:#f92672">.</span>dst)
+        self<span style="color:#f92672">.</span>Minv <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>getPerspectiveTransform(self<span style="color:#f92672">.</span>dst, self<span style="color:#f92672">.</span>src)
+        warped <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>warpPerspective(workImg, self<span style="color:#f92672">.</span>M, (img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>], img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]))
+
+        <span style="color:#75715e"># Draw lines for debugging</span>
+        <span style="color:#66d9ef">if</span> debug <span style="color:#f92672">==</span> True:
+            warpedImg <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(warped)
+            warpedPoly <span style="color:#f92672">=</span> draw_lines(warpedImg, dst)
+            plt<span style="color:#f92672">.</span>imshow(warpedPoly)
+            plt<span style="color:#f92672">.</span>show()
+
+        <span style="color:#66d9ef">return</span> warped
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgRoI</span>(self):
+        height <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>height
+        width <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>width
+        bottom_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.78</span>
+        top_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.465</span>
+
+        left_x_bottom <span style="color:#f92672">=</span> width <span style="color:#f92672">-</span> (width<span style="color:#f92672">*</span>bottom_offset)
+        left_x_top <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>top_offset
+        right_x_bottom <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>bottom_offset
+        right_x_top <span style="color:#f92672">=</span> (width<span style="color:#f92672">*</span><span style="color:#ae81ff">0.5</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">40</span>
+
+        right_y_top <span style="color:#f92672">=</span> height<span style="color:#f92672">*.</span><span style="color:#ae81ff">623</span>
+        right_y_bottom <span style="color:#f92672">=</span> height<span style="color:#f92672">-</span><span style="color:#ae81ff">58</span>
+        left_y_bottom <span style="color:#f92672">=</span> right_y_bottom
+        left_y_top <span style="color:#f92672">=</span> right_y_top
+
+
+        left_bottom <span style="color:#f92672">=</span> (left_x_bottom, left_y_bottom)
+        left_top <span style="color:#f92672">=</span> (left_x_top, left_y_top)
+        right_bottom <span style="color:#f92672">=</span> (right_x_bottom, right_y_bottom)
+        right_top <span style="color:#f92672">=</span> (right_x_top, right_y_top)
+
+        self<span style="color:#f92672">.</span>src <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>float32([[left_x_top, left_y_top], 
+                          [right_x_top, right_y_top], 
+                          [right_x_bottom, right_y_bottom], 
+                          [left_x_bottom, left_y_bottom]])
+
+        dst_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">300</span>
+        self<span style="color:#f92672">.</span>dst <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>float32([[dst_offset, <span style="color:#ae81ff">0</span>],
+                        [width<span style="color:#f92672">-</span>dst_offset, <span style="color:#ae81ff">0</span>],
+                        [width<span style="color:#f92672">-</span>dst_offset, height], 
+                        [dst_offset, height]])
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">draw_lines</span>(self, img, lines, color<span style="color:#f92672">=</span>[<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], thickness<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>):
+
+        line_image <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>copy(img)<span style="color:#f92672">*</span><span style="color:#ae81ff">0</span>
+        <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> range(len(lines)):
+            x1, y1 <span style="color:#f92672">=</span> lines[line<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+            x2, y2 <span style="color:#f92672">=</span> lines[line]
+            cv2<span style="color:#f92672">.</span>line(line_image, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
+
+        <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>addWeighted(img, <span style="color:#ae81ff">0.8</span>, line_image, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetBinary</span>(self, img, thresh<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">255</span>)):
+        workImg <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>copy(img)
+
+        <span style="color:#75715e"># Convert to HLS color space and separate the V channel</span>
+        hls <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(workImg, cv2<span style="color:#f92672">.</span>COLOR_RGB2HLS)
+        s_channel <span style="color:#f92672">=</span> hls[:,:,<span style="color:#ae81ff">2</span>]
+
+        <span style="color:#75715e"># Sobel x</span>
+        sobelx <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>Sobel(s_channel, cv2<span style="color:#f92672">.</span>CV_64F, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, ksize<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>) <span style="color:#75715e"># Take the derivative in x</span>
+        abs_sobelx <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>absolute(sobelx) <span style="color:#75715e"># Absolute x derivative to accentuate lines away from horizontal</span>
+        scaled_sobel <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>uint8(<span style="color:#ae81ff">255</span><span style="color:#f92672">*</span>abs_sobelx<span style="color:#f92672">/</span>np<span style="color:#f92672">.</span>max(abs_sobelx))
+
+        binary <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros_like(scaled_sobel)
+        binary[(scaled_sobel <span style="color:#f92672">&gt;=</span> thresh[<span style="color:#ae81ff">0</span>]) <span style="color:#f92672">&amp;</span> (scaled_sobel <span style="color:#f92672">&lt;=</span> thresh[<span style="color:#ae81ff">1</span>])] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+
+        <span style="color:#66d9ef">return</span> binary
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">find_lane_pixels</span>(binary_warped):
+        <span style="color:#75715e"># Take a histogram of the bottom half of the image</span>
+        histogram <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(binary_warped[binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">//</span><span style="color:#ae81ff">2</span>:,:], axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+        <span style="color:#75715e"># Create an output image to draw on and visualize the result</span>
+        out_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dstack((binary_warped, binary_warped, binary_warped))
+        <span style="color:#75715e"># Find the peak of the left and right halves of the histogram</span>
+        <span style="color:#75715e"># These will be the starting point for the left and right lines</span>
+        midpoint <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>int32(histogram<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">//</span><span style="color:#ae81ff">2</span>)
+        leftx_base <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(histogram[:midpoint])
+        rightx_base <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(histogram[midpoint:]) <span style="color:#f92672">+</span> midpoint
+
+        <span style="color:#75715e"># HYPERPARAMETERS</span>
+        <span style="color:#75715e"># Choose the number of sliding windows</span>
+        nwindows <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>
+        <span style="color:#75715e"># Set the width of the windows +/- margin</span>
+        margin <span style="color:#f92672">=</span> <span style="color:#ae81ff">100</span>
+        <span style="color:#75715e"># Set minimum number of pixels found to recenter window</span>
+        minpix <span style="color:#f92672">=</span> <span style="color:#ae81ff">50</span>
+
+        <span style="color:#75715e"># Set height of windows - based on nwindows above and image shape</span>
+        window_height <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>int32(binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">//</span>nwindows)
+        <span style="color:#75715e"># Identify the x and y positions of all nonzero pixels in the image</span>
+        nonzero <span style="color:#f92672">=</span> binary_warped<span style="color:#f92672">.</span>nonzero()
+        nonzeroy <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(nonzero[<span style="color:#ae81ff">0</span>])
+        nonzerox <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(nonzero[<span style="color:#ae81ff">1</span>])
+        <span style="color:#75715e"># Current positions to be updated later for each window in nwindows</span>
+        leftx_current <span style="color:#f92672">=</span> leftx_base
+        rightx_current <span style="color:#f92672">=</span> rightx_base
+
+        <span style="color:#75715e"># Create empty lists to receive left and right lane pixel indices</span>
+        left_lane_inds <span style="color:#f92672">=</span> []
+        right_lane_inds <span style="color:#f92672">=</span> []
+
+        <span style="color:#75715e"># Step through the windows one by one</span>
+        <span style="color:#66d9ef">for</span> window <span style="color:#f92672">in</span> range(nwindows):
+            <span style="color:#75715e"># Identify window boundaries in x and y (and right and left)</span>
+            win_y_low <span style="color:#f92672">=</span> binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">-</span> (window<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">*</span>window_height
+            win_y_high <span style="color:#f92672">=</span> binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">-</span> window<span style="color:#f92672">*</span>window_height
+            <span style="color:#75715e">### Find the four below boundaries of the window ###</span>
+            win_xleft_low <span style="color:#f92672">=</span> leftx_current <span style="color:#f92672">-</span> margin
+            win_xleft_high <span style="color:#f92672">=</span> leftx_current <span style="color:#f92672">+</span> margin
+            win_xright_low <span style="color:#f92672">=</span> rightx_current <span style="color:#f92672">-</span> margin
+            win_xright_high <span style="color:#f92672">=</span> rightx_current <span style="color:#f92672">+</span> margin
+
+            <span style="color:#75715e"># Draw the windows on the visualization image</span>
+            cv2<span style="color:#f92672">.</span>rectangle(out_img,(win_xleft_low,win_y_low),
+            (win_xleft_high,win_y_high),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>), <span style="color:#ae81ff">2</span>) 
+            cv2<span style="color:#f92672">.</span>rectangle(out_img,(win_xright_low,win_y_low),
+            (win_xright_high,win_y_high),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>), <span style="color:#ae81ff">2</span>) 
+
+            <span style="color:#75715e">### Identify the nonzero pixels in x and y within the window ###</span>
+            good_left_inds <span style="color:#f92672">=</span> ((nonzeroy <span style="color:#f92672">&gt;=</span> win_y_low) <span style="color:#f92672">&amp;</span> (nonzeroy <span style="color:#f92672">&lt;</span> win_y_high) <span style="color:#f92672">&amp;</span> 
+            (nonzerox <span style="color:#f92672">&gt;=</span> win_xleft_low) <span style="color:#f92672">&amp;</span>  (nonzerox <span style="color:#f92672">&lt;</span> win_xleft_high))<span style="color:#f92672">.</span>nonzero()[<span style="color:#ae81ff">0</span>]
+            good_right_inds <span style="color:#f92672">=</span> ((nonzeroy <span style="color:#f92672">&gt;=</span> win_y_low) <span style="color:#f92672">&amp;</span> (nonzeroy <span style="color:#f92672">&lt;</span> win_y_high) <span style="color:#f92672">&amp;</span> 
+            (nonzerox <span style="color:#f92672">&gt;=</span> win_xright_low) <span style="color:#f92672">&amp;</span>  (nonzerox <span style="color:#f92672">&lt;</span> win_xright_high))<span style="color:#f92672">.</span>nonzero()[<span style="color:#ae81ff">0</span>]
+
+            <span style="color:#75715e"># Append these indices to the lists</span>
+            left_lane_inds<span style="color:#f92672">.</span>append(good_left_inds)
+            right_lane_inds<span style="color:#f92672">.</span>append(good_right_inds)
+
+            <span style="color:#75715e"># If you found &gt; minpix pixels, recenter next window on their mean position</span>
+            <span style="color:#66d9ef">if</span> len(good_left_inds) <span style="color:#f92672">&gt;</span> minpix:
+                leftx_current <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>int32(np<span style="color:#f92672">.</span>mean(nonzerox[good_left_inds]))
+            <span style="color:#66d9ef">if</span> len(good_right_inds) <span style="color:#f92672">&gt;</span> minpix:        
+                rightx_current <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>int32(np<span style="color:#f92672">.</span>mean(nonzerox[good_right_inds]))
+
+        <span style="color:#75715e"># Concatenate the arrays of indices (previously was a list of lists of pixels)</span>
+        <span style="color:#66d9ef">try</span>:
+            left_lane_inds <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>concatenate(left_lane_inds)
+            right_lane_inds <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>concatenate(right_lane_inds)
+        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">ValueError</span>:
+            <span style="color:#75715e"># Avoids an error if the above is not implemented fully</span>
+            <span style="color:#66d9ef">pass</span>
+
+        <span style="color:#75715e"># Extract left and right line pixel positions</span>
+        leftx <span style="color:#f92672">=</span> nonzerox[left_lane_inds]
+        lefty <span style="color:#f92672">=</span> nonzeroy[left_lane_inds] 
+        rightx <span style="color:#f92672">=</span> nonzerox[right_lane_inds]
+        righty <span style="color:#f92672">=</span> nonzeroy[right_lane_inds]
+
+        <span style="color:#66d9ef">return</span> leftx, lefty, rightx, righty, out_img
+
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">fit_polynomial</span>(binary_warped, plotPoly<span style="color:#f92672">=</span>True):
+        <span style="color:#75715e"># Find our lane pixels first</span>
+        leftx, lefty, rightx, righty, out_img <span style="color:#f92672">=</span> find_lane_pixels(binary_warped)
+
+        <span style="color:#75715e">### Fit a second order polynomial to each using `np.polyfit` ###</span>
+        left_fit <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>polyfit(lefty, leftx, <span style="color:#ae81ff">2</span>)
+        right_fit <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>polyfit(righty, rightx, <span style="color:#ae81ff">2</span>)
+
+        <span style="color:#75715e"># Generate x and y values for plotting</span>
+        ploty <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>linspace(<span style="color:#ae81ff">0</span>, binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, binary_warped<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] )
+        <span style="color:#66d9ef">try</span>:
+            left_fitx <span style="color:#f92672">=</span> left_fit[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">*</span>ploty<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> left_fit[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">*</span>ploty <span style="color:#f92672">+</span> left_fit[<span style="color:#ae81ff">2</span>]
+            right_fitx <span style="color:#f92672">=</span> right_fit[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">*</span>ploty<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> right_fit[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">*</span>ploty <span style="color:#f92672">+</span> right_fit[<span style="color:#ae81ff">2</span>]
+        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">TypeError</span>:
+            <span style="color:#75715e"># Avoids an error if `left` and `right_fit` are still none or incorrect</span>
+            <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;The function failed to fit a line!&#39;</span>)
+            left_fitx <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>ploty<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>ploty
+            right_fitx <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>ploty<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>ploty
+
+        <span style="color:#75715e">## Visualization ##</span>
+        <span style="color:#75715e"># Colors in the left and right lane regions</span>
+        out_img[lefty, leftx] <span style="color:#f92672">=</span> [<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>]
+        out_img[righty, rightx] <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">255</span>]
+
+        <span style="color:#75715e"># Plots the left and right polynomials on the lane lines</span>
+        <span style="color:#66d9ef">if</span> plotPoly <span style="color:#f92672">==</span> True:
+            plt<span style="color:#f92672">.</span>plot(left_fitx, ploty, color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;yellow&#39;</span>)
+            plt<span style="color:#f92672">.</span>plot(right_fitx, ploty, color<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;yellow&#39;</span>)
+
+        <span style="color:#66d9ef">return</span> out_img, ploty, left_fit, right_fit
+    
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">VehicleMetrics</span>(self, binaryImg, undImg):
+    
+        out_img, ploty, left_fit, right_fit  <span style="color:#f92672">=</span> fit_polynomial(binaryImg, plotPoly<span style="color:#f92672">=</span>False)
+        outImg <span style="color:#f92672">=</span> DrawBoundaries(binaryImg, undImg, self<span style="color:#f92672">.</span>Minv, left_fit, right_fit)
+
+        <span style="color:#75715e"># Calculate curvature</span>
+        leftx, lefty, rightx, righty, out_img <span style="color:#f92672">=</span> find_lane_pixels(binaryImg)
+        ploty, left_fit_m, right_fit_m <span style="color:#f92672">=</span> scale_curvature_to_pixels(binaryImg, leftx, lefty, rightx, righty)
+
+
+        left_curverad, right_curverad <span style="color:#f92672">=</span> measure_curvature_real(ploty, left_fit_m, right_fit_m)
+
+        imgH <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+        imgH_m <span style="color:#f92672">=</span> imgH<span style="color:#f92672">*</span>ym_per_pix
+        imgW <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]
+        imgW_m <span style="color:#f92672">=</span> imgW <span style="color:#f92672">*</span>xm_per_pix
+
+        <span style="color:#75715e"># Calculate vehicle center</span>
+        vehicleCenterScaled <span style="color:#f92672">=</span> (imgW_m) <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>
+
+        lineLeft <span style="color:#f92672">=</span> left_fit_m[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">*</span>imgH_m<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> left_fit_m[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">*</span>imgH_m <span style="color:#f92672">+</span> left_fit_m[<span style="color:#ae81ff">2</span>]
+        lineRight <span style="color:#f92672">=</span> right_fit_m[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">*</span>imgH_m<span style="color:#f92672">**</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> right_fit_m[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">*</span>imgH_m <span style="color:#f92672">+</span> right_fit_m[<span style="color:#ae81ff">2</span>]
+        avg <span style="color:#f92672">=</span> (lineRight <span style="color:#f92672">+</span> lineLeft)<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>
+
+        <span style="color:#75715e"># Calculating offset</span>
+        laneMiddle <span style="color:#f92672">=</span> vehicleCenterScaled <span style="color:#f92672">-</span> avg
+
+        <span style="color:#75715e"># Output metrics to image</span>
+        fscale <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>
+        fnt <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>FONT_HERSHEY_SIMPLEX
+        fclr <span style="color:#f92672">=</span> (<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>)
+        fthick <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
+        cv2<span style="color:#f92672">.</span>putText(outImg, <span style="color:#e6db74">&#39;Left curvature: {0:6.3f} m&#39;</span><span style="color:#f92672">.</span>format(left_curverad), 
+                    (<span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">50</span>), fnt, fscale, fclr, fthick)
+        cv2<span style="color:#f92672">.</span>putText(outImg, <span style="color:#e6db74">&#39;Right curvature: {0:6.3f} m&#39;</span><span style="color:#f92672">.</span>format(right_curverad), 
+                    (<span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">100</span>), fnt, fscale, fclr, fthick)
+        cv2<span style="color:#f92672">.</span>putText(outImg, <span style="color:#e6db74">&#39;Distance from lane center: {0:&gt;+6.3f} m&#39;</span><span style="color:#f92672">.</span>format(laneMiddle), 
+                    (<span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">150</span>), fnt, fscale, fclr, fthick)
+
+        <span style="color:#66d9ef">return</span> outImg
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">OpenImages</span>(loc):
+    images <span style="color:#f92672">=</span> glob<span style="color:#f92672">.</span>glob(loc)
+    imgList <span style="color:#f92672">=</span> []
+
+    <span style="color:#66d9ef">for</span> fname <span style="color:#f92672">in</span> images:
+        <span style="color:#75715e"># read in each image</span>
+        img <span style="color:#f92672">=</span> mpimg<span style="color:#f92672">.</span>imread(fname)
+        imgList<span style="color:#f92672">.</span>append(img)
+    <span style="color:#66d9ef">return</span> imgList
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">CalibrateImages</span>(imgList, nx<span style="color:#f92672">=</span><span style="color:#ae81ff">9</span>,ny<span style="color:#f92672">=</span><span style="color:#ae81ff">6</span>):
+
+    <span style="color:#75715e"># Prepare object points, like (0,0,0), (1,0,0), (2,0,0) ..., (7,5,0)</span>
+    objp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((nx<span style="color:#f92672">*</span>ny,<span style="color:#ae81ff">3</span>), np<span style="color:#f92672">.</span>float32)
+    objp[:,:<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>mgrid[<span style="color:#ae81ff">0</span>:nx, <span style="color:#ae81ff">0</span>:ny]<span style="color:#f92672">.</span>T<span style="color:#f92672">.</span>reshape(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>) <span style="color:#75715e"># x, y</span>
+
+    imgListCopy <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(imgList)
+    
+    imgPoints <span style="color:#f92672">=</span> []
+    objPoints <span style="color:#f92672">=</span> []
+
+    <span style="color:#66d9ef">for</span> img <span style="color:#f92672">in</span> imgListCopy:
+        <span style="color:#75715e"># Convert to grayscale and save</span>
+        gray <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(img, cv2<span style="color:#f92672">.</span>COLOR_BGR2GRAY)
+        imgSize <span style="color:#f92672">=</span> gray<span style="color:#f92672">.</span>shape[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+
+        <span style="color:#75715e"># Find the chessboard corners</span>
+        ret, corners <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>findChessboardCorners(gray, (nx, ny), None)
+
+        <span style="color:#75715e"># If found, draw corners, add object points, image points</span>
+        <span style="color:#66d9ef">if</span> ret <span style="color:#f92672">==</span> True:
+            imgPoints<span style="color:#f92672">.</span>append(corners)
+            objPoints<span style="color:#f92672">.</span>append(objp)
+
+    <span style="color:#75715e"># get the camera calibration parameters</span>
+    ret, mtx, dist, rvecs, tvecs <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>calibrateCamera(objPoints, imgPoints, imgSize, None, None)
+    <span style="color:#66d9ef">return</span> mtx, dist    
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Calibrating Camera...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+
+imgList <span style="color:#f92672">=</span> OpenImages(loc<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;./camera_cal/calibration*.jpg&#34;</span>)
+mtx, dist <span style="color:#f92672">=</span> CalibrateImages(imgList)
+laneImg <span style="color:#f92672">=</span> LaneProc(mtx, dist)
+
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;mtx&#34;</span>, laneImg<span style="color:#f92672">.</span>mtx, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">dist&#34;</span>, laneImg<span style="color:#f92672">.</span>dist)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ProcessImg</span>(image):
+    laneImg<span style="color:#f92672">.</span>img <span style="color:#f92672">=</span> image
+    laneImg<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]
+    laneImg<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] 
+
+    imshape <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape
+    laneImg<span style="color:#f92672">.</span>GetImgRoI()
+    
+    <span style="color:#75715e"># Undistorting image</span>
+    undistImg <span style="color:#f92672">=</span> laneImg<span style="color:#f92672">.</span>UndistortImg()
+    
+    <span style="color:#75715e"># Warping image</span>
+    warpedImg <span style="color:#f92672">=</span> laneImg<span style="color:#f92672">.</span>WarpImg(undistImg, debug<span style="color:#f92672">=</span>False)
+    
+    <span style="color:#75715e"># Getting binary image</span>
+    binaryImg <span style="color:#f92672">=</span> laneImg<span style="color:#f92672">.</span>GetBinary(warpedImg, thresh<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">255</span>))
+    
+    <span style="color:#75715e"># Calculating vehicle metrics</span>
+    CarMetricsImg <span style="color:#f92672">=</span> laneImg<span style="color:#f92672">.</span>VehicleMetrics(binaryImg, undistImg)
+
+    <span style="color:#66d9ef">return</span> CarMetricsImg
+</code></pre></div>
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/lane_finding/" data-toggle="tooltip" data-placement="top" title="Road Lane Detection with OpenCV and Python">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/spi_driver_test/" data-toggle="tooltip" data-placement="top" title="STM32 SPI Driver Testing with Logic Analyzer">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/arm" title="arm">
+                            arm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/bash" title="bash">
+                            bash
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/c" title="c">
+                            c
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/development" title="development">
+                            development
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/dynamic-systems" title="dynamic-systems">
+                            dynamic-systems
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="linux">
+                            linux
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/opencv" title="opencv">
+                            opencv
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/python" title="python">
+                            python
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>

@@ -30,27 +30,9 @@
     </item>
     
     <item>
-      <title>OpenCV</title>
-      <link>https://jarrocha.github.io/tags/opencv/</link>
-      <pubDate>Tue, 14 Sep 2021 06:45:31 -0500</pubDate>
-      
-      <guid>https://jarrocha.github.io/tags/opencv/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Python</title>
-      <link>https://jarrocha.github.io/tags/python/</link>
-      <pubDate>Tue, 14 Sep 2021 06:45:31 -0500</pubDate>
-      
-      <guid>https://jarrocha.github.io/tags/python/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>C</title>
       <link>https://jarrocha.github.io/tags/c/</link>
-      <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>
+      <pubDate>Sun, 19 Sep 2021 11:24:35 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/tags/c/</guid>
       <description></description>
@@ -59,7 +41,7 @@
     <item>
       <title>Driver</title>
       <link>https://jarrocha.github.io/tags/driver/</link>
-      <pubDate>Wed, 19 May 2021 11:24:35 -0500</pubDate>
+      <pubDate>Sun, 19 Sep 2021 11:24:35 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/tags/driver/</guid>
       <description></description>
@@ -68,9 +50,27 @@
     <item>
       <title>STM32</title>
       <link>https://jarrocha.github.io/tags/stm32/</link>
-      <pubDate>Wed, 19 May 2021 11:24:35 -0500</pubDate>
+      <pubDate>Sun, 19 Sep 2021 11:24:35 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/tags/stm32/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>OpenCV</title>
+      <link>https://jarrocha.github.io/tags/opencv/</link>
+      <pubDate>Tue, 10 Aug 2021 09:25:34 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/opencv/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Python</title>
+      <link>https://jarrocha.github.io/tags/python/</link>
+      <pubDate>Tue, 10 Aug 2021 09:25:34 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/tags/python/</guid>
       <description></description>
     </item>
     
