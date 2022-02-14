@@ -21,6 +21,16 @@
     </item>
     
     <item>
+      <title>Road Lane Detection with OpenCV and Python</title>
+      <link>https://jarrocha.github.io/post/lane_finding/</link>
+      <pubDate>Tue, 14 Sep 2021 06:45:31 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/lane_finding/</guid>
+      <description>Introduction  This was my first attempt at working at this project based on the Udacity course. I found it an amazing experience to learn about this because once you get through all the math and see the results, you get a very good feeling of accomplishment, understanding, and humility on the problem to be solved.
+Development  The code below is done twice, once for building single images and then the refactoring of the code to deal with videos.</description>
+    </item>
+    
+    <item>
       <title>Dynamic System Integration and Plotting with C&#43;&#43;</title>
       <link>https://jarrocha.github.io/post/euler1/</link>
       <pubDate>Sun, 20 Jun 2021 11:07:09 -0500</pubDate>

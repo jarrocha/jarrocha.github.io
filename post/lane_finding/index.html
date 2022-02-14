@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Innercoder.dev">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg">
+    <meta property="twitter:image" content="https://jarrocha.github.io/img/backgrounds/iot.jpg" />
+    
+
+    
+    <meta name="title" content="Road Lane Detection with OpenCV and Python" />
+    <meta property="og:title" content="Road Lane Detection with OpenCV and Python" />
+    <meta property="twitter:title" content="Road Lane Detection with OpenCV and Python" />
+    
+
+    
+    <meta name="description" content="Road lane detection algorithm with OpenCV based Python.">
+    <meta property="og:description" content="Road lane detection algorithm with OpenCV based Python." />
+    <meta property="twitter:description" content="Road lane detection algorithm with OpenCV based Python." />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Linux, C, C&#43;&#43;, macOS, mbedOS">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Road Lane Detection with OpenCV and Python-Innercoder.dev</title>
+
+    <link rel="canonical" href="/post/lane_finding/">
+
+    <link rel="stylesheet" href="/css/iDisqus.min.css"/>
+	
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+    
+    
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    
+    <script src="/js/jquery.min.js"></script>
+    
+    
+    <script src="/js/bootstrap.min.js"></script>
+    
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Innercoder.dev</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                        
+                    
+                    
+		    
+                        <li><a href="/top/upcoming/">UPCOMING</a></li>
+                    
+                        <li><a href="/top/courses/">COURSES</a></li>
+                    
+                        <li><a href="/top/about/">ABOUT</a></li>
+                    
+
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/backgrounds/iot.jpg')
+    }
+</style>
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/opencv" title="OpenCV">
+                            OpenCV
+                        </a>
+                        
+                        <a class="tag" href="/tags/python" title="Python">
+                            Python
+                        </a>
+                        
+                    </div>
+                    <h1>Road Lane Detection with OpenCV and Python</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by 
+                        
+                            Jaime Arrocha
+                         
+                        on 
+                        Tuesday, September 14, 2021
+                        
+                        
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <header>
+                    <h2>TOC</h2>
+                </header>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#development">Development</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                
+                <h2 id="introduction">Introduction</h2>
+<hr>
+<p>This was my first attempt at working at this project based on the Udacity
+<a href="https://www.udacity.com/course/self-driving-car-engineer-nanodegree--nd0013">course</a>.
+I found it an amazing experience to learn
+about this because once you get through all the math and see the results, you get a very good
+feeling of accomplishment, understanding, and humility on the problem to be solved.</p>
+<h2 id="development">Development</h2>
+<hr>
+<p>The code below is done twice, once for building single images and then the refactoring of the code to deal with
+videos.</p>
+<p>Here&rsquo;s an example image used to implement our algorithm pipeline.</p>
+<p>
+  <img src="/img/lane_finding/pic1.png" alt="png">
+
+</p>
+<h4 id="starting-code">Starting Code</h4>
+<p>Here&rsquo;s the starting code, although it was modified a little to make it easier to build
+around it.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> math
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">grayscale</span>(img):
+    <span style="color:#e6db74">&#34;&#34;&#34;Applies the Grayscale transform
+</span><span style="color:#e6db74">    This will return an image with only one color channel
+</span><span style="color:#e6db74">    but NOTE: to see the returned image as grayscale
+</span><span style="color:#e6db74">    (assuming your grayscaled image is called &#39;gray&#39;)
+</span><span style="color:#e6db74">    you should call plt.imshow(gray, cmap=&#39;gray&#39;)&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>cvtColor(img, cv2<span style="color:#f92672">.</span>COLOR_RGB2GRAY)
+    <span style="color:#75715e"># Or use BGR2GRAY if you read an image with cv2.imread()</span>
+    <span style="color:#75715e"># return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)</span>
+    
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">canny</span>(img, low_threshold, high_threshold):
+    <span style="color:#e6db74">&#34;&#34;&#34;Applies the Canny transform&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>Canny(img, low_threshold, high_threshold)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">gaussian_blur</span>(img, kernel_size):
+    <span style="color:#e6db74">&#34;&#34;&#34;Applies a Gaussian Noise kernel&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>GaussianBlur(img, (kernel_size, kernel_size), <span style="color:#ae81ff">0</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">region_of_interest</span>(img, vertices):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    Applies an image mask.
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    Only keeps the region of the image defined by the polygon
+</span><span style="color:#e6db74">    formed from `vertices`. The rest of the image is set to black.
+</span><span style="color:#e6db74">    `vertices` should be a numpy array of integer points.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#75715e">#defining a blank mask to start with</span>
+    mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros_like(img)   
+    
+    <span style="color:#75715e">#defining a 3 channel or 1 channel color to fill the mask with depending on the input image</span>
+    <span style="color:#66d9ef">if</span> len(img<span style="color:#f92672">.</span>shape) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">2</span>:
+        channel_count <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">2</span>]  <span style="color:#75715e"># i.e. 3 or 4 depending on your image</span>
+        ignore_mask_color <span style="color:#f92672">=</span> (<span style="color:#ae81ff">255</span>,) <span style="color:#f92672">*</span> channel_count
+    <span style="color:#66d9ef">else</span>:
+        ignore_mask_color <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span>
+        
+    <span style="color:#75715e">#filling pixels inside the polygon defined by &#34;vertices&#34; with the fill color    </span>
+    cv2<span style="color:#f92672">.</span>fillPoly(mask, vertices, ignore_mask_color)
+    
+    <span style="color:#75715e">#returning the image only where mask pixels are nonzero</span>
+    masked_image <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>bitwise_and(img, mask)
+    <span style="color:#66d9ef">return</span> masked_image
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">draw_lines</span>(img, lines, color<span style="color:#f92672">=</span>[<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], thickness<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    NOTE: this is the function you might want to use as a starting point once you want to 
+</span><span style="color:#e6db74">    average/extrapolate the line segments you detect to map out the full
+</span><span style="color:#e6db74">    extent of the lane (going from the result shown in raw-lines-example.mp4
+</span><span style="color:#e6db74">    to that shown in P1_example.mp4).  
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    Think about things like separating line segments by their 
+</span><span style="color:#e6db74">    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
+</span><span style="color:#e6db74">    line vs. the right line.  Then, you can average the position of each of 
+</span><span style="color:#e6db74">    the lines and extrapolate to the top and bottom of the lane.
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    This function draws `lines` with `color` and `thickness`.    
+</span><span style="color:#e6db74">    Lines are drawn on the image inplace (mutates the image).
+</span><span style="color:#e6db74">    If you want to make the lines semi-transparent, think about combining
+</span><span style="color:#e6db74">    this function with the weighted_img() function below
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> lines:
+        <span style="color:#66d9ef">for</span> x1,y1,x2,y2 <span style="color:#f92672">in</span> line:
+            cv2<span style="color:#f92672">.</span>line(img, (x1, y1), (x2, y2), color, thickness)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">hough_lines</span>(img, rho, theta, threshold, min_line_len, max_line_gap):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    `img` should be the output of a Canny transform.
+</span><span style="color:#e6db74">        
+</span><span style="color:#e6db74">    Returns an image with hough lines drawn.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    lines <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>HoughLinesP(img, rho, theta, threshold, np<span style="color:#f92672">.</span>array([]), minLineLength<span style="color:#f92672">=</span>min_line_len, maxLineGap<span style="color:#f92672">=</span>max_line_gap)
+    line_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>], img<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">3</span>), dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>uint8)
+    draw_lines(line_img, lines)
+    <span style="color:#66d9ef">return</span> line_img
+
+<span style="color:#75715e"># Python 3 has support for cool math symbols.</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">weighted_img</span>(img, initial_img, <span style="color:#960050;background-color:#1e0010">α</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0.8</span>, <span style="color:#960050;background-color:#1e0010">β</span><span style="color:#f92672">=</span><span style="color:#ae81ff">1.</span>, <span style="color:#960050;background-color:#1e0010">γ</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0.</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    `img` is the output of the hough_lines(), An image with lines drawn on it.
+</span><span style="color:#e6db74">    Should be a blank image (all black) with lines drawn on it.
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    `initial_img` should be the image before any processing.
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    The result image is computed as follows:
+</span><span style="color:#e6db74">    
+</span><span style="color:#e6db74">    initial_img * α + img * β + γ
+</span><span style="color:#e6db74">    NOTE: initial_img and img must be the same shape!
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>addWeighted(initial_img, <span style="color:#960050;background-color:#1e0010">α</span>, img, <span style="color:#960050;background-color:#1e0010">β</span>, <span style="color:#960050;background-color:#1e0010">γ</span>)
+</code></pre></div><h3 id="build-a-lane-finding-pipeline-for-single-images">Build a Lane Finding pipeline for single images</h3>
+<p>Here&rsquo;s the part of the code that work with the test images. You can see the output below.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> numpy.polynomial.polynomial <span style="color:#f92672">as</span> poly
+
+imageList <span style="color:#f92672">=</span> []
+processImgList <span style="color:#f92672">=</span> []
+test_images_loc <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;test_images&#34;</span>
+images <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;solidWhiteRight.jpg&#34;</span>,
+          <span style="color:#e6db74">&#34;solidWhiteCurve.jpg&#34;</span>,
+          <span style="color:#e6db74">&#34;solidYellowCurve.jpg&#34;</span>,
+          <span style="color:#e6db74">&#34;solidYellowCurve2.jpg&#34;</span>,
+          <span style="color:#e6db74">&#34;solidYellowLeft.jpg&#34;</span>,
+          <span style="color:#e6db74">&#34;whiteCarLaneSwitch.jpg&#34;</span>]
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Image</span>:
+    <span style="color:#66d9ef">def</span> __init__(self, name, location):
+        self<span style="color:#f92672">.</span>name <span style="color:#f92672">=</span> name
+        self<span style="color:#f92672">.</span>location <span style="color:#f92672">=</span> location
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>lines <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+
+        <span style="color:#75715e"># Keep track of left and right lane points</span>
+        self<span style="color:#f92672">.</span>leftLanePoints <span style="color:#f92672">=</span> []
+        self<span style="color:#f92672">.</span>rightLanePoints <span style="color:#f92672">=</span> []
+        
+        <span style="color:#75715e"># Used to draw final line</span>
+        self<span style="color:#f92672">.</span>left_x_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>left_x_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>left_y_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>left_y_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>right_x_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>right_x_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>right_y_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>right_y_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">open</span>(self):
+        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Opening image: &#34;</span> <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>name)
+        img <span style="color:#f92672">=</span> mpimg<span style="color:#f92672">.</span>imread(self<span style="color:#f92672">.</span>location <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/&#39;</span> <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>name)
+        imshape <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>shape
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> imshape[<span style="color:#ae81ff">0</span>]
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> imshape[<span style="color:#ae81ff">1</span>]
+        self<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> img
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">draw_lines</span>(img, lines, color<span style="color:#f92672">=</span>[<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], thickness<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    Modification of the previous function to return the modified image with lines drawn.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> lines:
+        <span style="color:#66d9ef">for</span> x1,y1,x2,y2 <span style="color:#f92672">in</span> line:
+            cv2<span style="color:#f92672">.</span>line(img, (x1, y1), (x2, y2), color, thickness)
+    
+    <span style="color:#66d9ef">return</span> img
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">show_imgs</span>(imgList, proc<span style="color:#f92672">=</span>False):
+    count <span style="color:#f92672">=</span> len(imgList)
+    cols <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+    rows <span style="color:#f92672">=</span> count<span style="color:#f92672">//</span>cols
+    fig<span style="color:#f92672">=</span>plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">8</span>))
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, count):
+        img_name <span style="color:#f92672">=</span> imgList[i]<span style="color:#f92672">.</span>name
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        <span style="color:#66d9ef">if</span> proc <span style="color:#f92672">==</span> True:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage)
+        <span style="color:#66d9ef">else</span>:    
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>image)
+    plt<span style="color:#f92672">.</span>tight_layout()
+    plt<span style="color:#f92672">.</span>show()
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">show_imgsVS</span>(imgList, greyScale<span style="color:#f92672">=</span>False):
+    count <span style="color:#f92672">=</span> len(imgList)
+    cols <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+    rows <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>
+    fig<span style="color:#f92672">=</span>plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">12</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">80</span>)
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, count):
+        img_name <span style="color:#f92672">=</span> imgList[i<span style="color:#f92672">//</span><span style="color:#ae81ff">2</span>]<span style="color:#f92672">.</span>name
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, (i<span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>image)
+        
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, (i<span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        <span style="color:#66d9ef">if</span> greyScale <span style="color:#f92672">==</span> True:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage, cmap<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gray&#39;</span>)
+        <span style="color:#66d9ef">else</span>:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage)
+    plt<span style="color:#f92672">.</span>tight_layout()
+    plt<span style="color:#f92672">.</span>show()
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">hough_transform</span>(img, rho, theta, threshold, min_line_len, max_line_gap):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    We need a function that returns the lines.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    lines <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>HoughLinesP(img, rho, theta, threshold, np<span style="color:#f92672">.</span>array([]), minLineLength<span style="color:#f92672">=</span>min_line_len, maxLineGap<span style="color:#f92672">=</span>max_line_gap)
+    <span style="color:#66d9ef">return</span> lines
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">draw_hough_lines</span>(height, width, lines, color<span style="color:#f92672">=</span>[<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], thickness<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>):
+    line_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((height, width, <span style="color:#ae81ff">3</span>), dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>uint8)
+    <span style="color:#66d9ef">return</span> draw_lines(line_img, lines, color, thickness)
+
+<span style="color:#75715e"># Create image class for each loaded image</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">InitImages</span>():
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> images:
+        img <span style="color:#f92672">=</span> Image(x, test_images_loc)
+        img<span style="color:#f92672">.</span>open()
+        imageList<span style="color:#f92672">.</span>append(img)
+
+<span style="color:#75715e"># Get grayscale for each image</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgGreyscale</span>():
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> grayscale(x<span style="color:#f92672">.</span>image)
+
+<span style="color:#75715e"># Apply Gaussian smoothing</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgGaussianSmoothing</span>():
+    kernel_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> gaussian_blur(x<span style="color:#f92672">.</span>procImage, kernel_size)
+
+<span style="color:#75715e"># Define our parameters for Canny and apply</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgCanny</span>():
+    low_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">100</span>
+    high_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">150</span>
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> canny(x<span style="color:#f92672">.</span>procImage, low_threshold, high_threshold)
+
+<span style="color:#75715e"># Define a four-sided polygon to mask</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgRoI</span>():
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        <span style="color:#75715e"># Getting specifics for each image </span>
+        height <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>height
+        width <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>width
+        bottom_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.9</span>
+        top_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.465</span>
+
+        x<span style="color:#f92672">.</span>left_x_bottom <span style="color:#f92672">=</span> width <span style="color:#f92672">-</span> (width<span style="color:#f92672">*</span>bottom_offset)
+        x<span style="color:#f92672">.</span>left_x_top <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>top_offset
+        x<span style="color:#f92672">.</span>right_x_bottom <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>bottom_offset
+        x<span style="color:#f92672">.</span>right_x_top <span style="color:#f92672">=</span> (width<span style="color:#f92672">*.</span><span style="color:#ae81ff">5</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">50</span>
+
+        x<span style="color:#f92672">.</span>left_y_bottom <span style="color:#f92672">=</span> height
+        x<span style="color:#f92672">.</span>left_y_top <span style="color:#f92672">=</span> height<span style="color:#f92672">*.</span><span style="color:#ae81ff">6</span>
+        x<span style="color:#f92672">.</span>right_y_bottom <span style="color:#f92672">=</span> height
+        x<span style="color:#f92672">.</span>right_y_top <span style="color:#f92672">=</span> height<span style="color:#f92672">*.</span><span style="color:#ae81ff">6</span>
+
+        left_bottom <span style="color:#f92672">=</span> (x<span style="color:#f92672">.</span>left_x_bottom, x<span style="color:#f92672">.</span>left_y_bottom)
+        left_top <span style="color:#f92672">=</span> (x<span style="color:#f92672">.</span>left_x_top, x<span style="color:#f92672">.</span>left_y_top)
+        right_bottom <span style="color:#f92672">=</span> (x<span style="color:#f92672">.</span>right_x_bottom, x<span style="color:#f92672">.</span>right_y_bottom)
+        right_top <span style="color:#f92672">=</span> (x<span style="color:#f92672">.</span>right_x_top, x<span style="color:#f92672">.</span>right_y_top)
+
+        vertices <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array([[left_bottom, left_top, right_top, right_bottom]], dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int32)
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> region_of_interest(x<span style="color:#f92672">.</span>procImage, vertices)
+
+<span style="color:#75715e"># Define the Hough transform parameters</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgRoughTransform</span>():
+    <span style="color:#75715e"># Make a blank the same size as our image to draw on</span>
+    rho <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>                         <span style="color:#75715e"># distance resolution in pixels of the Hough grid</span>
+    theta <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>pi<span style="color:#f92672">/</span><span style="color:#ae81ff">180</span>           <span style="color:#75715e"># angular resolution in radians of the Hough grid</span>
+    threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">15</span>                  <span style="color:#75715e"># minimum number of votes (intersections in Hough grid cell)</span>
+    min_line_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">50</span>             <span style="color:#75715e"># minimum number of pixels making up a line</span>
+    max_line_gap <span style="color:#f92672">=</span> <span style="color:#ae81ff">150</span>               <span style="color:#75715e"># maximum gap in pixels between connectable line segments</span>
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        x<span style="color:#f92672">.</span>lines <span style="color:#f92672">=</span> hough_transform(x<span style="color:#f92672">.</span>procImage, rho, theta, threshold, min_line_length, max_line_gap)
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_hough_lines(x<span style="color:#f92672">.</span>height, x<span style="color:#f92672">.</span>width, x<span style="color:#f92672">.</span>lines)
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> weighted_img(x<span style="color:#f92672">.</span>procImage, x<span style="color:#f92672">.</span>image, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>)
+
+<span style="color:#75715e"># Separate the lane points</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgLanePoints</span>():
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        imgMiddle <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>width<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>
+
+        <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> x<span style="color:#f92672">.</span>lines:
+            <span style="color:#66d9ef">for</span> x1,y1,x2,y2 <span style="color:#f92672">in</span> line:
+                dx <span style="color:#f92672">=</span> x2<span style="color:#f92672">-</span>x1
+                dy <span style="color:#f92672">=</span> y2<span style="color:#f92672">-</span>y1
+
+                <span style="color:#75715e"># Line not increasing</span>
+                <span style="color:#66d9ef">if</span> dx <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">or</span> dy <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+                    <span style="color:#66d9ef">continue</span>
+
+                m <span style="color:#f92672">=</span> dy<span style="color:#f92672">/</span>dx
+
+                <span style="color:#75715e"># Discard lines with small slopes</span>
+                slope_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.2</span>
+                <span style="color:#66d9ef">if</span> abs(m) <span style="color:#f92672">&lt;</span> slope_threshold:
+                    <span style="color:#66d9ef">continue</span>
+
+                <span style="color:#75715e"># Indentify left and right lanes</span>
+                <span style="color:#66d9ef">if</span> x1 <span style="color:#f92672">&lt;</span> imgMiddle <span style="color:#f92672">and</span> x2 <span style="color:#f92672">&lt;</span> imgMiddle:
+                    x<span style="color:#f92672">.</span>leftLanePoints<span style="color:#f92672">.</span>append([[x1,y1,x2,y2]])
+                <span style="color:#66d9ef">elif</span> x1 <span style="color:#f92672">&gt;=</span> imgMiddle <span style="color:#f92672">and</span> x2 <span style="color:#f92672">&gt;=</span>imgMiddle:
+                    x<span style="color:#f92672">.</span>rightLanePoints<span style="color:#f92672">.</span>append([[x1,y1,x2,y2]])
+
+        <span style="color:#75715e"># With the points separated, now this points will be drawn into the</span>
+        <span style="color:#75715e"># image with different colors</span>
+        
+        <span style="color:#75715e"># Mark left lane points</span>
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_hough_lines(x<span style="color:#f92672">.</span>height, x<span style="color:#f92672">.</span>width, x<span style="color:#f92672">.</span>leftLanePoints, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>], <span style="color:#ae81ff">10</span>)
+        <span style="color:#75715e"># Mark right lane points</span>
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(x<span style="color:#f92672">.</span>procImage, x<span style="color:#f92672">.</span>rightLanePoints, [<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+
+<span style="color:#75715e"># Calculate line fit for each lane</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgLineFit</span>():
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> imageList:
+        xs <span style="color:#f92672">=</span> []
+        ys <span style="color:#f92672">=</span> []
+        <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> x<span style="color:#f92672">.</span>leftLanePoints:
+                <span style="color:#66d9ef">for</span> x1, y1, x2, y2 <span style="color:#f92672">in</span> line:
+                    xs<span style="color:#f92672">.</span>append(x1)
+                    xs<span style="color:#f92672">.</span>append(x2)
+                    ys<span style="color:#f92672">.</span>append(y1)
+                    ys<span style="color:#f92672">.</span>append(y2)
+
+        z <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyfit(xs, ys, <span style="color:#ae81ff">1</span>)
+        <span style="color:#75715e"># Extrapolate to the top and bottom of the special regions</span>
+        y_bottom <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(x<span style="color:#f92672">.</span>left_x_bottom, z)
+        y_top <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(x<span style="color:#f92672">.</span>left_x_top, z)
+        <span style="color:#75715e"># print(&#34;Debug: Top Left: Y: &#34; + str(y_top) + &#34; X: &#34; + str(x.left_x_top))</span>
+        <span style="color:#75715e"># print(&#34;Debug: Bottom Left: Y: &#34; + str(y_bottom) + &#34; X: &#34; + str(x.left_x_bottom))</span>
+
+        new_lines <span style="color:#f92672">=</span> [[[int(x<span style="color:#f92672">.</span>left_x_bottom), int(y_bottom), int(x<span style="color:#f92672">.</span>left_x_top), int(y_top)]]]
+        line_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((x<span style="color:#f92672">.</span>height, x<span style="color:#f92672">.</span>width, <span style="color:#ae81ff">3</span>), dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>uint8)
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(line_img, new_lines, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+
+        xs<span style="color:#f92672">.</span>clear()
+        ys<span style="color:#f92672">.</span>clear()
+        <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> x<span style="color:#f92672">.</span>rightLanePoints:
+                <span style="color:#66d9ef">for</span> x1, y1, x2, y2 <span style="color:#f92672">in</span> line:
+                    xs<span style="color:#f92672">.</span>append(x1)
+                    xs<span style="color:#f92672">.</span>append(x2)
+                    ys<span style="color:#f92672">.</span>append(y1)
+                    ys<span style="color:#f92672">.</span>append(y2)
+
+        z <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyfit(xs, ys, <span style="color:#ae81ff">1</span>)
+        <span style="color:#75715e"># Extrapolate to the top and bottom of the special regions</span>
+        y_bottom <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(x<span style="color:#f92672">.</span>right_x_bottom, z)
+        y_top <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(x<span style="color:#f92672">.</span>right_x_top, z)
+        <span style="color:#75715e"># print(&#34;Debug: Top Right: Y: &#34; + str(y_top) + &#34; X: &#34; + str(x.right_x_top))</span>
+        <span style="color:#75715e"># print(&#34;Debug: Bottom Right: Y: &#34; + str(y_bottom) + &#34; X: &#34; + str(x.right_x_bottom))</span>
+
+        new_lines <span style="color:#f92672">=</span> [[[int(x<span style="color:#f92672">.</span>right_x_bottom), int(y_bottom), int(x<span style="color:#f92672">.</span>right_x_top), int(y_top)]]]
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(x<span style="color:#f92672">.</span>procImage, new_lines, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+        x<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> weighted_img(x<span style="color:#f92672">.</span>procImage, x<span style="color:#f92672">.</span>image, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>)
+        
+        
+<span style="color:#75715e">#Pipeline to work with the images</span>
+InitImages()
+<span style="color:#75715e"># show_imgs(imageList)</span>
+
+GetImgGreyscale()
+<span style="color:#75715e"># show_imgsVS(imageList, True)</span>
+
+GetImgGaussianSmoothing()
+<span style="color:#75715e"># show_imgsVS(imageList, True)</span>
+
+GetImgCanny()
+<span style="color:#75715e"># show_imgs(imageList, True)</span>
+
+GetImgRoI()
+<span style="color:#75715e"># show_imgs(imageList, True)</span>
+
+GetImgRoughTransform()
+<span style="color:#75715e"># show_imgs(imageList, True)</span>
+
+GetImgLanePoints()
+<span style="color:#75715e"># show_imgs(imageList, True)</span>
+
+GetImgLineFit()
+show_imgs(imageList, True)
+</code></pre></div><pre><code>Opening image: solidWhiteRight.jpg
+Opening image: solidWhiteCurve.jpg
+Opening image: solidYellowCurve.jpg
+Opening image: solidYellowCurve2.jpg
+Opening image: solidYellowLeft.jpg
+Opening image: whiteCarLaneSwitch.jpg
+</code></pre>
+<p>
+  <img src="/img/lane_finding/pic2.png" alt="png">
+
+</p>
+<h3 id="build-a-lane-finding-pipeline-for-videos">Build a Lane Finding pipeline for videos</h3>
+<p>The code is very similar but transformed to deal with videos. This gives you an idea of how things are
+processed in the field. Output videos are shown below.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Import everything needed to edit/save/watch video clips</span>
+<span style="color:#f92672">from</span> moviepy.editor <span style="color:#f92672">import</span> VideoFileClip
+<span style="color:#f92672">from</span> IPython.display <span style="color:#f92672">import</span> HTML
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Image</span>:
+    <span style="color:#66d9ef">def</span> __init__(self, name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>, location<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>):
+        self<span style="color:#f92672">.</span>name <span style="color:#f92672">=</span> name
+        self<span style="color:#f92672">.</span>location <span style="color:#f92672">=</span> location
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+        self<span style="color:#f92672">.</span>lines <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+
+        <span style="color:#75715e"># Keep track of left and right lane points</span>
+        self<span style="color:#f92672">.</span>leftLanePoints <span style="color:#f92672">=</span> []
+        self<span style="color:#f92672">.</span>rightLanePoints <span style="color:#f92672">=</span> []
+        
+        <span style="color:#75715e"># Used to draw final line</span>
+        self<span style="color:#f92672">.</span>left_x_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>left_x_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>left_y_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>left_y_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>right_x_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>right_x_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>right_y_bottom <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+        self<span style="color:#f92672">.</span>right_y_top <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">open</span>(self):
+        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Opening image: &#34;</span> <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>name)
+        img <span style="color:#f92672">=</span> mpimg<span style="color:#f92672">.</span>imread(self<span style="color:#f92672">.</span>location <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;/&#39;</span> <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>name)
+        imshape <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>shape
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> imshape[<span style="color:#ae81ff">0</span>]
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> imshape[<span style="color:#ae81ff">1</span>]
+        self<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> img
+    
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">initVideoImg</span>(self):
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> <span style="color:#ae81ff">540</span>
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> <span style="color:#ae81ff">960</span>
+    
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">SetVideoDim</span>(self, w, h):
+        self<span style="color:#f92672">.</span>height <span style="color:#f92672">=</span> h
+        self<span style="color:#f92672">.</span>width <span style="color:#f92672">=</span> w
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">show_imgs</span>(imgList, proc<span style="color:#f92672">=</span>False):
+    count <span style="color:#f92672">=</span> len(imgList)
+    cols <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+    rows <span style="color:#f92672">=</span> count<span style="color:#f92672">//</span>cols
+    fig<span style="color:#f92672">=</span>plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">8</span>))
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, count):
+        img_name <span style="color:#f92672">=</span> imgList[i]<span style="color:#f92672">.</span>name
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        <span style="color:#66d9ef">if</span> proc <span style="color:#f92672">==</span> True:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage)
+        <span style="color:#66d9ef">else</span>:    
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>image)
+    plt<span style="color:#f92672">.</span>tight_layout()
+    plt<span style="color:#f92672">.</span>show()
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">show_imgsVS</span>(imgList, greyScale<span style="color:#f92672">=</span>False):
+    count <span style="color:#f92672">=</span> len(imgList)
+    cols <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+    rows <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>
+    fig<span style="color:#f92672">=</span>plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">12</span>, <span style="color:#ae81ff">12</span>), dpi<span style="color:#f92672">=</span><span style="color:#ae81ff">80</span>)
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, count):
+        img_name <span style="color:#f92672">=</span> imgList[i<span style="color:#f92672">//</span><span style="color:#ae81ff">2</span>]<span style="color:#f92672">.</span>name
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, (i<span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>image)
+        
+        fig<span style="color:#f92672">.</span>add_subplot(rows, cols, (i<span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>)
+        plt<span style="color:#f92672">.</span>title(img_name)
+        <span style="color:#66d9ef">if</span> greyScale <span style="color:#f92672">==</span> True:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage, cmap<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gray&#39;</span>)
+        <span style="color:#66d9ef">else</span>:
+            plt<span style="color:#f92672">.</span>imshow(imgList[i]<span style="color:#f92672">.</span>procImage)
+    plt<span style="color:#f92672">.</span>tight_layout()
+    plt<span style="color:#f92672">.</span>show()
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">hough_transform</span>(img, rho, theta, threshold, min_line_len, max_line_gap):
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    We need a function that returns the lines.
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    lines <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>HoughLinesP(img, rho, theta, threshold, np<span style="color:#f92672">.</span>array([]), minLineLength<span style="color:#f92672">=</span>min_line_len, maxLineGap<span style="color:#f92672">=</span>max_line_gap)
+    <span style="color:#66d9ef">return</span> lines
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">draw_hough_lines</span>(height, width, lines, color<span style="color:#f92672">=</span>[<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>], thickness<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>):
+    line_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((height, width, <span style="color:#ae81ff">3</span>), dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>uint8)
+    <span style="color:#66d9ef">return</span> draw_lines(line_img, lines, color, thickness)
+
+<span style="color:#75715e"># Create image class for each loaded image</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">InitImages</span>(imgLocation, imgName):
+    img <span style="color:#f92672">=</span> Image(imgName, imgLocation)
+    img<span style="color:#f92672">.</span>open()
+    <span style="color:#66d9ef">return</span> img
+
+<span style="color:#75715e"># Get grayscale for each image</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgGreyscale</span>(img):
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> grayscale(img<span style="color:#f92672">.</span>image)
+
+<span style="color:#75715e"># Apply Gaussian smoothing</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgGaussianSmoothing</span>(img):
+    kernel_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> gaussian_blur(img<span style="color:#f92672">.</span>procImage, kernel_size)
+
+<span style="color:#75715e"># Define our parameters for Canny and apply</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgCanny</span>(img):
+    low_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">100</span>
+    high_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">150</span>
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> canny(img<span style="color:#f92672">.</span>procImage, low_threshold, high_threshold)
+
+<span style="color:#75715e"># Define a four-sided polygon to mask</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgRoI</span>(img):
+    <span style="color:#75715e"># Getting specifics for each image </span>
+    height <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>height
+    width <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>width
+    bottom_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.9</span>
+    top_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.455</span>
+
+    img<span style="color:#f92672">.</span>left_x_bottom <span style="color:#f92672">=</span> width <span style="color:#f92672">-</span> (width<span style="color:#f92672">*</span>bottom_offset)
+    img<span style="color:#f92672">.</span>left_x_top <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>top_offset
+    img<span style="color:#f92672">.</span>right_x_bottom <span style="color:#f92672">=</span> width<span style="color:#f92672">*</span>bottom_offset
+    img<span style="color:#f92672">.</span>right_x_top <span style="color:#f92672">=</span> (width<span style="color:#f92672">*</span><span style="color:#ae81ff">0.5</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">50.0</span>
+
+    img<span style="color:#f92672">.</span>left_y_bottom <span style="color:#f92672">=</span> height
+    img<span style="color:#f92672">.</span>left_y_top <span style="color:#f92672">=</span> height<span style="color:#f92672">*.</span><span style="color:#ae81ff">6</span>
+    img<span style="color:#f92672">.</span>right_y_bottom <span style="color:#f92672">=</span> height
+    img<span style="color:#f92672">.</span>right_y_top <span style="color:#f92672">=</span> height<span style="color:#f92672">*.</span><span style="color:#ae81ff">6</span>
+
+    left_bottom <span style="color:#f92672">=</span> (img<span style="color:#f92672">.</span>left_x_bottom, img<span style="color:#f92672">.</span>left_y_bottom)
+    left_top <span style="color:#f92672">=</span> (img<span style="color:#f92672">.</span>left_x_top, img<span style="color:#f92672">.</span>left_y_top)
+    right_bottom <span style="color:#f92672">=</span> (img<span style="color:#f92672">.</span>right_x_bottom, img<span style="color:#f92672">.</span>right_y_bottom)
+    right_top <span style="color:#f92672">=</span> (img<span style="color:#f92672">.</span>right_x_top, img<span style="color:#f92672">.</span>right_y_top)
+
+    vertices <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array([[left_bottom, left_top, right_top, right_bottom]], dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int32)
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> region_of_interest(img<span style="color:#f92672">.</span>procImage, vertices)
+
+<span style="color:#75715e"># Define the Hough transform parameters</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgRoughTransform</span>(img):
+    <span style="color:#75715e"># Make a blank the same size as our image to draw on</span>
+    rho <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>                         <span style="color:#75715e"># distance resolution in pixels of the Hough grid</span>
+    theta <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>pi<span style="color:#f92672">/</span><span style="color:#ae81ff">180</span>           <span style="color:#75715e"># angular resolution in radians of the Hough grid</span>
+    threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">15</span>                  <span style="color:#75715e"># minimum number of votes (intersections in Hough grid cell)</span>
+    min_line_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">50</span>             <span style="color:#75715e"># minimum number of pixels making up a line</span>
+    max_line_gap <span style="color:#f92672">=</span> <span style="color:#ae81ff">150</span>               <span style="color:#75715e"># maximum gap in pixels between connectable line segments</span>
+    
+    img<span style="color:#f92672">.</span>lines <span style="color:#f92672">=</span> hough_transform(img<span style="color:#f92672">.</span>procImage, rho, theta, threshold, min_line_length, max_line_gap)
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_hough_lines(img<span style="color:#f92672">.</span>height, img<span style="color:#f92672">.</span>width, img<span style="color:#f92672">.</span>lines)
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> weighted_img(img<span style="color:#f92672">.</span>procImage, img<span style="color:#f92672">.</span>image, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>)
+
+<span style="color:#75715e"># Separate the lane points</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgLanePoints</span>(img):
+   
+    imgMiddle <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>width<span style="color:#f92672">/</span><span style="color:#ae81ff">2</span>
+
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> img<span style="color:#f92672">.</span>lines:
+        <span style="color:#66d9ef">for</span> x1,y1,x2,y2 <span style="color:#f92672">in</span> line:
+            dx <span style="color:#f92672">=</span> x2<span style="color:#f92672">-</span>x1
+            dy <span style="color:#f92672">=</span> y2<span style="color:#f92672">-</span>y1
+
+            <span style="color:#75715e"># Line not increasing</span>
+            <span style="color:#66d9ef">if</span> dx <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">or</span> dy <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+                <span style="color:#66d9ef">continue</span>
+
+            m <span style="color:#f92672">=</span> dy<span style="color:#f92672">/</span>dx
+
+            <span style="color:#75715e"># Discard lines with small slopes</span>
+            slope_threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.2</span>
+            <span style="color:#66d9ef">if</span> abs(m) <span style="color:#f92672">&lt;</span> slope_threshold:
+                <span style="color:#66d9ef">continue</span>
+
+            <span style="color:#75715e"># Indentify left and right lanes</span>
+            <span style="color:#66d9ef">if</span> x1 <span style="color:#f92672">&lt;</span> imgMiddle <span style="color:#f92672">and</span> x2 <span style="color:#f92672">&lt;</span> imgMiddle:
+                img<span style="color:#f92672">.</span>leftLanePoints<span style="color:#f92672">.</span>append([[x1,y1,x2,y2]])
+            <span style="color:#66d9ef">elif</span> x1 <span style="color:#f92672">&gt;=</span> imgMiddle <span style="color:#f92672">and</span> x2 <span style="color:#f92672">&gt;=</span>imgMiddle:
+                img<span style="color:#f92672">.</span>rightLanePoints<span style="color:#f92672">.</span>append([[x1,y1,x2,y2]])
+
+    <span style="color:#75715e"># With the points separated, now this points will be drawn into the</span>
+    <span style="color:#75715e"># image with different colors</span>
+    
+    <span style="color:#75715e"># Mark left lane points</span>
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_hough_lines(img<span style="color:#f92672">.</span>height, img<span style="color:#f92672">.</span>width, img<span style="color:#f92672">.</span>leftLanePoints, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>], <span style="color:#ae81ff">10</span>)
+    <span style="color:#75715e"># Mark right lane points</span>
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(img<span style="color:#f92672">.</span>procImage, img<span style="color:#f92672">.</span>rightLanePoints, [<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+
+<span style="color:#75715e"># Calculate line fit for each lane</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">GetImgLineFit</span>(img):
+    xs <span style="color:#f92672">=</span> []
+    ys <span style="color:#f92672">=</span> []
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> img<span style="color:#f92672">.</span>leftLanePoints:
+            <span style="color:#66d9ef">for</span> x1, y1, x2, y2 <span style="color:#f92672">in</span> line:
+                xs<span style="color:#f92672">.</span>append(x1)
+                xs<span style="color:#f92672">.</span>append(x2)
+                ys<span style="color:#f92672">.</span>append(y1)
+                ys<span style="color:#f92672">.</span>append(y2)
+
+    z <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyfit(xs, ys, <span style="color:#ae81ff">1</span>)
+    <span style="color:#75715e"># Extrapolate to the top and bottom of the special regions</span>
+    y_bottom <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(img<span style="color:#f92672">.</span>left_x_bottom, z)
+    y_top <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(img<span style="color:#f92672">.</span>left_x_top, z)
+    <span style="color:#75715e"># print(&#34;Debug: Top Left: Y: &#34; + str(y_top) + &#34; X: &#34; + str(x.left_x_top))</span>
+    <span style="color:#75715e"># print(&#34;Debug: Bottom Left: Y: &#34; + str(y_bottom) + &#34; X: &#34; + str(x.left_x_bottom))</span>
+
+    new_lines <span style="color:#f92672">=</span> [[[int(img<span style="color:#f92672">.</span>left_x_bottom), int(y_bottom), int(img<span style="color:#f92672">.</span>left_x_top), int(y_top)]]]
+    line_img <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((img<span style="color:#f92672">.</span>height, img<span style="color:#f92672">.</span>width, <span style="color:#ae81ff">3</span>), dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>uint8)
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(line_img, new_lines, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+
+    xs<span style="color:#f92672">.</span>clear()
+    ys<span style="color:#f92672">.</span>clear()
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> img<span style="color:#f92672">.</span>rightLanePoints:
+            <span style="color:#66d9ef">for</span> x1, y1, x2, y2 <span style="color:#f92672">in</span> line:
+                xs<span style="color:#f92672">.</span>append(x1)
+                xs<span style="color:#f92672">.</span>append(x2)
+                ys<span style="color:#f92672">.</span>append(y1)
+                ys<span style="color:#f92672">.</span>append(y2)
+
+    z <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyfit(xs, ys, <span style="color:#ae81ff">1</span>)
+    <span style="color:#75715e"># Extrapolate to the top and bottom of the special regions</span>
+    y_bottom <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(img<span style="color:#f92672">.</span>right_x_bottom, z)
+    y_top <span style="color:#f92672">=</span> poly<span style="color:#f92672">.</span>polyval(img<span style="color:#f92672">.</span>right_x_top, z)
+    <span style="color:#75715e"># print(&#34;Debug: Top Right: Y: &#34; + str(y_top) + &#34; X: &#34; + str(x.right_x_top))</span>
+    <span style="color:#75715e"># print(&#34;Debug: Bottom Right: Y: &#34; + str(y_bottom) + &#34; X: &#34; + str(x.right_x_bottom))</span>
+
+    new_lines <span style="color:#f92672">=</span> [[[int(img<span style="color:#f92672">.</span>right_x_bottom), int(y_bottom), int(img<span style="color:#f92672">.</span>right_x_top), int(y_top)]]]
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> draw_lines(img<span style="color:#f92672">.</span>procImage, new_lines, [<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">10</span>)
+    img<span style="color:#f92672">.</span>procImage <span style="color:#f92672">=</span> weighted_img(img<span style="color:#f92672">.</span>procImage, img<span style="color:#f92672">.</span>image, <span style="color:#ae81ff">0.8</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">process_image</span>(image):
+    <span style="color:#75715e"># NOTE: The output you return should be a color image (3 channel) for processing video below</span>
+    <span style="color:#75715e"># TODO: put your pipeline here,</span>
+    <span style="color:#75715e"># you should return the final output (image where lines are drawn on lanes)</span>
+    
+    img <span style="color:#f92672">=</span> Image()
+    img<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> image
+    img<span style="color:#f92672">.</span>SetVideoDim(<span style="color:#ae81ff">960</span>, <span style="color:#ae81ff">540</span>)
+    
+    GetImgGreyscale(img)
+    GetImgGaussianSmoothing(img)
+    GetImgCanny(img)
+    GetImgRoI(img)
+    GetImgRoughTransform(img)
+    GetImgLanePoints(img)
+    GetImgLineFit(img)
+
+    <span style="color:#66d9ef">return</span> img<span style="color:#f92672">.</span>procImage
+</code></pre></div><p>
+  <img src="/img/lane_finding/video1.gif" alt="png">
+
+</p>
+<p>
+  <img src="/img/lane_finding/video2.gif" alt="png">
+
+</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>For the first problem, a process to smooth out the current result with the past frame result will make it less jumpy.
+But I&rsquo;m not sure this is the correct result given my current knowledge because this smoothing process could not work with the
+car going at high speeds. I think a better approach could be better lane identification.</p>
+<p>The other problem is the curved lanes and I think this can be easily addressed with a regression result with higher degree order
+coefficients. The current problem I face is how to calculate the extrapolated lane. How far in the lane is safe enough to
+calculate an extrapolation? I will come back to this problem and improve this project once I get more knowledge on lane
+identification.</p>
+<p>Overall, an very interesting project to understand the kind of problems this field has in regards to environment perception.</p>
+
+
+                
+
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/euler1/" data-toggle="tooltip" data-placement="top" title="Dynamic System Integration and Plotting with C&#43;&#43;">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/quadrotor_dynamics/" data-toggle="tooltip" data-placement="top" title="Quadrotor Autopilot Design Part 1: Dynamics">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+<div id="disqus-comment"></div>
+
+
+
+            </div>
+            
+            <div class="
+                col-lg-11 col-lg-offset-1
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/arm" title="arm">
+                            arm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/bash" title="bash">
+                            bash
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/c" title="c">
+                            c
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/development" title="development">
+                            development
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/dynamic-systems" title="dynamic-systems">
+                            dynamic-systems
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/kvm" title="kvm">
+                            kvm
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/linux" title="linux">
+                            linux
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/qemu" title="qemu">
+                            qemu
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/tcp/ip" title="tcp/ip">
+                            tcp/ip
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/x86-assembly" title="x86-assembly">
+                            x86-assembly
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                   
+                    
+                    <li>
+                        <a href="mailto:jarrocha@linux.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    
+                    
+
+                    
+
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/jarrocha">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    <li>
+                        <a target="_blank" href="https://gitlab.com/jarrocha27">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-gitlab fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/jaime-arrocha-337b0488/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/3848072/jarr">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+            
+                    
+                    
+                    
+            
+            
+            
+                </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Innercoder.dev 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    async("https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+</body>
+</html>
