@@ -32,12 +32,24 @@ I wanted to test this for myself so I updated and uploaded an old SPI driver I w
     </item>
     
     <item>
+      <title>Extended Kalman Filter for Quadrotor Simulator</title>
+      <link>https://jarrocha.github.io/post/quadrotor_sim_ekf/</link>
+      <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_sim_ekf/</guid>
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree.
+The project consists on building an estimator based on the Extended Kalman filter. The lessons started by giving us an introduction with the Bayes and Kalman filter, and then procedded to the Extended and Unscented Kalman filter.
+The steps in this project have us building an estimator step by step and at the end to test our previous controller with non-ideal settings for the IMUs and Estimator.</description>
+    </item>
+    
+    <item>
       <title>Quadrotor C&#43;&#43; PID Controller for Simulator</title>
       <link>https://jarrocha.github.io/post/quadrotor_sim_pid/</link>
       <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
       
       <guid>https://jarrocha.github.io/post/quadrotor_sim_pid/</guid>
-      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree. The project consists on building a complete cascaded controller on C++. To verify each step of the design, the simulator contains customized scenerios to test each part as it is developed.
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree.
+The project consists on building a complete cascaded controller on C++. To verify each step of the design, the simulator contains customized scenerios to test each part as it is developed.
 The figure below helps to keep in mind the different parts that we need to develop.
  The attitude controller part consists of three controllers.</description>
     </item>

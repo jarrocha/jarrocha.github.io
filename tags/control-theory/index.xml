@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Control Theory on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/tags/control-theory/</link>
+    <description>Recent content in Control Theory on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 12 Nov 2021 17:09:43 -0500</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/tags/control-theory/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Quadrotor Autopilot Design Part 1: Dynamics</title>
+      <link>https://jarrocha.github.io/post/quadrotor_dynamics/</link>
+      <pubDate>Fri, 12 Nov 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_dynamics/</guid>
+      <description>Intro  In this post I will show the derivations of the equations to describe the behavior of a quadrotor. This is will be a 3-5 part series that will consist on dynamics, system simulation, control design with PID, control design with Optimal Control, EKF, and finally to see it on an actual quadrotor. This is based on what I learned from the Udacity Nanodegree course on quadrotor autopilot design with some further study on my own.</description>
+    </item>
+    
+    <item>
+      <title>Extended Kalman Filter for Quadrotor Simulator</title>
+      <link>https://jarrocha.github.io/post/quadrotor_sim_ekf/</link>
+      <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_sim_ekf/</guid>
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree.
+The project consists on building an estimator based on the Extended Kalman filter. The lessons started by giving us an introduction with the Bayes and Kalman filter, and then procedded to the Extended and Unscented Kalman filter.
+The steps in this project have us building an estimator step by step and at the end to test our previous controller with non-ideal settings for the IMUs and Estimator.</description>
+    </item>
+    
+    <item>
+      <title>Quadrotor C&#43;&#43; PID Controller for Simulator</title>
+      <link>https://jarrocha.github.io/post/quadrotor_sim_pid/</link>
+      <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_sim_pid/</guid>
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree.
+The project consists on building a complete cascaded controller on C++. To verify each step of the design, the simulator contains customized scenerios to test each part as it is developed.
+The figure below helps to keep in mind the different parts that we need to develop.
+ The attitude controller part consists of three controllers.</description>
+    </item>
+    
+  </channel>
+</rss>

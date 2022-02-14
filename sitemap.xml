@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://jarrocha.github.io/tags/c/</loc>
+    <lastmod>2021-11-12T17:09:43-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jarrocha.github.io/tags/control-theory/</loc>
+    <lastmod>2021-11-12T17:09:43-05:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://jarrocha.github.io/tags/dynamic-systems/</loc>
     <lastmod>2021-11-12T17:09:43-05:00</lastmod>
   </url>
@@ -33,11 +43,6 @@
   </url>
   
   <url>
-    <loc>https://jarrocha.github.io/tags/c/</loc>
-    <lastmod>2021-09-19T11:24:35-05:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://jarrocha.github.io/tags/driver/</loc>
     <lastmod>2021-09-19T11:24:35-05:00</lastmod>
   </url>
@@ -50,6 +55,16 @@
   <url>
     <loc>https://jarrocha.github.io/post/spi_driver_test/</loc>
     <lastmod>2021-09-19T11:24:35-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jarrocha.github.io/post/quadrotor_sim_ekf/</loc>
+    <lastmod>2021-08-25T17:09:43-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jarrocha.github.io/tags/kalman-filter/</loc>
+    <lastmod>2021-08-25T17:09:43-05:00</lastmod>
   </url>
   
   <url>

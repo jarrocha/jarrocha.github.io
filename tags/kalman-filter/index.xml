@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kalman Filter on Innercoder.dev</title>
+    <link>https://jarrocha.github.io/tags/kalman-filter/</link>
+    <description>Recent content in Kalman Filter on Innercoder.dev</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 25 Aug 2021 17:09:43 -0500</lastBuildDate>
+    
+	<atom:link href="https://jarrocha.github.io/tags/kalman-filter/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Extended Kalman Filter for Quadrotor Simulator</title>
+      <link>https://jarrocha.github.io/post/quadrotor_sim_ekf/</link>
+      <pubDate>Wed, 25 Aug 2021 17:09:43 -0500</pubDate>
+      
+      <guid>https://jarrocha.github.io/post/quadrotor_sim_ekf/</guid>
+      <description>Intro  This project is the result for the training course for the Flying Car Nanodegree.
+The project consists on building an estimator based on the Extended Kalman filter. The lessons started by giving us an introduction with the Bayes and Kalman filter, and then procedded to the Extended and Unscented Kalman filter.
+The steps in this project have us building an estimator step by step and at the end to test our previous controller with non-ideal settings for the IMUs and Estimator.</description>
+    </item>
+    
+  </channel>
+</rss>
